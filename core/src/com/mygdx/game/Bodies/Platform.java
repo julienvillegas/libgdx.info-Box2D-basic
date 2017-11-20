@@ -14,13 +14,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
  * Created by julienvillegas on 01/02/2017.
  */
 
-public class Floor extends Image {
+public class Platform extends Image {
 
     private Body body;
     private World world;
 
-    public Floor(World aWorld, float pos_x, float pos_y, float aWidth, float aHeight, float angle){
-        super(new Texture(Gdx.files.internal("wood.jpg")));
+    public Platform(World aWorld, float pos_x, float pos_y, float aWidth, float aHeight, float angle){
+        super(new Texture(Gdx.files.internal("platform.png")));
         this.setSize(aWidth,aHeight);
         this.setOrigin(this.getWidth()/2,this.getHeight()/2);
         this.rotateBy(angle);

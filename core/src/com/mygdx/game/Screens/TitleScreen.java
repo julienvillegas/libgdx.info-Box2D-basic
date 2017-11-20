@@ -25,13 +25,13 @@ public class TitleScreen implements Screen {
         game = aGame;
         stage = new Stage(new ScreenViewport());
 
-        Label title = new Label("Box2D Basic demo", MyGdxGame.skin,"big-black");
+        Label title = new Label("Space Hunters", MyGdxGame.skin,"big-black");
         title.setAlignment(Align.center);
         title.setY(Gdx.graphics.getHeight()*2/3);
         title.setWidth(Gdx.graphics.getWidth());
         stage.addActor(title);
 
-        TextButton playButton = new TextButton("Start!",MyGdxGame.skin);
+        TextButton playButton = new TextButton("Start!", MyGdxGame.skin);
         playButton.setWidth(Gdx.graphics.getWidth()/2);
         playButton.setPosition(Gdx.graphics.getWidth()/2-playButton.getWidth()/2,Gdx.graphics.getHeight()/2-playButton.getHeight()/2);
         playButton.addListener(new InputListener(){
@@ -44,6 +44,10 @@ public class TitleScreen implements Screen {
                 return true;
             }
         });
+        TextButton settings = new TextButton("Settings", MyGdxGame.skin);
+        settings.setWidth(Gdx.graphics.getWidth()/2);
+        settings.setPosition(Gdx.graphics.getWidth()/2-playButton.getWidth()/2,Gdx.graphics.getHeight()/2-playButton.getHeight()*2);
+        stage.addActor(settings);
         stage.addActor(playButton);
 
 
