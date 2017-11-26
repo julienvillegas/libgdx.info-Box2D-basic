@@ -3,19 +3,24 @@ package com.mygdx.game.Bodies;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJoint;
+import com.badlogic.gdx.physics.box2d.joints.DistanceJointDef;
+import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+
+import java.security.cert.TrustAnchor;
 
 /**
  * Created by julienvillegas on 31/01/2017.
  */
 
 public class Block extends Image  {
-
 
     private Body body;
     private World world;
@@ -49,19 +54,37 @@ public class Block extends Image  {
         // If you are wondering, density and area are used to calculate over all mass
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = shape;
-        fixtureDef.density = 5f;
-        fixtureDef.friction = 0f;
-        fixtureDef.restitution= 1f;
+        fixtureDef.density = 0.1f;
+        fixtureDef.friction = 0.4f;
+        fixtureDef.restitution = 1f;
         body.createFixture(fixtureDef);
 
         // Shape is the only disposable of the lot, so get rid of it
         shape.dispose();
         this.setOrigin(this.getWidth()/2,this.getHeight()/2);
 
+    }
+
+    public void AddDWeldJoint(Block block){
+        WeldJointDef jointDef = new WeldJointDef ();
+        jointDef.initialize(this.body, block.body, new Vector2(0,0) );
+        world.createJoint(jointDef); // Returns subclass Joint.
+    }
+
+
+    public void ApplyForseToCenter(float a, float b) {
+        this.body.applyForceToCenter(a, b, true);
+    }
+
+
+    public void SetLinearVelocity(float a, float b){
+        this.body.setLinearVelocity(a,b);
 
     }
-    public void ApplyForseToCenter(float a, float b){
-        this.body.applyForceToCenter(a, b, true);
+
+    public void SetAngularVelocity(float a){
+        this.body.setAngularVelocity(a);
+
     }
 
 
