@@ -38,6 +38,9 @@ public class Block extends Image  {
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.DynamicBody;
         bodyDef.position.set(pos_x, pos_y);
+        bodyDef.linearDamping = 0f;
+        bodyDef.angularDamping = 0f;
+        bodyDef.gravityScale = 1000f;
 
         // Create a body in the world using our definition
         body = world.createBody(bodyDef);
