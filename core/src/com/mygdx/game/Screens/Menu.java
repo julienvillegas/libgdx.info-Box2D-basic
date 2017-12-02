@@ -5,25 +5,23 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.Bodies.MoveableImage;
 
-
-/**
- * Created by julienvillegas on 17/01/2017.
- */
 public class Menu implements Screen, InputProcessor {
 
     private Stage stage;
     private Game game;
     private MoveableImage image;
-
+    private float oldX=0,oldY=0;
     public Menu(Game aGame) {
         game = aGame;
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(this);
-        image = new MoveableImage(0, Gdx.graphics.getHeight()/2,Gdx.graphics.getWidth()/4, Gdx.graphics.getHeight()/4, 0);
+        image = new MoveableImage(Gdx.graphics.getWidth()/8, Gdx.graphics.getHeight()/2,Gdx.graphics.getWidth()/4, Gdx.graphics.getHeight()/4, 0);
         stage.addActor(image);
 
 
@@ -49,19 +47,31 @@ public class Menu implements Screen, InputProcessor {
 
         @Override
         public boolean touchDown (int x, int y, int pointer, int button) {
+            if (image.contains(x,y)){
+                image.isMoving = true;
+
+            }
+            oldX=x;
+            oldY=y;
 
             return true;
         }
 
         @Override
         public boolean touchUp (int x, int y, int pointer, int button) {
+            image.isMoving = false;
 
             return true;
         }
 
         @Override
         public boolean touchDragged (int x, int y, int pointer) {
-            image.setRect(x,y,image.getRect().getWidth(), image.getRect().getHeight(),0);
+        if (image.isMoving == true) {
+            image.setX(image.getX() + x - oldX);
+            image.setY(image.getY() - y + oldY);
+            oldX = x;
+            oldY = y;
+        }
             return true;
         }
 

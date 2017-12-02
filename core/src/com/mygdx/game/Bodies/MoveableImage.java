@@ -1,26 +1,75 @@
 package com.mygdx.game.Bodies;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
-/**
- * Created by artum on 30.11.2017.
- */
 
 public class MoveableImage extends Image {
-    private Rect rect;
     public boolean isMoving = false;
+    private float x;
+    private float y;
+    private float width;
+    private float height;
+    private float angle;
 
-    public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle){
+    public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle) {
         super(new Texture("woodblock.png"));
-        this.setSize(aWidth,aHeight);
-        this.setOrigin(this.getWidth()/2,this.getHeight()/2);
-        this.rotateBy(angle);
-        rect  = new Rect(pos_x, pos_y, aWidth, aHeight , angle);
-        this.setPosition(pos_x,pos_y);
+        this.x = pos_x;
+        this.y = pos_y;
+        this.width = aWidth;
+        this.height = aHeight;
+        this.angle = angle;
+    }
+
+    @Override
+    public float getX() {
+        return x;
+    }
+
+    @Override
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    @Override
+    public float getY() {
+        return y;
+    }
+
+    @Override
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    @Override
+    public float getWidth() {
+        return width;
+    }
+
+    @Override
+    public void setWidth(float width) {
+        this.width = width;
+    }
+
+    @Override
+    public float getHeight() {
+        return height;
+    }
+
+    @Override
+    public void setHeight(float height) {
+        this.height = height;
+    }
+
+    public float getAngle() {
+        return angle;
+    }
+
+    public void setAngle(float angle) {
+        this.angle = angle;
     }
 
     @Override
@@ -30,31 +79,21 @@ public class MoveableImage extends Image {
 
     }
 
-    public void setRect(float pos_x, float pos_y, float aWidth, float aHeight, float angle){
-        rect.setX(pos_x);
-        rect.setY(pos_y);
-        rect.setWidth(aWidth);
-        rect.setHeight(aHeight);
-        rect.setAngle(angle);
-    }
 
-    public Rect getRect(){
-        return rect;
-    }
+
 
     @Override
     public void act(float delta) {
         super.act(delta);
-        this.setRotation(rect.getAngle()*  MathUtils.radiansToDegrees);
-
-        this.setPosition(rect.getX()-this.getWidth()/2,rect.getY()-this.getHeight()/2);
-
-
+        this.setRotation(angle*  MathUtils.radiansToDegrees);
+        this.setPosition(x,y);
     }
 
     public boolean contains(float x, float y){
-        return (x>rect.getX() && x<(rect.getX()+rect.getWidth())) && (y>rect.getY() && y<(rect.getY()+rect.getHeight()));
+
+        return (x>this.x && x<(this.x+this.width)) && (y< Gdx.graphics.getHeight()-this.y && y>Gdx.graphics.getHeight()-this.y-this.height);
     }
+
 
 
 }
