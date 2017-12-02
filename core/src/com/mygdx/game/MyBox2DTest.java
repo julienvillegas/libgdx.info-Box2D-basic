@@ -8,48 +8,51 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
-import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.WorldManifold;
+
 
 import java.util.ArrayList;
 
-/**
- * Created by artum on 01.12.2017.
- */
 
 public class MyBox2DTest implements ApplicationListener, InputProcessor {
-    /** the camera **/
-    protected OrthographicCamera camera;
+    // the camera
+    private OrthographicCamera camera;
 
-    /** the immediate mode renderer to output our debug drawings **/
-    private ShapeRenderer renderer;
-
-    /** box2d debug renderer **/
+    // box2d debug renderer
     private Box2DDebugRenderer debugRenderer;
 
-    private TextureRegion textureRegion;
+    //pictures
+    private TextureRegion woodblock_picture;
+    private TextureRegion steelblock_picture;
+    private TextureRegion halfwoodblock_picture;
+    private TextureRegion halfsteelblock_picture;
+    private TextureRegion engine_picture;
+    private TextureRegion gun_1_picture;
+    private TextureRegion gun_2_picture;
+    private TextureRegion turbine_picture;
+    private TextureRegion meteor_picture;
+    private TextureRegion meteor_2_picture;
+    private TextureRegion background_picture;
 
-    SpriteBatch batch;
+    private SpriteBatch batch;
 
-    /** our box2D world **/
-    protected World world;
+    //box2D world
+    private World world;
 
-    /** ground body to connect the mouse joint to **/
-    protected Body groundBody;
+    //bodies
+    private ArrayList<Body> woodblocks = new ArrayList<Body>();
+    private ArrayList<Body> steelblocks = new ArrayList<Body>();
 
-    /** our boxes **/
-    private ArrayList<Body> boxes = new ArrayList<Body>();
+
+
 
     @Override
     public void create() {
@@ -63,16 +66,21 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         camera = new OrthographicCamera(48, 32);
         camera.position.set(0, 16, 0);
 
-        // next we setup the immediate mode renderer
-        renderer = new ShapeRenderer();
-
         // next we create the box2d debug renderer
         debugRenderer = new Box2DDebugRenderer();
 
         // next we create a SpriteBatch a
         batch = new SpriteBatch();
 
-        textureRegion = new TextureRegion(new Texture(Gdx.files.internal("woodenblock.png")));
+        woodblock_picture = new TextureRegion(new Texture(Gdx.files.internal("woodblock.png")));
+        steelblock_picture = new TextureRegion(new Texture(Gdx.files.internal("steelblock.png")));
+        halfwoodblock_picture = new TextureRegion(new Texture(Gdx.files.internal("halfwoodblock.png")));
+        halfsteelblock_picture = new TextureRegion(new Texture(Gdx.files.internal("halfsteelblock.png")));
+        engine_picture = new TextureRegion(new Texture(Gdx.files.internal("engine.png")));
+        gun_1_picture = new TextureRegion(new Texture(Gdx.files.internal("gun_1.png")));
+        gun_2_picture = new TextureRegion(new Texture(Gdx.files.internal("gun_2.png")));
+        turbine_picture = new TextureRegion(new Texture(Gdx.files.internal("turbine.png")));
+        background_picture = new TextureRegion(new Texture(Gdx.files.internal("background_red_space.png")));
 
         // next we create out physics world.
         createPhysicsWorld();
@@ -85,12 +93,6 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         // we instantiate a new World with a proper gravity vector
         // and tell it to sleep when possible.
         world = new World(new Vector2(0, -10), true);
-
-        float[] vertices = {-0.07421887f, -0.16276085f, -0.12109375f, -0.22786504f, -0.157552f, -0.7122401f, 0.04296875f,
-                -0.7122401f, 0.110677004f, -0.6419276f, 0.13151026f, -0.49869835f, 0.08984375f, -0.3190109f};
-
-        PolygonShape shape = new PolygonShape();
-        shape.set(vertices);
 
         // next we create a static ground platform. This platform
         // is not moveable and will not react to any influences from
@@ -105,7 +107,8 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         // simply a static body.
         BodyDef groundBodyDef = new BodyDef();
         groundBodyDef.type = BodyDef.BodyType.StaticBody;
-        groundBody = world.createBody(groundBodyDef);
+        /* ground body to connect the mouse joint to */
+        Body groundBody = world.createBody(groundBodyDef);
 
 
         // finally we add a fixture to the body using the polygon
@@ -118,39 +121,20 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         groundBody.createFixture(fixtureDef);
         groundPoly.dispose();
 
-        // We also create a simple ChainShape we put above our
-        // ground polygon for extra funkyness.
-        ChainShape chainShape = new ChainShape();
-        chainShape.createLoop(new Vector2[] {new Vector2(-10, 10), new Vector2(-10, 5), new Vector2(10, 5), new Vector2(10, 11),});
-        BodyDef chainBodyDef = new BodyDef();
-        chainBodyDef.type = BodyDef.BodyType.StaticBody;
-        Body chainBody = world.createBody(chainBodyDef);
-        chainBody.createFixture(chainShape, 0);
-        chainShape.dispose();
 
         createBoxes();
     }
 
     private void createBoxes () {
-
         // next we create 50 boxes at random locations above the ground
-
         // body. First we create a nice polygon representing a box 2 meters
-
         // wide and high.
-
         PolygonShape boxPoly = new PolygonShape();
-
-        boxPoly.setAsBox(1, 1);
-
-
+        boxPoly.setAsBox(2, 2);
 
         // next we create the 50 box bodies using the PolygonShape we just
-
         // defined. This process is similar to the one we used for the ground
-
         // body. Note that we reuse the polygon for each body fixture.
-
         for (int i = 0; i < 20; i++) {
             // Create the BodyDef, set a random position above the
             // ground and create a new body
@@ -162,7 +146,7 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
             boxBody.createFixture(boxPoly, 1);
 
             // add the box to our list of boxes
-            boxes.add(boxBody);
+            woodblocks.add(boxBody);
         }
         // we are done, all that's left is disposing the boxPoly
         boxPoly.dispose();
@@ -189,11 +173,6 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
 
         camera.update();
 
-
-
-
-
-
         // next we render each box via the SpriteBatch.
         // for this we have to set the projection matrix of the
         // spritebatch to the camera's combined matrix. This will
@@ -201,47 +180,34 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         batch.getProjectionMatrix().set(camera.combined);
 
         batch.begin();
-        for (int i = 0; i < boxes.size(); i++) {
-            Body box = boxes.get(i);
+        batch.draw(background_picture,-24,0,48,32);
+        for (int i = 0; i <woodblocks.size()/2; i++) {
+            Body box = woodblocks.get(i);
             Vector2 position = box.getPosition(); // that's the box's center position
             float angle = MathUtils.radiansToDegrees * box.getAngle(); // the rotation angle around the center
-            batch.draw(textureRegion, position.x - 1, position.y - 1, // the bottom left corner of the box, unrotated
-                    1f, 1f, // the rotation center relative to the bottom left corner of the box
-                    2, 2, // the width and height of the box
-                    1, 1, // the scale on the x- and y-axis
+            batch.draw(woodblock_picture, position.x -2, position.y - 2, // the bottom left corner of the box, unrotated
+                    2f, 2f, // the rotation center relative to the bottom left corner of the box
+                    4, 4, // the width and height of the box
+                    1.1f, 1.1f, // the scale on the x- and y-axis
                     angle); // the rotation angle
 
         }
+        for (int i = woodblocks.size()/2; i <woodblocks.size(); i++) {
+            Body box = woodblocks.get(i);
+            Vector2 position = box.getPosition(); // that's the box's center position
+            float angle = MathUtils.radiansToDegrees * box.getAngle(); // the rotation angle around the center
+            batch.draw(steelblock_picture, position.x -2, position.y - 2, // the bottom left corner of the box, unrotated
+                    2f, 2f, // the rotation center relative to the bottom left corner of the box
+                    4, 4, // the width and height of the box
+                    1.1f, 1.1f, // the scale on the x- and y-axis
+                    angle); // the rotation angle
+
+        }
+
         batch.end();
 
-        // next we use the debug renderer. Note that we
-        // simply apply the camera again and then call
-        // the renderer. the camera.apply() call is actually
-        // not needed as the opengl matrices are already set
-        // by the spritebatch which in turn uses the camera matrices :)
-        debugRenderer.render(world, camera.combined);
+        //debugRenderer.render(world, camera.combined);
 
-        // finally we render all contact points
-        renderer.setProjectionMatrix(camera.combined);
-        renderer.begin(ShapeRenderer.ShapeType.Point);
-        renderer.setColor(0, 1, 0, 1);
-
-        for (int i = 0; i < world.getContactCount(); i++) {
-            Contact contact = world.getContactList().get(i);
-            // we only render the contact if it actually touches
-            if (contact.isTouching()) {
-                // get the world manifold from which we get the
-                // contact points. A manifold can have 0, 1 or 2
-                // contact points.
-                WorldManifold manifold = contact.getWorldManifold();
-                int numContactPoints = manifold.getNumberOfContactPoints();
-                for (int j = 0; j < numContactPoints; j++) {
-                    Vector2 point = manifold.getPoints()[j];
-                    renderer.point(point.x, point.y, 0);
-                }
-            }
-        }
-        renderer.end();
     }
 
 
@@ -257,7 +223,6 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
 
     @Override
     public void dispose() {
-        renderer.dispose();
         debugRenderer.dispose();
         world.dispose();
 

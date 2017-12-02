@@ -15,7 +15,7 @@ public class MoveableImage extends Image {
     public boolean isMoving = false;
 
     public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle){
-        super(new Texture("woodenblock.png"));
+        super(new Texture("woodblock.png"));
         this.setSize(aWidth,aHeight);
         this.setOrigin(this.getWidth()/2,this.getHeight()/2);
         this.rotateBy(angle);
