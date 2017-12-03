@@ -14,6 +14,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.ChainShape;
+import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -50,6 +51,9 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
     //bodies
     private ArrayList<Body> woodblocks = new ArrayList<Body>();
     private ArrayList<Body> steelblocks = new ArrayList<Body>();
+    private Body meteor;
+    private Body halfwoodblockbody;
+    private Body halfsteelblockbody;
 
 
 
@@ -80,6 +84,8 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         gun_1_picture = new TextureRegion(new Texture(Gdx.files.internal("gun_1.png")));
         gun_2_picture = new TextureRegion(new Texture(Gdx.files.internal("gun_2.png")));
         turbine_picture = new TextureRegion(new Texture(Gdx.files.internal("turbine.png")));
+        meteor_picture = new TextureRegion(new Texture(Gdx.files.internal("meteor.png")));
+        meteor_2_picture = new TextureRegion(new Texture(Gdx.files.internal("meteor_2.png")));
         background_picture = new TextureRegion(new Texture(Gdx.files.internal("background_red_space.png")));
 
         // next we create out physics world.
@@ -93,34 +99,95 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
         // we instantiate a new World with a proper gravity vector
         // and tell it to sleep when possible.
         world = new World(new Vector2(0, -10), true);
+        {
+            // next we create a static ground platform. This platform
+            // is not moveable and will not react to any influences from
+            // outside. It will however influence other bodies. First we
+            // create a PolygonShape that holds the form of the platform.
+            // it will be 100 meters wide and 2 meters high, centered
+            // around the origin
+            PolygonShape groundPoly = new PolygonShape();
+            groundPoly.setAsBox(50, 1);
 
-        // next we create a static ground platform. This platform
-        // is not moveable and will not react to any influences from
-        // outside. It will however influence other bodies. First we
-        // create a PolygonShape that holds the form of the platform.
-        // it will be 100 meters wide and 2 meters high, centered
-        // around the origin
-        PolygonShape groundPoly = new PolygonShape();
-        groundPoly.setAsBox(50, 1);
-
-        // next we create the body for the ground platform. It's
-        // simply a static body.
-        BodyDef groundBodyDef = new BodyDef();
-        groundBodyDef.type = BodyDef.BodyType.StaticBody;
+            // next we create the body for the ground platform. It's
+            // simply a static body.
+            BodyDef groundBodyDef = new BodyDef();
+            groundBodyDef.type = BodyDef.BodyType.StaticBody;
         /* ground body to connect the mouse joint to */
-        Body groundBody = world.createBody(groundBodyDef);
+            Body groundBody = world.createBody(groundBodyDef);
+
+            // finally we add a fixture to the body using the polygon
+            // defined above. Note that we have to dispose PolygonShapes
+            // and CircleShapes once they are no longer used. This is the
+            // only time you have to care explicitly for memory management.
+            FixtureDef fixtureDef = new FixtureDef();
+            fixtureDef.shape = groundPoly;
+            fixtureDef.filter.groupIndex = 0;
+            groundBody.createFixture(fixtureDef);
+            groundPoly.dispose();
+        }
+        {
+            CircleShape shape = new CircleShape();
+            shape.setRadius(2f);
+
+            FixtureDef fd = new FixtureDef();
+            fd.shape = shape;
+            fd.density = 1.0f;
 
 
-        // finally we add a fixture to the body using the polygon
-        // defined above. Note that we have to dispose PolygonShapes
-        // and CircleShapes once they are no longer used. This is the
-        // only time you have to care explicitly for memory management.
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = groundPoly;
-        fixtureDef.filter.groupIndex = 0;
-        groundBody.createFixture(fixtureDef);
-        groundPoly.dispose();
+            BodyDef bd = new BodyDef();
+            bd.type = BodyDef.BodyType.DynamicBody;
+            bd.position.set(0, 30);
 
+            meteor = world.createBody(bd);
+            meteor.createFixture(fd);
+
+            shape.dispose();
+        }
+        {
+            Vector2[] vertices = new Vector2[3];
+            vertices[0] = new Vector2(0, 0);
+            vertices[1] = new Vector2(0, 4);
+            vertices[2] = new Vector2(4, 0);
+
+
+            PolygonShape shape = new PolygonShape();
+            shape.set(vertices);
+
+            FixtureDef fd = new FixtureDef();
+            fd.shape = shape;
+            fd.density = 1.0f;
+
+            BodyDef bd = new BodyDef();
+            bd.type = BodyDef.BodyType.DynamicBody;
+            bd.position.set(-10, 60);
+            halfwoodblockbody = world.createBody(bd);
+            halfwoodblockbody.createFixture(fd);
+
+            shape.dispose();
+        }
+        {
+            Vector2[] vertices = new Vector2[3];
+            vertices[0] = new Vector2(0, 0);
+            vertices[1] = new Vector2(0, -4);
+            vertices[2] = new Vector2(4, 0);
+
+
+            PolygonShape shape = new PolygonShape();
+            shape.set(vertices);
+
+            FixtureDef fd = new FixtureDef();
+            fd.shape = shape;
+            fd.density = 1.0f;
+
+            BodyDef bd = new BodyDef();
+            bd.type = BodyDef.BodyType.DynamicBody;
+            bd.position.set(-20, 60);
+            halfsteelblockbody = world.createBody(bd);
+            halfsteelblockbody.createFixture(fd);
+
+            shape.dispose();
+        }
 
         createBoxes();
     }
@@ -203,10 +270,36 @@ public class MyBox2DTest implements ApplicationListener, InputProcessor {
                     angle); // the rotation angle
 
         }
-
+        {
+            Vector2 position = meteor.getPosition();
+            float angle = MathUtils.radiansToDegrees * meteor.getAngle();
+            batch.draw(meteor_2_picture, position.x - 2, position.y - 2, // the bottom left corner of the box, unrotated
+                    2f, 2f, // the rotation center relative to the bottom left corner of the box
+                    4, 4, // the width and height of the box
+                    1.0f, 1.0f, // the scale on the x- and y-axis
+                    angle);
+        }
+        {
+            Vector2 position = halfwoodblockbody.getPosition();
+            float angle = MathUtils.radiansToDegrees * halfwoodblockbody.getAngle();
+            batch.draw(halfwoodblock_picture, position.x, position.y , // the bottom left corner of the box, unrotated
+                    0, 0, // the rotation center relative to the bottom left corner of the box
+                    4, 4, // the width and height of the box
+                    1.0f, 1.0f, // the scale on the x- and y-axis
+                    angle);
+        }
+       // {
+       //     Vector2 position = halfsteelblockbody.getPosition();
+       //     float angle = MathUtils.radiansToDegrees * halfsteelblockbody.getAngle();
+       //     batch.draw(halfsteelblock_picture, position.x, position.y , // the bottom left corner of the box, unrotated
+       //             0, 0, // the rotation center relative to the bottom left corner of the box
+       //             4, 4, // the width and height of the box
+       //             1.0f, 1.0f, // the scale on the x- and y-axis
+       //             angle);
+       // }
         batch.end();
 
-        //debugRenderer.render(world, camera.combined);
+        debugRenderer.render(world, camera.combined);
 
     }
 
