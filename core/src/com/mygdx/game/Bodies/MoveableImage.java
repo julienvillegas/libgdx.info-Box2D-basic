@@ -14,9 +14,15 @@ public class MoveableImage extends Image {
     private float width;
     private float height;
     private float angle;
+    private float startPosX;
+    private float startPosY;
+    private int number;
 
-    public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle) {
-        super(new Texture("woodblock.png"));
+    public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle,String texture) {
+        super(new Texture(texture));
+        number = getString(texture);
+        startPosX= pos_x;
+        startPosY = pos_y;
         this.x = pos_x;
         this.y = pos_y;
         this.width = aWidth;
@@ -24,6 +30,20 @@ public class MoveableImage extends Image {
         this.angle = angle;
     }
 
+    public int getString(String texture){
+        if (texture.equals("woodblock.png")){
+            return 1;
+        }
+        if (texture.equals("steelblock.png")){
+            return 2;
+        }
+        else return 50;
+
+    }
+
+    public int getNumber(){
+        return number;
+    }
     @Override
     public float getX() {
         return x;
@@ -78,10 +98,6 @@ public class MoveableImage extends Image {
 
 
     }
-
-
-
-
     @Override
     public void act(float delta) {
         super.act(delta);
@@ -92,6 +108,11 @@ public class MoveableImage extends Image {
     public boolean contains(float x, float y){
 
         return (x>this.x && x<(this.x+this.width)) && (y< Gdx.graphics.getHeight()-this.y && y>Gdx.graphics.getHeight()-this.y-this.height);
+    }
+
+    public void returnToStartPos(){
+        this.setX(startPosX);
+        this.setY(startPosY);
     }
 
 
