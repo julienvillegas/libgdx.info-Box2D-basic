@@ -23,7 +23,7 @@ public class GameScreen implements Screen {
 
     private Stage stage;
     private Game game;
-    private World world = new World(new Vector2(0, -1000), true);
+    private World world = new World(new Vector2(0, -10000000), true);
     private Box2DDebugRenderer debugRenderer;
     private Block block1;
     private Block block2;
