@@ -56,6 +56,8 @@ public class Menu implements Screen, InputProcessor {
                             blockarr[i][j] = image.getNumber();
                             image.setX(emptyblocks[i][j].getX());
                             image.setY(emptyblocks[i][j].getY());
+                            image.setXinTable(i);
+                            image.setYinTable(j);
                         }
                         else {
                             image.returnToStartPos();
@@ -92,6 +94,11 @@ public class Menu implements Screen, InputProcessor {
         for (int i=0;i<numBlocks;i++) {
             if (blocks[i].contains(x, y)) {
                blocks[i].isMoving = true;
+               if (blocks[i].getXinTable()!=50) {
+                   blockarr[blocks[i].getXinTable()][blocks[i].getYinTable()] = 0;
+                   blocks[i].setXinTable(50);
+                   blocks[i].setYinTable(50);
+               }
 
             }
         }
