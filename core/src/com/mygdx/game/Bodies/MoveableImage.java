@@ -17,10 +17,14 @@ public class MoveableImage extends Image {
     private float startPosX;
     private float startPosY;
     private int number;
+    private int XinTable;
+    private int YinTable;
 
     public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle,String texture) {
         super(new Texture(texture));
         number = getString(texture);
+        XinTable = 50;
+        YinTable = 50;
         startPosX= pos_x;
         startPosY = pos_y;
         this.x = pos_x;
@@ -28,6 +32,22 @@ public class MoveableImage extends Image {
         this.width = aWidth;
         this.height = aHeight;
         this.angle = angle;
+    }
+
+    public int getXinTable() {
+        return XinTable;
+    }
+
+    public void setXinTable(int xinTable) {
+        XinTable = xinTable;
+    }
+
+    public int getYinTable() {
+        return YinTable;
+    }
+
+    public void setYinTable(int yinTable) {
+        YinTable = yinTable;
     }
 
     public int getString(String texture){
