@@ -164,26 +164,26 @@ class MyBox2DTest : ApplicationListener, InputProcessor {
             shape1.dispose()
 
 
-            val vertices1 = arrayOfNulls<Vector2>(3)
-            vertices1[0] = Vector2(0f, 0f)
-            vertices1[1] = Vector2(0f, -4f)
-            vertices1[2] = Vector2(4f, 0f)
+            //val vertices1 = arrayOfNulls<Vector2>(3)
+            //vertices1[0] = Vector2(0f, 0f)
+            //vertices1[1] = Vector2(0f, -4f)
+            //vertices1[2] = Vector2(4f, 0f)
 
 
-            val shape2 = PolygonShape()
-            shape2.set(vertices1)
+            //val shape2 = PolygonShape()
+            //shape2.set(vertices1)
 
-            val fd2 = FixtureDef()
-            fd2.shape = shape2
-            fd2.density = 1.0f
+            //val fd2 = FixtureDef()
+            //fd2.shape = shape2
+            //fd2.density = 1.0f
 
-            val bd2 = BodyDef()
-            bd2.type = BodyDef.BodyType.DynamicBody
-            bd2.position.set(-20f, 60f)
-            halfsteelblockbody = world!!.createBody(bd2)
-            halfsteelblockbody!!.createFixture(fd2)
+            //val bd2 = BodyDef()
+            //bd2.type = BodyDef.BodyType.DynamicBody
+            //bd2.position.set(-20f, 60f)
+            //halfsteelblockbody = world!!.createBody(bd2)
+            //halfsteelblockbody!!.createFixture(fd2)
 
-            shape2.dispose()
+            //shape2.dispose()
 
 
         createBoxes()
@@ -243,7 +243,7 @@ class MyBox2DTest : ApplicationListener, InputProcessor {
 
         batch!!.begin()
         batch!!.draw(background_picture!!, -24f, 0f, 48f, 32f)
-        for (i in 0 .. woodblocks.size / 2-1) {
+        for (i in 0 until woodblocks.size / 2) {
             val box = woodblocks[i]
             val position = box.position // that's the box's center position
             val angle = MathUtils.radiansToDegrees * box.angle // the rotation angle around the center
@@ -254,7 +254,7 @@ class MyBox2DTest : ApplicationListener, InputProcessor {
                     angle) // the rotation angle
 
         }
-        for (i in woodblocks.size / 2 .. woodblocks.size-1) {
+        for (i in woodblocks.size / 2 until woodblocks.size) {
             val box = woodblocks[i]
             val position = box.position // that's the box's center position
             val angle = MathUtils.radiansToDegrees * box.angle // the rotation angle around the center
@@ -294,7 +294,7 @@ class MyBox2DTest : ApplicationListener, InputProcessor {
         // }
         batch!!.end()
 
-        debugRenderer!!.render(world, camera!!.combined)
+        //debugRenderer!!.render(world, camera!!.combined)
 
     }
 
