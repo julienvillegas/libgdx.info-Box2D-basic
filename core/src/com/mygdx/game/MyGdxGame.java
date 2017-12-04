@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.mygdx.game.Screens.Menu;
 import com.mygdx.game.Screens.TitleScreen;
 
 public class MyGdxGame extends Game {
@@ -18,7 +19,7 @@ public class MyGdxGame extends Game {
 		skin = new Skin(Gdx.files.internal("skin/glassy-ui.json"));
 		textureAtlas = new TextureAtlas();
 		textureAtlas.addRegion("note",new TextureRegion(new Texture("note.png")));
-		this.setScreen(new TitleScreen(this));
+		this.setScreen(new Menu(this));
 
 	}
 
