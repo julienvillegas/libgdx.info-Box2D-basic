@@ -3,15 +3,15 @@
 
 ### *OUR TEAM* 
 
-**Name of the team**: _`SeaHunters`_
+**Name of the team**: _`SpaceHunters`_
 
 #### Team stucture:
 
- * _`Bey Sviatoslav`_
- 
  * _`Nurgaliev Artyom`_
  
  * _`Nurgaliev Timur`_
+ 
+ * _`Bey Sviatoslav`_
  
  * _`Smirnov Mihail`_
  
