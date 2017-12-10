@@ -16,20 +16,21 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
+import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
+import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 public class LibGDXTest extends ApplicationAdapter {
     static final float STEP_TIME = 1f / 60f;
     static final int VELOCITY_ITERATIONS = 6;
     static final int POSITION_ITERATIONS = 2;
     static final float SCALE = 0.02f;
-    static final int COUNT = 20;
 
     private int maxwidthofship =6;
     private int maxheightofship =5;
@@ -51,8 +52,8 @@ public class LibGDXTest extends ApplicationAdapter {
     Body leftground;
     Body rightground;
 
-    ArrayList<Body> Bodies = new ArrayList<Body>();
-    ArrayList<String> names = new ArrayList<String>();
+    Body[][] Bodies = new Body[maxwidthofship][maxheightofship];
+    String[][] names = new String[maxwidthofship][maxheightofship];
     int [][] player1ship = new int[maxwidthofship][maxheightofship];
     int [][] player2ship = new int[maxwidthofship][maxheightofship];
 
@@ -114,75 +115,108 @@ public class LibGDXTest extends ApplicationAdapter {
                     float x = (float) (-100);
                     float y = (float) (0);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
 
                 if (player1ship[i][j] == 1) {
                     String name = blockNames[0];
 
-                    float x = (float) (10+i*7);
-                    float y = (float) (40 -j*7);
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 2) {
                     String name = blockNames[1];
 
-                    float x = (float) (10+i*7);
-                    float y = (float) (40 -j*7);
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 3) {
                     String name = blockNames[2];
 
-                    float x = (float) (10+i*7);
-                    float y = (float) (40 -j*7);
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 4) {
                     String name = blockNames[3];
 
-                    float x = (float) (10+i*7);
-                    float y = (float) (40 -j*7+1.2);
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7 +1.1)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 5) {
                     String name = blockNames[4];
 
-                    float x = (float) (10+i*7);
-                    float y = (float) (40 -j*7);
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 6) {
                     String name = blockNames[5];
 
-                    float x = (float) (10+i*7-4.5);
-                    float y = (float) (40 -j*7);
+                    float x = (float) ((10+i*7 - 4.5)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 7) {
                     String name = blockNames[6];
 
-                    float x = (float) (10+i*7);
-                    float y = (float) (40 -j*7);
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names.add(i+j,name);
-                    Bodies.add(i+j,createBody(name, x, y, 0));
+                    names[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
             }
         }
+        MotorJointDef jointDef = new MotorJointDef();
+
+        for (int j = 0; j < maxheightofship; j++) {
+            for (int i = 1; i < maxwidthofship; i++) {
+                if (player1ship[i][j]!= 0&&player1ship[i-1][j]!=0) {
+
+                    jointDef.angularOffset = 0f;
+                    jointDef.collideConnected = true;
+                    jointDef.correctionFactor = 0f;
+                    jointDef.maxForce = 1f;
+                    jointDef.maxTorque = 1f;
+                    jointDef.initialize(Bodies[i][j], Bodies[i-1][j]);
+                    world.createJoint(jointDef);
+                }
+            }
+        }
+        for (int i = 0; i < maxwidthofship; i++) {
+            for (int j = 1; j < maxheightofship; j++) {
+                if (player1ship[i][j] != 0&&player1ship[i][j-1]!=0) {
+                    jointDef.angularOffset = 0f;
+                    jointDef.collideConnected = true;
+                    jointDef.correctionFactor = 0f;
+                    jointDef.maxForce = 1f;
+                    jointDef.maxTorque = 1f;
+                    jointDef.initialize(Bodies[i][j], Bodies[i][j-1]);
+                    world.createJoint(jointDef);
+                }
+            }
+        }
+
+
+
+
     }
 
     private Body createBody(String name, float x, float y, float rotation) {
@@ -253,13 +287,17 @@ public class LibGDXTest extends ApplicationAdapter {
 
         batch.begin();
 
-        for (int i = 0; i < Bodies.size(); i++) {
-            Body body = Bodies.get(i);
-            String name = names.get(i);
+        for (int i = 0; i < maxwidthofship; i++) {
+            for (int j = 0; j < maxheightofship; j++) {
 
-            Vector2 position = body.getPosition();
-            float degrees = (float) Math.toDegrees(body.getAngle());
-            drawSprite(name, position.x, position.y, degrees);
+                Body body = Bodies[i][j];
+                String name = names[i][j];
+
+                Vector2 position = body.getPosition();
+                float degrees = (float) Math.toDegrees(body.getAngle());
+                drawSprite(name, position.x, position.y, degrees);
+
+            }
         }
 
         batch.end();

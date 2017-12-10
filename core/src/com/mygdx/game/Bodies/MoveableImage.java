@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 
 public class MoveableImage extends Image {
     public boolean isMoving = false;
+    public boolean isTouchable = false;
     private float x;
     private float y;
     private float width;
@@ -19,6 +20,7 @@ public class MoveableImage extends Image {
     private int number;
     private int XinTable;
     private int YinTable;
+
 
     public MoveableImage(float pos_x, float pos_y, float aWidth, float aHeight, float angle,String texture) {
         super(new Texture(texture));
@@ -133,6 +135,10 @@ public class MoveableImage extends Image {
     public void returnToStartPos(){
         this.setX(startPosX);
         this.setY(startPosY);
+    }
+
+    public boolean isInStartPos(){
+        return x == startPosX && y == startPosY;
     }
 
 
