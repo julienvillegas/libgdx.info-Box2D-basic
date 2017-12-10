@@ -103,6 +103,7 @@ project(":core") {
 
 
     dependencies {
+        compile "com.codeandweb.physicseditor:gdx-pe-loader:1.1.0"
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
     }
