@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -29,6 +30,10 @@ public class LibGDXTest extends ApplicationAdapter {
     static final int POSITION_ITERATIONS = 2;
     static final float SCALE = 0.02f;
     static final int COUNT = 20;
+
+    private int maxwidthofship =6;
+    private int maxheightofship =5;
+
 
     TextureAtlas textureAtlas;
     SpriteBatch batch;
@@ -41,12 +46,32 @@ public class LibGDXTest extends ApplicationAdapter {
     Box2DDebugRenderer debugRenderer;
     PhysicsShapeCache physicsBodies;
     float accumulator = 0;
-    Body ground;
-    Body[] fruitBodies = new Body[COUNT];
-    String[] names = new String[COUNT];
+    Body upground;
+    Body downground;
+    Body leftground;
+    Body rightground;
+
+    ArrayList<Body> Bodies = new ArrayList<Body>();
+    ArrayList<String> names = new ArrayList<String>();
+    int [][] player1ship = new int[maxwidthofship][maxheightofship];
+    int [][] player2ship = new int[maxwidthofship][maxheightofship];
+
 
     @Override
     public void create() {
+        player1ship[0] = new int[]{0, 0, 0, 0, 0};
+        player1ship[1] = new int[]{0, 6, 1, 6, 0};
+        player1ship[2] = new int[]{0, 7, 1, 7, 0};
+        player1ship[3] = new int[]{0, 5, 4, 5, 0};
+        player1ship[4] = new int[]{0, 0, 0, 0, 0};
+        player1ship[5] = new int[]{0, 0, 0, 0, 0};
+        //player1ship[0] = new int[]{1, 1, 1, 1, 1};
+        //player1ship[1] = new int[]{1, 1, 1, 1, 1};
+        //player1ship[2] = new int[]{1, 1, 1, 1, 1};
+        //player1ship[3] = new int[]{1, 1, 1, 1, 1};
+        //player1ship[4] = new int[]{1, 1, 1, 1, 1};
+        //player1ship[5] = new int[]{1, 1, 1, 1, 1};
+
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(50, 50, camera);
@@ -55,9 +80,9 @@ public class LibGDXTest extends ApplicationAdapter {
         addSprites();
 
         Box2D.init();
-        world = new World(new Vector2(0, -120), true);
+        world = new World(new Vector2(0, 0), true);
         physicsBodies = new PhysicsShapeCache("physics.xml");
-        generateFruit();
+        generate();
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -78,19 +103,85 @@ public class LibGDXTest extends ApplicationAdapter {
         }
     }
 
-    private void generateFruit() {
-        String[] fruitNames = new String[]{"meteorone","steelblock","turbine","engine", "guntwo", "halfsteelblock","gunone"};
+    private void generate() {
+        String[] blockNames = new String[]{"steelblock","halfwoodblock","halfsteelblock","gunone","guntwo", "turbine","engine"};
 
-        Random random = new Random();
+        for (int j = 0; j < maxheightofship; j++) {
+            for (int i = 0; i < maxwidthofship; i++) {
+                if (player1ship[i][j] == 0) {
+                    String name = blockNames[0];
 
-        for (int i = 0; i < fruitBodies.length; i++) {
-            String name = fruitNames[random.nextInt(fruitNames.length)];
+                    float x = (float) (-100);
+                    float y = (float) (0);
 
-            float x = random.nextFloat() * 50;
-            float y = random.nextFloat() * 50 + 50;
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
 
-            names[i] = name;
-            fruitBodies[i] = createBody(name, x, y, 0);
+                if (player1ship[i][j] == 1) {
+                    String name = blockNames[0];
+
+                    float x = (float) (10+i*7);
+                    float y = (float) (40 -j*7);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+                if (player1ship[i][j] == 2) {
+                    String name = blockNames[1];
+
+                    float x = (float) (10+i*7);
+                    float y = (float) (40 -j*7);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+                if (player1ship[i][j] == 3) {
+                    String name = blockNames[2];
+
+                    float x = (float) (10+i*7);
+                    float y = (float) (40 -j*7);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+                if (player1ship[i][j] == 4) {
+                    String name = blockNames[3];
+
+                    float x = (float) (10+i*7);
+                    float y = (float) (40 -j*7+1.2);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+                if (player1ship[i][j] == 5) {
+                    String name = blockNames[4];
+
+                    float x = (float) (10+i*7);
+                    float y = (float) (40 -j*7);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+                if (player1ship[i][j] == 6) {
+                    String name = blockNames[5];
+
+                    float x = (float) (10+i*7-4.5);
+                    float y = (float) (40 -j*7);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+                if (player1ship[i][j] == 7) {
+                    String name = blockNames[6];
+
+                    float x = (float) (10+i*7);
+                    float y = (float) (40 -j*7);
+
+                    names.add(i+j,name);
+                    Bodies.add(i+j,createBody(name, x, y, 0));
+                }
+            }
         }
     }
 
@@ -111,37 +202,60 @@ public class LibGDXTest extends ApplicationAdapter {
     }
 
     private void createGround() {
-        if (ground != null) world.destroyBody(ground);
+        if (upground != null) world.destroyBody(upground);
+        if (downground != null) world.destroyBody(upground);
+        if (leftground != null) world.destroyBody(upground);
+        if (rightground != null) world.destroyBody(upground);
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
 
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.friction = 1;
+        FixtureDef fixtureDef1 = new FixtureDef();
+        fixtureDef.friction = 1;
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(camera.viewportWidth, 1);
         fixtureDef.shape = shape;
 
-        ground = world.createBody(bodyDef);
-        ground.createFixture(fixtureDef);
-        ground.setTransform(0, 0, 0);
+        PolygonShape shape1 = new PolygonShape();
+        shape1.setAsBox(1, camera.viewportHeight);
+        fixtureDef1.shape = shape1;
+
+        //upground = world.createBody(bodyDef);
+        //upground.createFixture(fixtureDef);
+        //upground.setTransform(0, camera.viewportHeight, 0);
+
+        downground = world.createBody(bodyDef);
+        downground.createFixture(fixtureDef);
+        downground.setTransform(0, 0, 0);
+
+        leftground = world.createBody(bodyDef);
+        leftground.createFixture(fixtureDef1);
+        leftground.setTransform(0, 0, 0);
+
+        rightground = world.createBody(bodyDef);
+        rightground.createFixture(fixtureDef1);
+        rightground.setTransform(camera.viewportWidth, 0, 0);
 
         shape.dispose();
+        shape1.dispose();
     }
 
     @Override
     public void render() {
-        Gdx.gl.glClearColor(0.57f, 0.77f, 0.85f, 1);
+        //Gdx.gl.glClearColor(0.57f, 0.77f, 0.85f, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stepWorld();
 
         batch.begin();
 
-        for (int i = 0; i < fruitBodies.length; i++) {
-            Body body = fruitBodies[i];
-            String name = names[i];
+        for (int i = 0; i < Bodies.size(); i++) {
+            Body body = Bodies.get(i);
+            String name = names.get(i);
 
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -151,7 +265,7 @@ public class LibGDXTest extends ApplicationAdapter {
         batch.end();
 
         // uncomment to show the polygons
-        // debugRenderer.render(world, camera.combined);
+         debugRenderer.render(world, camera.combined);
     }
 
     private void stepWorld() {

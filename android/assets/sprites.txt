@@ -1,102 +1,88 @@
 sprites.png
-size: 1007, 1856
+size: 1732, 1573
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-banana
-  rotate: false
-  xy: 714, 634
-  size: 127, 128
-  orig: 128, 128
+background_red_space
+  rotate: true
+  xy: 1, 1
+  size: 1398, 679
+  orig: 1398, 679
   offset: 0, 0
   index: -1
-cherries
-  rotate: false
-  xy: 843, 634
-  size: 120, 125
-  orig: 128, 128
-  offset: 5, 0
-  index: -1
-crate
-  rotate: false
-  xy: 714, 889
-  size: 123, 121
-  orig: 128, 128
-  offset: 3, 0
-  index: -1
 engine
-  rotate: true
-  xy: 318, 1092
+  rotate: false
+  xy: 1364, 880
   size: 360, 353
   orig: 360, 353
   offset: 0, 0
   index: -1
-gunone
-  rotate: true
-  xy: 1, 1
-  size: 1089, 345
-  orig: 1089, 345
+gray
+  rotate: false
+  xy: 1048, 880
+  size: 300, 300
+  orig: 300, 300
   offset: 0, 0
-  index: 1
+  index: -1
+gunone
+  rotate: false
+  xy: 682, 1
+  size: 770, 194
+  orig: 770, 194
+  offset: 0, 0
+  index: -1
 guntwo
-  rotate: true
-  xy: 1, 1092
+  rotate: false
+  xy: 682, 197
   size: 763, 315
   orig: 763, 315
   offset: 0, 0
-  index: 2
+  index: -1
 halfsteelblock
   rotate: false
-  xy: 673, 1080
+  xy: 1029, 1227
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 halfwoodblock
   rotate: false
-  xy: 673, 1415
+  xy: 1364, 1235
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 meteorone
   rotate: false
-  xy: 348, 348
+  xy: 1249, 514
   size: 364, 364
   orig: 364, 364
   offset: 0, 0
   index: -1
 meteortwo
   rotate: false
-  xy: 348, 714
+  xy: 682, 861
   size: 364, 364
   orig: 364, 364
   offset: 0, 0
-  index: 2
-orange
-  rotate: false
-  xy: 714, 764
-  size: 127, 123
-  orig: 128, 128
-  offset: 1, 0
   index: -1
 steelblock
   rotate: false
-  xy: 318, 1454
+  xy: 682, 1227
   size: 345, 345
   orig: 345, 345
   offset: 0, 0
   index: -1
 turbine
   rotate: false
-  xy: 348, 1
+  xy: 682, 514
   size: 565, 345
   orig: 565, 345
   offset: 0, 0
   index: -1
 woodblock
   rotate: false
-  xy: 714, 348
+  xy: 1447, 197
   size: 284, 284
   orig: 284, 284
   offset: 0, 0
