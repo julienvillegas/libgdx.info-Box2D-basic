@@ -12,6 +12,6 @@ class AndroidLauncher : AndroidApplication() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val config = AndroidApplicationConfiguration()
-        initialize(LibGDXTest(), config)
+        initialize(MyGdxGame(), config)
     }
 }
