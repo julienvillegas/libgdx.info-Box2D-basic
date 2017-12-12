@@ -185,13 +185,13 @@
 
 	<body name="meteorone1">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -201,13 +201,13 @@
 
 	<body name="meteorone2">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -217,13 +217,13 @@
 
 	<body name="meteorone3">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -233,13 +233,13 @@
 
 	<body name="meteorthree">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -264,13 +264,13 @@
 
 	<body name="meteortwo">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -280,13 +280,13 @@
 
 	<body name="meteortwo1">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -296,13 +296,13 @@
 
 	<body name="meteortwo2">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -312,13 +312,13 @@
 
 	<body name="meteortwo3">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
@@ -328,13 +328,13 @@
 
 	<body name="meteortwo4">
 		<is_dynamic/>
-		<linear_damping>0</linear_damping>
-		<angular_damping>0</angular_damping>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
 		<allow_sleep/>
 		<fixture>
 			<density>2</density>
-			<friction>0</friction>
-			<restitution>0</restitution>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>

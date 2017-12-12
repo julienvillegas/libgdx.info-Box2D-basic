@@ -33,7 +33,7 @@ public class GameScreen implements Screen, InputProcessor {
     static final float STEP_TIME = 1f / 60f;
     static final int VELOCITY_ITERATIONS = 6;
     static final int POSITION_ITERATIONS = 2;
-    static final float SCALE = 0.01f;
+    static final float SCALE = 0.005f;
 
     private int maxwidthofship =6;
     private int maxheightofship =5;
@@ -236,11 +236,15 @@ public class GameScreen implements Screen, InputProcessor {
         for (int i = 0; i < meteorBodies.length; i++) {
             String name = meteorNames[random.nextInt(meteorNames.length)];
 
-            float x = (random.nextFloat() * 50+50)*(float)( SCALE/0.02);
-            float y = (random.nextFloat() * 50+50)*(float)( SCALE/0.02);
-
+            float x = (random.nextFloat() * 150)*(float)( SCALE/0.01);
+            float y = (random.nextFloat() * 80)*(float)( SCALE/0.01);
+            if ((x<50*SCALE/0.02)&&(y<50*SCALE/0.01)){
+                x +=50*(float)(SCALE/0.01);
+                y +=50*(float)(SCALE/0.01);
+            }
             meteornames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
+            meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
         }
     }
 
