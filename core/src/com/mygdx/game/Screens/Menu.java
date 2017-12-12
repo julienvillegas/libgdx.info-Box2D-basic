@@ -19,7 +19,6 @@ import java.util.ArrayList;
 public class Menu implements Screen, InputProcessor {
 
     private Stage stage;
-    private Game game;
     private float oldX=0,oldY=0;
     private int blockarrHeight = 5;
     private int blockarrWidth = 6;
@@ -49,8 +48,7 @@ public class Menu implements Screen, InputProcessor {
     private Label[] labels = new Label[8];
 
     private MoveableImage[][] emptyblocks = new MoveableImage[blockarrHeight][blockarrWidth];
-    public Menu(Game aGame) {
-        game = aGame;
+    public Menu() {
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(this);
         for (int i=0;i<blockarrHeight;i++){
@@ -72,9 +70,9 @@ public class Menu implements Screen, InputProcessor {
         for (int i=0;i<blocks.size();i++) {
             for (int j = 0; j < blocks.get(i).length; j++) {
                 blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), getWidth(i),getHeight(i), 0, getImageName(i));
-                stage.addActor(blocks.get(i)[blocks.get(i).length - j - 1]);
             }
             blocks.get(i)[0].isTouchable = true;
+            stage.addActor(blocks.get(i)[0]);
         }
 
         BitmapFont font = new BitmapFont();
@@ -210,26 +208,19 @@ public class Menu implements Screen, InputProcessor {
                 if (blocks.get(i)[j].isMoving == true) {
                     if (setEndPosition(blocks.get(i)[j], x, y) == true) {
                         if (j < blocks.get(i).length - 1) {
-                            for (int h = j + 1; h < blocks.get(i).length; h++) {
-                                if (blocks.get(i)[h].isInStartPos() == true) {
-                                    blocks.get(i)[h].isTouchable = true;
-                                    break;
+                                if (blocks.get(i)[j+1].isInStartPos() == true) {
+                                        blocks.get(i)[j+1].isTouchable = true;
+                                        stage.addActor(blocks.get(i)[j+1]);
                                 }
-                            }
                         }
                     } else {
                         labels[i].setText(String.valueOf(Integer.parseInt(labels[i].getText().toString()) + 1));
-                        for (int h = 0; h < j; j++) {
-                            if (blocks.get(i)[h].isInStartPos() == true) {
-                                blocks.get(i)[j].isTouchable = false;
-                            }
-                        }
                         for (int h = j + 1; h < blocks.get(i).length; h++) {
                             if (blocks.get(i)[h].isInStartPos() == true) {
                                 blocks.get(i)[h].isTouchable = false;
+                                blocks.get(i)[h].remove();
                             }
                         }
-
                     }
                 }
                 blocks.get(i)[j].isMoving = false;
