@@ -1,13 +1,13 @@
-package com.mygdx.game.Tests;
+package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -16,9 +16,6 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.joints.MotorJointDef;
-import com.badlogic.gdx.physics.box2d.joints.PrismaticJointDef;
-import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
@@ -26,7 +23,12 @@ import com.codeandweb.physicseditor.PhysicsShapeCache;
 
 import java.util.HashMap;
 
-public class LibGDXTest extends ApplicationAdapter {
+/**
+ * Created by artum on 12.12.2017.
+ */
+
+public class GameScreen implements Screen, InputProcessor {
+
     static final float STEP_TIME = 1f / 60f;
     static final int VELOCITY_ITERATIONS = 6;
     static final int POSITION_ITERATIONS = 2;
@@ -58,8 +60,11 @@ public class LibGDXTest extends ApplicationAdapter {
     int [][] player2ship = new int[maxwidthofship][maxheightofship];
 
 
-    @Override
-    public void create() {
+    public GameScreen(
+            //int [][] player1ship, int [][] player2ship
+            ){
+        //this.player1ship = player1ship;
+        //this.player2ship = player2ship;
         player1ship[0] = new int[]{0, 0, 0, 0, 0};
         player1ship[1] = new int[]{0, 6, 1, 6, 0};
         player1ship[2] = new int[]{0, 7, 1, 7, 0};
@@ -87,11 +92,10 @@ public class LibGDXTest extends ApplicationAdapter {
 
         debugRenderer = new Box2DDebugRenderer();
     }
-
     private void addSprites() {
-        Array<AtlasRegion> regions = textureAtlas.getRegions();
+        Array<TextureAtlas.AtlasRegion> regions = textureAtlas.getRegions();
 
-        for (AtlasRegion region : regions) {
+        for (TextureAtlas.AtlasRegion region : regions) {
             Sprite sprite = textureAtlas.createSprite(region.name);
 
             float width = sprite.getWidth() * SCALE;
@@ -217,6 +221,59 @@ public class LibGDXTest extends ApplicationAdapter {
         return body;
     }
 
+
+    @Override
+    public void show() {
+
+    }
+
+    @Override
+    public void render(float delta) {
+        //Gdx.gl.glClearColor(0.57f, 0.77f, 0.85f, 1);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        stepWorld();
+
+        batch.begin();
+
+        for (int i = 0; i < maxwidthofship; i++) {
+            for (int j = 0; j < maxheightofship; j++) {
+
+                Body body = Bodies[i][j];
+                String name = names[i][j];
+
+                Vector2 position = body.getPosition();
+                float degrees = (float) Math.toDegrees(body.getAngle());
+                drawSprite(name, position.x, position.y, degrees);
+
+            }
+        }
+
+        batch.end();
+
+        // uncomment to show the polygons
+        debugRenderer.render(world, camera.combined);
+
+    }
+
+    private void stepWorld() {
+        float delta = Gdx.graphics.getDeltaTime();
+        accumulator += Math.min(delta, 0.25f);
+
+        if (accumulator >= STEP_TIME) {
+            accumulator -= STEP_TIME;
+            world.step(STEP_TIME, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+        }
+    }
+
+    private void drawSprite(String name, float x, float y, float degrees) {
+        Sprite sprite = sprites.get(name);
+        sprite.setPosition(x, y);
+        sprite.setRotation(degrees);
+        sprite.draw(batch);
+    }
+
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
@@ -227,10 +284,10 @@ public class LibGDXTest extends ApplicationAdapter {
     }
 
     private void createGround() {
-        if (upground != null) world.destroyBody(upground);
-        if (downground != null) world.destroyBody(upground);
-        if (leftground != null) world.destroyBody(upground);
-        if (rightground != null) world.destroyBody(upground);
+        if (upground != null) {world.destroyBody(upground);}
+        if (downground != null) {world.destroyBody(downground);}
+        if (leftground != null) {world.destroyBody(leftground);}
+        if (rightground != null) {world.destroyBody(rightground);}
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -269,49 +326,18 @@ public class LibGDXTest extends ApplicationAdapter {
     }
 
     @Override
-    public void render() {
-        //Gdx.gl.glClearColor(0.57f, 0.77f, 0.85f, 1);
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    public void pause() {
 
-        stepWorld();
-
-        batch.begin();
-
-        for (int i = 0; i < maxwidthofship; i++) {
-            for (int j = 0; j < maxheightofship; j++) {
-
-                Body body = Bodies[i][j];
-                String name = names[i][j];
-
-                Vector2 position = body.getPosition();
-                float degrees = (float) Math.toDegrees(body.getAngle());
-                drawSprite(name, position.x, position.y, degrees);
-
-            }
-        }
-
-        batch.end();
-
-        // uncomment to show the polygons
-         debugRenderer.render(world, camera.combined);
     }
 
-    private void stepWorld() {
-        float delta = Gdx.graphics.getDeltaTime();
-        accumulator += Math.min(delta, 0.25f);
+    @Override
+    public void resume() {
 
-        if (accumulator >= STEP_TIME) {
-            accumulator -= STEP_TIME;
-            world.step(STEP_TIME, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
-        }
     }
 
-    private void drawSprite(String name, float x, float y, float degrees) {
-        Sprite sprite = sprites.get(name);
-        sprite.setPosition(x, y);
-        sprite.setRotation(degrees);
-        sprite.draw(batch);
+    @Override
+    public void hide() {
+
     }
 
     @Override
@@ -320,5 +346,49 @@ public class LibGDXTest extends ApplicationAdapter {
         sprites.clear();
         world.dispose();
         debugRenderer.dispose();
+    }
+
+
+
+
+
+    @Override
+    public boolean keyDown(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyUp(int keycode) {
+        return false;
+    }
+
+    @Override
+    public boolean keyTyped(char character) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        return false;
+    }
+
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) {
+        return false;
+    }
+
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) {
+        return false;
+    }
+
+    @Override
+    public boolean scrolled(int amount) {
+        return false;
     }
 }
