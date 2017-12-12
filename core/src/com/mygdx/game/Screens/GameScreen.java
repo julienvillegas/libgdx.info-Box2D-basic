@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
 
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created by artum on 12.12.2017.
@@ -32,7 +33,7 @@ public class GameScreen implements Screen, InputProcessor {
     static final float STEP_TIME = 1f / 60f;
     static final int VELOCITY_ITERATIONS = 6;
     static final int POSITION_ITERATIONS = 2;
-    static final float SCALE = 0.02f;
+    static final float SCALE = 0.01f;
 
     private int maxwidthofship =6;
     private int maxheightofship =5;
@@ -53,11 +54,15 @@ public class GameScreen implements Screen, InputProcessor {
     Body downground;
     Body leftground;
     Body rightground;
+    static final int COUNT = 60;
 
     Body[][] Bodies = new Body[maxwidthofship][maxheightofship];
-    String[][] names = new String[maxwidthofship][maxheightofship];
+    String[][] namesofBodies = new String[maxwidthofship][maxheightofship];
     int [][] player1ship = new int[maxwidthofship][maxheightofship];
     int [][] player2ship = new int[maxwidthofship][maxheightofship];
+
+    Body[] meteorBodies = new Body[COUNT];
+    String[] meteornames = new String[COUNT];
 
 
     public GameScreen(
@@ -89,6 +94,7 @@ public class GameScreen implements Screen, InputProcessor {
         world = new World(new Vector2(0, 0), true);
         physicsBodies = new PhysicsShapeCache("physics.xml");
         generate();
+        generateMeteors();
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -109,7 +115,7 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void generate() {
-        String[] blockNames = new String[]{"steelblock","halfwoodblock","halfsteelblock","gunone","guntwo", "turbine","engine"};
+        String[] blockNames = new String[]{"steelblock","halfwoodblock","halfsteelblock","gunone","guntwo", "turbine","engine","woodblock"};
 
         for (int j = 0; j < maxheightofship; j++) {
             for (int i = 0; i < maxwidthofship; i++) {
@@ -119,7 +125,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) (-100);
                     float y = (float) (0);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
 
@@ -129,7 +135,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 2) {
@@ -138,7 +144,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 3) {
@@ -147,7 +153,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 4) {
@@ -156,7 +162,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7)*SCALE/0.02);
                     float y = (float) ((40 -j*7 +1.1)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 5) {
@@ -165,7 +171,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 6) {
@@ -174,7 +180,7 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7 - 4.5)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 7) {
@@ -183,11 +189,21 @@ public class GameScreen implements Screen, InputProcessor {
                     float x = (float) ((10+i*7)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    names[i][j] = name;
+                    namesofBodies[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
+                }
+                if (player1ship[i][j] == 8) {
+                    String name = blockNames[7];
+
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
+
+                    namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
             }
         }
+
         WeldJointDef jointDef = new WeldJointDef();
 
         for (int j = 0; j < maxheightofship; j++) {
@@ -209,15 +225,28 @@ public class GameScreen implements Screen, InputProcessor {
             }
         }
 
+    }
 
+    private void generateMeteors() {
+        String[] meteorNames = new String[]{"meteorthree", "meteorfour", "meteorfive","meteortwo","meteortwo1","meteortwo2","meteortwo3","meteortwo4",
+                "meteorone","meteorone1","meteorone2","meteorone3"};
 
+        Random random = new Random();
 
+        for (int i = 0; i < meteorBodies.length; i++) {
+            String name = meteorNames[random.nextInt(meteorNames.length)];
+
+            float x = (random.nextFloat() * 50+50)*(float)( SCALE/0.02);
+            float y = (random.nextFloat() * 50+50)*(float)( SCALE/0.02);
+
+            meteornames[i] = name;
+            meteorBodies[i] = createBody(name, x, y, 0);
+        }
     }
 
     private Body createBody(String name, float x, float y, float rotation) {
         Body body = physicsBodies.createBody(name, world, SCALE, SCALE);
         body.setTransform(x, y, rotation);
-
         return body;
     }
 
@@ -236,12 +265,13 @@ public class GameScreen implements Screen, InputProcessor {
         stepWorld();
 
         batch.begin();
+        drawSprite("background_red_space",0,0,camera.viewportWidth,camera.viewportHeight,0);
 
         for (int i = 0; i < maxwidthofship; i++) {
             for (int j = 0; j < maxheightofship; j++) {
 
                 Body body = Bodies[i][j];
-                String name = names[i][j];
+                String name = namesofBodies[i][j];
 
                 Vector2 position = body.getPosition();
                 float degrees = (float) Math.toDegrees(body.getAngle());
@@ -249,6 +279,15 @@ public class GameScreen implements Screen, InputProcessor {
 
             }
         }
+        for (int i = 0; i < meteorBodies.length; i++) {
+            Body body = meteorBodies[i];
+            String name = meteornames[i];
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+        }
+
 
         batch.end();
 
@@ -271,6 +310,13 @@ public class GameScreen implements Screen, InputProcessor {
         Sprite sprite = sprites.get(name);
         sprite.setPosition(x, y);
         sprite.setRotation(degrees);
+        sprite.draw(batch);
+    }
+    private void drawSprite(String name, float x, float y,float width, float height, float degrees){
+        Sprite sprite = sprites.get(name);
+        sprite.setPosition(x, y);
+        sprite.setRotation(degrees);
+        sprite.setSize(width,height);
         sprite.draw(batch);
     }
 
@@ -305,9 +351,9 @@ public class GameScreen implements Screen, InputProcessor {
         shape1.setAsBox(1, camera.viewportHeight);
         fixtureDef1.shape = shape1;
 
-        //upground = world.createBody(bodyDef);
-        //upground.createFixture(fixtureDef);
-        //upground.setTransform(0, camera.viewportHeight, 0);
+        upground = world.createBody(bodyDef);
+        upground.createFixture(fixtureDef);
+        upground.setTransform(0, camera.viewportHeight, 0);
 
         downground = world.createBody(bodyDef);
         downground.createFixture(fixtureDef);
