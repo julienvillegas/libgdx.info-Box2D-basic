@@ -14,9 +14,6 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MyGdxGame;
 import com.mygdx.game.Tests.LibGDXTest;
 
-/**
- * Created by julienvillegas on 17/01/2017.
- */
 public class TitleScreen implements Screen {
 
     private Stage stage;
@@ -36,6 +33,7 @@ public class TitleScreen implements Screen {
         playButton.setWidth(Gdx.graphics.getWidth()/2);
         playButton.setPosition(Gdx.graphics.getWidth()/2-playButton.getWidth()/2,Gdx.graphics.getHeight()/2-playButton.getHeight()/2);
         playButton.addListener(new InputListener(){
+
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
 
