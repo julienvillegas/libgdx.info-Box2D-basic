@@ -21,6 +21,7 @@ android {
         applicationId "com.mygdx.game"
         minSdkVersion 8
         targetSdkVersion 26
+        multiDexEnabled true
     }
 }
 

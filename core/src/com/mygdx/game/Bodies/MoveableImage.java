@@ -100,7 +100,6 @@ public class MoveableImage extends Image {
     public float getHeight() {
         return height;
     }
-
     @Override
     public void setHeight(float height) {
         this.height = height;
@@ -117,8 +116,6 @@ public class MoveableImage extends Image {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-
-
     }
     @Override
     public void act(float delta) {

@@ -12,6 +12,7 @@ import com.mygdx.game.Screens.Menu;
 import com.mygdx.game.Screens.TitleScreen;
 
 public class MyGdxGame extends Game {
+
 	static public Skin skin;
 	static public TextureAtlas textureAtlas;
 
@@ -20,19 +21,16 @@ public class MyGdxGame extends Game {
 		skin = new Skin(Gdx.files.internal("skin/glassy-ui.json"));
 		textureAtlas = new TextureAtlas();
 		textureAtlas.addRegion("note",new TextureRegion(new Texture("note.png")));
-		this.setScreen(new GameScreen());
-
+		this.setScreen(new Menu());
 	}
 
 	@Override
 	public void render () {
 		super.render();
-
 	}
 
 	public void dispose () {
 		skin.dispose();
-
 	}
 
 }
