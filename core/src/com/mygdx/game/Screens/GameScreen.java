@@ -59,6 +59,13 @@ public class GameScreen implements Screen, InputProcessor {
     Body[][] Bodies = new Body[maxwidthofship][maxheightofship];
     String[][] namesofBodies = new String[maxwidthofship][maxheightofship];
     int [][] player1ship = new int[maxwidthofship][maxheightofship];
+
+    int firstplayerturbine1_I;
+    int firstplayerturbine1_J;
+    int firstplayerturbine2_I;
+    int firstplayerturbine2_J;
+
+
     int [][] player2ship = new int[maxwidthofship][maxheightofship];
 
     Body[] meteorBodies = new Body[COUNT];
@@ -117,6 +124,7 @@ public class GameScreen implements Screen, InputProcessor {
     private void generate() {
         String[] blockNames = new String[]{"steelblock","halfwoodblock","halfsteelblock","gunone","guntwo", "turbine","engine","woodblock"};
 
+        int k=0;
         for (int j = 0; j < maxheightofship; j++) {
             for (int i = 0; i < maxwidthofship; i++) {
                 if (player1ship[i][j] == 0) {
@@ -175,6 +183,15 @@ public class GameScreen implements Screen, InputProcessor {
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 6) {
+                    if (k==1){
+                        firstplayerturbine2_I = i;
+                        firstplayerturbine2_J = j;
+                    }
+                    if (k==0){
+                        firstplayerturbine1_I = i;
+                        firstplayerturbine1_J = j;
+                        k+=1;
+                    }
                     String name = blockNames[5];
 
                     float x = (float) ((10+i*7 - 4.5)*SCALE/0.02);
@@ -257,7 +274,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(this);
     }
 
     @Override
@@ -419,7 +436,18 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        Body body1  = Bodies[firstplayerturbine1_I][firstplayerturbine1_J];
+        float cos1 = (float) Math.cos(body1.getAngle());
+        float sin1 = (float) Math.sin(body1.getAngle());
+        Body body2 = Bodies[firstplayerturbine2_I][firstplayerturbine2_J];
+        float cos2 = (float) Math.cos(body2.getAngle());
+        float sin2 = (float) Math.sin(body2.getAngle());
+        if (screenY<Gdx.graphics.getHeight()/2){
+            Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(20000*cos1,20000*sin1,true);}
+        if (screenY>Gdx.graphics.getHeight()/2){
+            Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(20000*cos2,20000*sin2,true);}
         return false;
+
     }
 
     @Override
