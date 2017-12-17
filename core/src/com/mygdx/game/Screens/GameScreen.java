@@ -84,7 +84,7 @@ public class GameScreen implements Screen, InputProcessor {
         player1ship[0] = new int[]{0, 0, 0, 0, 0};
         player1ship[1] = new int[]{0, 6, 1, 6, 0};
         player1ship[2] = new int[]{0, 7, 1, 7, 0};
-        player1ship[3] = new int[]{0, 0, 4, 0, 0};
+        player1ship[3] = new int[]{0, 5, 4, 5, 0};
         player1ship[4] = new int[]{0, 0, 0, 0, 0};
         player1ship[5] = new int[]{0, 0, 0, 0, 0};
         //player1ship[0] = new int[]{1, 1, 1, 1, 1};
@@ -131,16 +131,6 @@ public class GameScreen implements Screen, InputProcessor {
         int k=0;
         for (int j = 0; j < maxheightofship; j++) {
             for (int i = 0; i < maxwidthofship; i++) {
-                if (player1ship[i][j] == 0) {
-                    String name = blockNames[0];
-
-                    float x = (float) (-100);
-                    float y = (float) (0);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-
                 if (player1ship[i][j] == 1) {
                     String name = blockNames[0];
 
@@ -300,14 +290,14 @@ public class GameScreen implements Screen, InputProcessor {
 
         for (int i = 0; i < maxwidthofship; i++) {
             for (int j = 0; j < maxheightofship; j++) {
+                if (player1ship[i][j]!=0) {
+                    Body body = Bodies[i][j];
+                    String name = namesofBodies[i][j];
 
-                Body body = Bodies[i][j];
-                String name = namesofBodies[i][j];
-
-                Vector2 position = body.getPosition();
-                float degrees = (float) Math.toDegrees(body.getAngle());
-                drawSprite(name, position.x, position.y, degrees);
-
+                    Vector2 position = body.getPosition();
+                    float degrees = (float) Math.toDegrees(body.getAngle());
+                    drawSprite(name, position.x, position.y, degrees);
+                }
             }
         }
         for (int i = 0; i < meteorBodies.length; i++) {
@@ -463,16 +453,18 @@ public class GameScreen implements Screen, InputProcessor {
         float sin1 = (float) Math.sin(body1.getAngle());
         Body body2 = Bodies[firstplayerturbine2_I][firstplayerturbine2_J];
         Body body3 = Bodies[firstplayergun1_I][firstplayergun1_J];
-        float cos3 = (float) Math.cos(body3.getAngle());
-        float sin3 = (float) Math.sin(body3.getAngle());
+        float alpha = (float)(Math.acos(7/Math.sqrt(7*7+1.75*1/75)));
+        float cos3 = (float) Math.cos(body3.getAngle()+alpha);
+        float sin3 = (float) Math.sin(body3.getAngle()+alpha);
         float cos2 = (float) Math.cos(body2.getAngle());
         float sin2 = (float) Math.sin(body2.getAngle());
         if (screenY<Gdx.graphics.getHeight()/3){
             Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(20000*cos1,20000*sin1,true);}
         if ((screenY>Gdx.graphics.getHeight()/3)&&(screenY<Gdx.graphics.getHeight()*2/3)){
-            Body bullet = createBody("bullet",body3.getPosition().x+3f*cos3,body3.getPosition().y+4.5f*sin3,body3.getAngle());
-            bullet.setLinearVelocity(new Vector2(body3.getLinearVelocity().x + 2000*cos3,body3.getLinearVelocity().y +2000*sin3));
+            Body bullet = createBody("bullet",body3.getPosition().x+4f*cos3,body3.getPosition().y+4f*sin3,body3.getAngle());
+            bullet.setLinearVelocity(new Vector2(body3.getLinearVelocity().x + 10000*(float)Math.cos(body3.getAngle()),body3.getLinearVelocity().y +10000*(float)Math.sin(body3.getAngle())));
             bullets.add(bullet);
+            Bodies[firstplayergun1_I][firstplayergun1_J].applyForceToCenter(-10000*cos2,-10000*sin2,true);
         }
         if (screenY>Gdx.graphics.getHeight()*2/3){
             Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(20000*cos2,20000*sin2,true);}

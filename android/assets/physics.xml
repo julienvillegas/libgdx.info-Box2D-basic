@@ -709,12 +709,12 @@
 
 	<body name="bullet">
 		<is_dynamic/>
-		<linear_damping>0.5</linear_damping>
-		<angular_damping>0.5</angular_damping>
+		<linear_damping>0.1</linear_damping>
+		<angular_damping>0.1</angular_damping>
 		<is_bullet/>
 		<allow_sleep/>
 		<fixture>
-			<density>2</density>
+			<density>8</density>
 			<friction>0.5</friction>
 			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
