@@ -14,5 +14,9 @@ public interface ItemID {
     int HALF_STEEL_BLOCK = 5;
     int GUN_1 = 6;
     int GUN_2 = 7;
+    int NULL = 50;
+    int UP = 10;
+    int LEFT = 20;
+    int DOWN = 30;
 
 }

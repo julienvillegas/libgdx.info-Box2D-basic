@@ -77,16 +77,17 @@ public class GameScreen implements Screen, InputProcessor {
     ArrayList<Body> bullets = new ArrayList<Body>();
 
     public GameScreen(
-            //int [][] player1ship, int [][] player2ship
+            int [][] player1ship
+            // int [][] player2ship
             ){
-        //this.player1ship = player1ship;
+        this.player1ship = player1ship;
         //this.player2ship = player2ship;
-        player1ship[0] = new int[]{0, 0, 0, 0, 0};
-        player1ship[1] = new int[]{0, 6, 1, 6, 0};
-        player1ship[2] = new int[]{0, 7, 1, 7, 0};
-        player1ship[3] = new int[]{0, 5, 4, 5, 0};
-        player1ship[4] = new int[]{0, 0, 0, 0, 0};
-        player1ship[5] = new int[]{0, 0, 0, 0, 0};
+        //player1ship[0] = new int[]{0, 0, 0, 0, 0};
+        //player1ship[1] = new int[]{0, 6, 1, 6, 0};
+        //player1ship[2] = new int[]{0, 7, 1, 7, 0};
+        //player1ship[3] = new int[]{0, 5, 4, 5, 0};
+        //player1ship[4] = new int[]{0, 0, 0, 0, 0};
+        //player1ship[5] = new int[]{0, 0, 0, 0, 0};
         //player1ship[0] = new int[]{1, 1, 1, 1, 1};
         //player1ship[1] = new int[]{1, 1, 1, 1, 1};
         //player1ship[2] = new int[]{1, 1, 1, 1, 1};
@@ -126,11 +127,14 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void generate() {
-        String[] blockNames = new String[]{"steelblock","halfwoodblock","halfsteelblock","gunone","guntwo", "turbine","engine","woodblock"};
+        String[] blockNames = new String[]{"steelblock","engine","turbine","halfwoodblock","halfsteelblock","gunone","guntwo","woodblock"};
 
         int k=0;
         for (int j = 0; j < maxheightofship; j++) {
+            System.out.println("");
             for (int i = 0; i < maxwidthofship; i++) {
+                System.out.print(player1ship[i][j] + " ");
+
                 if (player1ship[i][j] == 1) {
                     String name = blockNames[0];
 
@@ -140,47 +144,8 @@ public class GameScreen implements Screen, InputProcessor {
                     namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
-                if (player1ship[i][j] == 2) {
-                    String name = blockNames[1];
 
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 3) {
-                    String name = blockNames[2];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 4) {
-
-                    String name = blockNames[3];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7 +1.1)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-
-                    firstplayergun1_I = i;
-                    firstplayergun1_J = j;
-                }
-                if (player1ship[i][j] == 5) {
-                    String name = blockNames[4];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 6) {
+                if (player1ship[i][j] == 3) {//turbine
                     if (k==1){
                         firstplayerturbine2_I = i;
                         firstplayerturbine2_J = j;
@@ -190,13 +155,57 @@ public class GameScreen implements Screen, InputProcessor {
                         firstplayerturbine1_J = j;
                         k+=1;
                     }
-                    String name = blockNames[5];
+                    String name = blockNames[2];
 
                     float x = (float) ((10+i*7 - 4.5)*SCALE/0.02);
                     float y = (float) ((40 -j*7)*SCALE/0.02);
 
                     namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
+                }
+
+                if (player1ship[i][j] == 2) {
+                    String name = blockNames[1];
+
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
+
+                    namesofBodies[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
+                }
+
+                if (player1ship[i][j] == 4) {
+                    String name = blockNames[3];
+
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
+
+                    namesofBodies[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
+                }
+
+                if (player1ship[i][j] == 5) {
+                    String name = blockNames[4];
+
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7)*SCALE/0.02);
+
+                    namesofBodies[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
+                }
+
+                if (player1ship[i][j] == 6) {//gunone
+
+                    String name = blockNames[5];
+
+                    float x = (float) ((10+i*7)*SCALE/0.02);
+                    float y = (float) ((40 -j*7 +1.1)*SCALE/0.02);
+
+                    namesofBodies[i][j] = name;
+                    Bodies[i][j]=createBody(name, x, y, 0);
+
+                    firstplayergun1_I = i;
+                    firstplayergun1_J = j;
                 }
                 if (player1ship[i][j] == 7) {
                     String name = blockNames[6];
@@ -216,6 +225,7 @@ public class GameScreen implements Screen, InputProcessor {
                     namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
+
             }
         }
 
@@ -223,7 +233,7 @@ public class GameScreen implements Screen, InputProcessor {
 
         for (int j = 0; j < maxheightofship; j++) {
             for (int i = 1; i < maxwidthofship; i++) {
-                if (player1ship[i][j]!= 0&&player1ship[i-1][j]!=0) {
+                if (player1ship[i][j]!=0&&player1ship[i-1][j]!=0) {
 
                     jointDef.initialize(Bodies[i][j],Bodies[i-1][j], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
@@ -325,7 +335,7 @@ public class GameScreen implements Screen, InputProcessor {
         batch.end();
 
         // uncomment to show the polygons
-        debugRenderer.render(world, camera.combined);
+        //debugRenderer.render(world, camera.combined);
 
     }
 
@@ -427,10 +437,6 @@ public class GameScreen implements Screen, InputProcessor {
         debugRenderer.dispose();
     }
 
-
-
-
-
     @Override
     public boolean keyDown(int keycode) {
         return false;
@@ -448,6 +454,7 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+
         Body body1  = Bodies[firstplayerturbine1_I][firstplayerturbine1_J];
         float cos1 = (float) Math.cos(body1.getAngle());
         float sin1 = (float) Math.sin(body1.getAngle());
