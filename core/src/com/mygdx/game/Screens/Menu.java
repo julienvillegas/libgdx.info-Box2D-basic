@@ -43,7 +43,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
         for (int i = 0; i < blocks.size(); i++) {
             for (int j = 0; j < blocks.get(i).length; j++)
-                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), BLOCK_SIZE, BLOCK_SIZE, 0, getImageName(i));
+                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), getWidth(i), getHeight(i), 0, getImageName(i));
             blocks.get(i)[0].isTouchable = true;
             stage.addActor(blocks.get(i)[0]);
         }
@@ -54,10 +54,12 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
         for (int i = 0; i < labels.length; i++) {
             labels[i] = new Label(countToString(blocks.get(i).length), itemsCountLS);
-            labels[i].setX((i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/5 : SCREEN_WIDTH - BLOCK_SIZE*2/5);
+            labels[i].setX((i < NUMBER_OF_ITEMS/2)? 0: SCREEN_WIDTH - BLOCK_SIZE*2/5);
             labels[i].setY(getPosY(i) + BLOCK_SIZE/5);
             stage.addActor(labels[i]);
         }
+
+
     }
 
 
@@ -70,26 +72,26 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE*i + BLOCK_SIZE/2 : BLOCK_SIZE*i + BLOCK_SIZE/2 - BLOCK_SIZE*NUMBER_OF_ITEMS/2;
     }
 
+    private float getWidth(int i) {
+        return BLOCK_SIZE;
+    }
+
+    private float getHeight(int i) {
+        return BLOCK_SIZE;
+    }
+
 
     private String countToString(int N) {
-        return (N == 0)? "" : "x" + N;
+        return "x" + N;
     }               // Преобразует число N в строку "xN"
 
     private String add1ToString(String N) {
-        if (N.equals(""))
-            return "x1";
-        else {
             int num = Integer.parseInt(N.substring(1)) + 1;
             return "x" + num;
-        }
     }             // Прибавляет 1 к числу в строковом виде
     private String subtract1FromString(String N) {
-        if (N.equals("") || N.equals("x1"))
-            return "";
-        else {
             int num = Integer.parseInt(N.substring(1)) - 1;
             return "x" + num;
-        }
     }      // Отнимает 1 от числа в строковом виде
 
 
@@ -121,34 +123,33 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     }               // Задаёт изначальное количество предметов для расстановки
 
 
+
     public boolean setEndPosition(MoveableImage image, int x, int y) {
-        if (((x > FIELD_DELTA_X) && (x < SCREEN_WIDTH - FIELD_DELTA_X)) &&
-            ((y > FIELD_DELTA_Y) && (y < SCREEN_HEIGHT - FIELD_DELTA_Y))) {
-            for (int i = 0; i < FIELD_HEIGHT; i++) {
-                for (int j = 0; j < FIELD_WIDTH; j++) {
-                    if (cells[i][j].contains(x,y)) {
-                        if (blockArr[i][j] == 0) {
-                            blockArr[i][j] = image.getNumber();
-                            image.setX(cells[i][j].getX());
-                            image.setY(cells[i][j].getY());
-                            image.setXinTable(i);
-                            image.setYinTable(j);
-                            return true;
+            if (((x > FIELD_DELTA_X) && (x < SCREEN_WIDTH - FIELD_DELTA_X)) &&
+                    ((y > FIELD_DELTA_Y) && (y < SCREEN_HEIGHT - FIELD_DELTA_Y))) {
+                for (int i = 0; i < FIELD_HEIGHT; i++) {
+                    for (int j = 0; j < FIELD_WIDTH; j++) {
+                        if (cells[i][j].contains(x, y)) {
+                            if (blockArr[i][j] == 0) {
+                                blockArr[i][j] = image.getNumber();
+                                image.setX(cells[i][j].getX());
+                                image.setY(cells[i][j].getY());
+                                image.setXinTable(i);
+                                image.setYinTable(j);
+                                return true;
+
+                            } else {
+                                image.returnToStartPos();
+                                return false;
+                            }
 
                         }
-                        else {
-                            image.returnToStartPos();
-                            return false;
-                        }
-
                     }
                 }
+            } else {
+                image.returnToStartPos();
+                return false;
             }
-        }
-        else {
-            image.returnToStartPos();
-            return false;
-        }
         return true;
     }
 
@@ -211,6 +212,13 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                                 blocks.get(i)[h].remove();
                             }
                         }
+                        for (int h = 0; h < j; h++) {
+                            if (blocks.get(i)[h].isInStartPos()) {
+                                blocks.get(i)[j].isTouchable = false;
+                                blocks.get(i)[j].remove();
+                                break;
+                            }
+                        }
                     }
                 }
                 blocks.get(i)[j].isMoving = false;
@@ -224,6 +232,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         for (int i = 0; i < blocks.size(); i++) {
             for (int j = 0; j < blocks.get(i).length; j++) {
                 if (blocks.get(i)[j].isMoving) {
+                    blocks.get(i)[j].isAlreadyMoved = true;
                     blocks.get(i)[j].setX(blocks.get(i)[j].getX() + x - oldX);
                     blocks.get(i)[j].setY(blocks.get(i)[j].getY() - y + oldY);
                 }

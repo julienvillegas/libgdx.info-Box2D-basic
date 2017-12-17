@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 public class MoveableImage extends Image {
     public boolean isMoving = false;
     public boolean isTouchable = false;
+    public boolean isAlreadyMoved = false;
     private float x;
     private float y;
     private float width;
@@ -34,6 +35,7 @@ public class MoveableImage extends Image {
         this.width = aWidth;
         this.height = aHeight;
         this.angle = angle;
+        this.setOrigin(width/2,height/2);
     }
 
     public int getXinTable() {
@@ -133,6 +135,12 @@ public class MoveableImage extends Image {
         this.setX(startPosX);
         this.setY(startPosY);
     }
+
+    public void flip90(){
+        angle+=Math.PI/2;
+    }
+
+
 
     public boolean isInStartPos(){
         return x == startPosX && y == startPosY;

@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -64,13 +65,16 @@ public class GameScreen implements Screen, InputProcessor {
     int firstplayerturbine1_J;
     int firstplayerturbine2_I;
     int firstplayerturbine2_J;
+    int firstplayergun1_I;
+    int firstplayergun1_J;
+
 
 
     int [][] player2ship = new int[maxwidthofship][maxheightofship];
 
     Body[] meteorBodies = new Body[COUNT];
     String[] meteornames = new String[COUNT];
-
+    ArrayList<Body> bullets = new ArrayList<Body>();
 
     public GameScreen(
             //int [][] player1ship, int [][] player2ship
@@ -80,7 +84,7 @@ public class GameScreen implements Screen, InputProcessor {
         player1ship[0] = new int[]{0, 0, 0, 0, 0};
         player1ship[1] = new int[]{0, 6, 1, 6, 0};
         player1ship[2] = new int[]{0, 7, 1, 7, 0};
-        player1ship[3] = new int[]{0, 5, 4, 5, 0};
+        player1ship[3] = new int[]{0, 0, 4, 0, 0};
         player1ship[4] = new int[]{0, 0, 0, 0, 0};
         player1ship[5] = new int[]{0, 0, 0, 0, 0};
         //player1ship[0] = new int[]{1, 1, 1, 1, 1};
@@ -165,6 +169,7 @@ public class GameScreen implements Screen, InputProcessor {
                     Bodies[i][j]=createBody(name, x, y, 0);
                 }
                 if (player1ship[i][j] == 4) {
+
                     String name = blockNames[3];
 
                     float x = (float) ((10+i*7)*SCALE/0.02);
@@ -172,6 +177,9 @@ public class GameScreen implements Screen, InputProcessor {
 
                     namesofBodies[i][j] = name;
                     Bodies[i][j]=createBody(name, x, y, 0);
+
+                    firstplayergun1_I = i;
+                    firstplayergun1_J = j;
                 }
                 if (player1ship[i][j] == 5) {
                     String name = blockNames[4];
@@ -286,7 +294,9 @@ public class GameScreen implements Screen, InputProcessor {
         stepWorld();
 
         batch.begin();
+
         drawSprite("background_red_space",0,0,camera.viewportWidth,camera.viewportHeight,0);
+
 
         for (int i = 0; i < maxwidthofship; i++) {
             for (int j = 0; j < maxheightofship; j++) {
@@ -308,6 +318,18 @@ public class GameScreen implements Screen, InputProcessor {
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
         }
+        for (int i = 0; i < bullets.size(); i++) {
+            Body body = bullets.get(i);
+            String name = "bullet";
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+        }
+
+        drawSprite("button2",-5,-5,20,20,0);
+        drawSprite("button3",-7,8.5f,25,32,0);
+        drawSprite("button1",-5, 32,20,20,0);
 
 
         batch.end();
@@ -440,11 +462,19 @@ public class GameScreen implements Screen, InputProcessor {
         float cos1 = (float) Math.cos(body1.getAngle());
         float sin1 = (float) Math.sin(body1.getAngle());
         Body body2 = Bodies[firstplayerturbine2_I][firstplayerturbine2_J];
+        Body body3 = Bodies[firstplayergun1_I][firstplayergun1_J];
+        float cos3 = (float) Math.cos(body3.getAngle());
+        float sin3 = (float) Math.sin(body3.getAngle());
         float cos2 = (float) Math.cos(body2.getAngle());
         float sin2 = (float) Math.sin(body2.getAngle());
-        if (screenY<Gdx.graphics.getHeight()/2){
+        if (screenY<Gdx.graphics.getHeight()/3){
             Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(20000*cos1,20000*sin1,true);}
-        if (screenY>Gdx.graphics.getHeight()/2){
+        if ((screenY>Gdx.graphics.getHeight()/3)&&(screenY<Gdx.graphics.getHeight()*2/3)){
+            Body bullet = createBody("bullet",body3.getPosition().x+3f*cos3,body3.getPosition().y+4.5f*sin3,body3.getAngle());
+            bullet.setLinearVelocity(new Vector2(body3.getLinearVelocity().x + 2000*cos3,body3.getLinearVelocity().y +2000*sin3));
+            bullets.add(bullet);
+        }
+        if (screenY>Gdx.graphics.getHeight()*2/3){
             Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(20000*cos2,20000*sin2,true);}
         return false;
 
