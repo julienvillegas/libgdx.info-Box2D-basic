@@ -61,12 +61,16 @@ public class GameScreen implements Screen, InputProcessor {
     String[][] namesofBodies = new String[maxwidthofship][maxheightofship];
     int [][] player1ship = new int[maxwidthofship][maxheightofship];
 
-    int firstplayerturbine1_I;
-    int firstplayerturbine1_J;
-    int firstplayerturbine2_I;
-    int firstplayerturbine2_J;
-    int firstplayergun1_I;
-    int firstplayergun1_J;
+    int firstplayerturbine1_I = -1;
+    int firstplayerturbine1_J = -1;
+    int firstplayerturbine2_I = -1;
+    int firstplayerturbine2_J = -1;
+    int firstplayergun1_I = -1;
+    int firstplayergun1_J = -1;
+    int firstplayergun2_1_I = -1;
+    int firstplayergun2_1_J = -1;
+    int firstplayergun2_2_I = -1;
+    int firstplayergun2_2_J = -1;
 
 
 
@@ -127,218 +131,68 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void generate() {
-        String[] blockNames = new String[]{"steelblock","engine","turbine","halfwoodblock","halfsteelblock","gunone","guntwo",
-                "woodblock","turbine90","turbine180","turbine270","halfwoodblock90",
-                "halfwoodblock180","halfwoodblock270",
-                "halfsteelblock90","halfsteelblock180","halfsteelblock270",
-                "gunone90","gunone180","gunone270",
-                "guntwo90","guntwo180","guntwo90"};
+        String[] blockNames = new String[]{"steelblock","engine","turbine","halfwoodblock","halfsteelblock","gunone","guntwo", "woodblock"};
 
         int k=0;
+        int f=0;
         for (int j = 0; j < maxheightofship; j++) {
-            System.out.println("");
             for (int i = 0; i < maxwidthofship; i++) {
-                System.out.print(player1ship[i][j] + " ");
+                for (int t = 1; t < 9; t++){
+                    if (player1ship[i][j]%10 == t){
+                        String name = blockNames[t-1];
+                        if (player1ship[i][j]/10 == 1){name+="90";}
+                        if (player1ship[i][j]/10 == 2){name+="180";}
+                        if (player1ship[i][j]/10 == 3){name+="270";}
 
-                if (player1ship[i][j] == 1) {
-                    String name = blockNames[0];
+                        float x = (float) ((10+i*7)*SCALE/0.02);
+                        float y = (float) ((40 -j*7)*SCALE/0.02);
 
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
+                        //turbine
+                        if (player1ship[i][j]%10 == 3){
+                            if (k==1){firstplayerturbine2_I = i;firstplayerturbine2_J = j;}
+                            if (k==0){firstplayerturbine1_I = i;firstplayerturbine1_J = j;k+=1;}
 
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
+                            if (player1ship[i][j]/10 == 0){x = (float) ((10+i*7 - 4.5)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 1){y = (float) ((40-j*7 - 4.5)*SCALE/0.02);}
+                        }
 
+                        //gunone
+                        if (player1ship[i][j]%10 == 6){
+                            firstplayergun1_I = i;
+                            firstplayergun1_J = j;
 
-                if (player1ship[i][j] == 3) {//turbine
-                    if (k==1){
-                        firstplayerturbine2_I = i;
-                        firstplayerturbine2_J = j;
+                            if (player1ship[i][j]/10 == 0){y = (float) ((40 -j*7 +1.2)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 1){x = (float) ((10+i*7+1.2)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 2){
+                                x = (float) ((10+i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((40 -j*7 +1.2)*SCALE/0.02);
+                            }
+                            if (player1ship[i][j]/10 == 3){
+                                x = (float) ((10+i*7 +1.2)*SCALE/0.02);
+                                y = (float) ((40 -j*7 -8.2)*SCALE/0.02);
+                            }
+                        }
+
+                        //guntwo
+                        if (player1ship[i][j]%10 == 7){
+                            if (f==1){firstplayergun2_2_I = i;firstplayergun2_2_J = j;}
+                            if (f==0){firstplayergun2_1_I = i;firstplayergun2_1_J = j;f+=1;}
+
+                            if (player1ship[i][j]/10 == 0){y = (float) ((40 -j*7 +0.1)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 1){x = (float) ((10+i*7+0.1)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 2){
+                                x = (float) ((10+i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((40 -j*7 +0.1)*SCALE/0.02);
+                            }
+                            if (player1ship[i][j]/10 == 3){
+                                x = (float) ((10+i*7 +0.1)*SCALE/0.02);
+                                y = (float) ((40 -j*7 -8.2)*SCALE/0.02);
+                            }
+                        }
+
+                        namesofBodies[i][j] = name;
+                        Bodies[i][j]=createBody(name, x, y, 0);
                     }
-                    if (k==0){
-                        firstplayerturbine1_I = i;
-                        firstplayerturbine1_J = j;
-                        k+=1;
-                    }
-                    String name = blockNames[2];
-
-                    float x = (float) ((10+i*7 - 4.5)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 13) {//turbine90
-                    if (k==1){
-                        firstplayerturbine2_I = i;
-                        firstplayerturbine2_J = j;
-                    }
-                    if (k==0){
-                        firstplayerturbine1_I = i;
-                        firstplayerturbine1_J = j;
-                        k+=1;
-                    }
-                    String name = blockNames[8];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7 - 4.5)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 23) {//turbine180
-                    if (k==1){
-                        firstplayerturbine2_I = i;
-                        firstplayerturbine2_J = j;
-                    }
-                    if (k==0){
-                        firstplayerturbine1_I = i;
-                        firstplayerturbine1_J = j;
-                        k+=1;
-                    }
-                    String name = blockNames[9];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 33) {//turbine270
-                    if (k==1){
-                        firstplayerturbine2_I = i;
-                        firstplayerturbine2_J = j;
-                    }
-                    if (k==0){
-                        firstplayerturbine1_I = i;
-                        firstplayerturbine1_J = j;
-                        k+=1;
-                    }
-                    String name = blockNames[10];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-
-
-                if (player1ship[i][j] == 2) {
-                    String name = blockNames[1];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-
-                if (player1ship[i][j] == 4) {//halfwoodblock
-                    String name = blockNames[3];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 14) {//halfwoodblock90
-                    String name = blockNames[11];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 24) {//halfwoodblock180
-                    String name = blockNames[12];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 34) {//halfwoodblock270
-                    String name = blockNames[13];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-
-                if (player1ship[i][j] == 5) {
-                    String name = blockNames[4];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 15) {//steelwoodblock90
-                    String name = blockNames[14];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 25) {//steelwoodblock180
-                    String name = blockNames[15];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 35) {//steelwoodblock270
-                    String name = blockNames[16];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-
-                if (player1ship[i][j] == 6) {//gunone
-
-                    String name = blockNames[5];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7 +1.1)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-
-                    firstplayergun1_I = i;
-                    firstplayergun1_J = j;
-                }
-                if (player1ship[i][j] == 7) {
-                    String name = blockNames[6];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
-                }
-                if (player1ship[i][j] == 8) {
-                    String name = blockNames[7];
-
-                    float x = (float) ((10+i*7)*SCALE/0.02);
-                    float y = (float) ((40 -j*7)*SCALE/0.02);
-
-                    namesofBodies[i][j] = name;
-                    Bodies[i][j]=createBody(name, x, y, 0);
                 }
 
             }
@@ -569,29 +423,77 @@ public class GameScreen implements Screen, InputProcessor {
 
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+        //turbine
+        if (firstplayerturbine1_I>0) {
+            Body body1 = Bodies[firstplayerturbine1_I][firstplayerturbine1_J];
+            float cos1 = (float) Math.cos(body1.getAngle());
+            float sin1 = (float) Math.sin(body1.getAngle());
+            for (int i=1;i<4;i++){
+            if(player1ship[firstplayerturbine1_I][firstplayerturbine1_J]/10 == i){
+                cos1 = (float) Math.cos(body1.getAngle()+i*Math.PI/2);
+                sin1 = (float) Math.sin(body1.getAngle()+i*Math.PI/2);
+            }}
 
-        Body body1  = Bodies[firstplayerturbine1_I][firstplayerturbine1_J];
-        float cos1 = (float) Math.cos(body1.getAngle());
-        float sin1 = (float) Math.sin(body1.getAngle());
-        Body body2 = Bodies[firstplayerturbine2_I][firstplayerturbine2_J];
-        Body body3 = Bodies[firstplayergun1_I][firstplayergun1_J];
-        float alpha = (float)(Math.acos(7/Math.sqrt(7*7+1.75*1/75)));
-        float cos3 = (float) Math.cos(body3.getAngle()+alpha);
-        float sin3 = (float) Math.sin(body3.getAngle()+alpha);
-        float cos2 = (float) Math.cos(body2.getAngle());
-        float sin2 = (float) Math.sin(body2.getAngle());
-        if (screenY<Gdx.graphics.getHeight()/3){
-            Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(20000*cos1,20000*sin1,true);}
-        if ((screenY>Gdx.graphics.getHeight()/3)&&(screenY<Gdx.graphics.getHeight()*2/3)){
-            Body bullet = createBody("bullet",body3.getPosition().x+4f*cos3,body3.getPosition().y+4f*sin3,body3.getAngle());
-            bullet.setLinearVelocity(new Vector2(body3.getLinearVelocity().x + 10000*(float)Math.cos(body3.getAngle()),body3.getLinearVelocity().y +10000*(float)Math.sin(body3.getAngle())));
-            bullets.add(bullet);
-            Bodies[firstplayergun1_I][firstplayergun1_J].applyForceToCenter(-10000*cos2,-10000*sin2,true);
+            if (screenY < Gdx.graphics.getHeight() / 3) {
+                Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(20000 * cos1, 20000 * sin1, true);
+            }
         }
-        if (screenY>Gdx.graphics.getHeight()*2/3){
-            Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(20000*cos2,20000*sin2,true);}
-        return false;
 
+        if (firstplayerturbine2_I>0) {
+            Body body2 = Bodies[firstplayerturbine2_I][firstplayerturbine2_J];
+            float cos2 = (float) Math.cos(body2.getAngle());
+            float sin2 = (float) Math.sin(body2.getAngle());
+            for (int i=1;i<4;i++){
+                if(player1ship[firstplayerturbine2_I][firstplayerturbine2_J]/10 == i){
+                    cos2 = (float) Math.cos(body2.getAngle()+i*Math.PI/2);
+                    sin2 = (float) Math.sin(body2.getAngle()+i*Math.PI/2);
+                }}
+            if (screenY > Gdx.graphics.getHeight() * 2 / 3) {
+                Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(20000 * cos2, 20000 * sin2, true);
+            }
+        }
+
+        //gunone
+        if (firstplayergun1_I>0) {
+            Body body3 = Bodies[firstplayergun1_I][firstplayergun1_J];
+            float alpha = (float) (Math.acos(7 / Math.sqrt(7 * 7 + 1.75 * 1 / 75)));
+            float cos3;float sin3;float cos3alpha;float sin3alpha;
+            for (int i = 0; i < 4; i++) {
+                if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == i) {
+                    cos3 = (float) Math.cos(body3.getAngle() + i * Math.PI/2);
+                    sin3 = (float) Math.sin(body3.getAngle() + i * Math.PI/2);
+
+                    if ((screenY > Gdx.graphics.getHeight() / 3) && (screenY < Gdx.graphics.getHeight() * 2 / 3)) {
+                        Body bullet = createBody("bullet", 0, 0, body3.getAngle());
+                        if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 0){
+                            cos3alpha = (float) Math.cos(body3.getAngle() + alpha + i * Math.PI/2);
+                            sin3alpha = (float) Math.sin(body3.getAngle() + alpha + i * Math.PI/2);
+                            bullet.setTransform(body3.getPosition().x + 4f*cos3alpha, body3.getPosition().y + 4f*sin3alpha, body3.getAngle()+(float) Math.PI/2*i);
+                        }
+                        if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 1){
+                            cos3alpha = (float) Math.cos(body3.getAngle() -alpha +  Math.PI/2);
+                            sin3alpha = (float) Math.sin(body3.getAngle() -alpha +  Math.PI/2);
+                            bullet.setTransform(body3.getPosition().x + 2.5f*cos3alpha, body3.getPosition().y + 2.5f*sin3alpha, body3.getAngle()+(float) Math.PI/2*i);
+                        }
+                        if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 2){
+                            cos3alpha = (float) Math.cos(body3.getAngle() + Math.PI/2);
+                            sin3alpha = (float) Math.sin(body3.getAngle() + Math.PI/2);
+                            bullet.setTransform(body3.getPosition().x + 0.5f*cos3alpha, body3.getPosition().y + 0.5f*sin3alpha, body3.getAngle()+(float) Math.PI/2*i);
+                        }
+                        if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 3){
+                            cos3alpha = (float) Math.cos(body3.getAngle() + alpha -  Math.PI/2);
+                            sin3alpha = (float) Math.sin(body3.getAngle() + alpha - Math.PI/2);
+                            bullet.setTransform(body3.getPosition().x + 2.5f*cos3alpha, body3.getPosition().y + 2.5f*sin3alpha, body3.getAngle()+(float) Math.PI/2*i);
+                        }
+
+                        bullet.setLinearVelocity(new Vector2(body3.getLinearVelocity().x + 10000 * (float) Math.cos(body3.getAngle() + i*Math.PI/2), body3.getLinearVelocity().y + 10000 * (float) Math.sin(body3.getAngle() + i*Math.PI/2)));
+                        bullets.add(bullet);
+                        Bodies[firstplayergun1_I][firstplayergun1_J].applyForceToCenter(-10000 * cos3, -10000 * sin3, true);
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Override

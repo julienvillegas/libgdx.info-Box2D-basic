@@ -251,9 +251,12 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                     }
                     if (setEndPosition(blocks.get(i)[j], x, y)) {
                         if (j < blocks.get(i).length - 1) {
-                            if (blocks.get(i)[j + 1].isInStartPos()) {
-                                blocks.get(i)[j + 1].setTouchable(true);
-                                stage.addActor(blocks.get(i)[j + 1]);
+                            for (int h=j+1;h<blocks.get(i).length;h++){
+                                if (blocks.get(i)[h].isInStartPos()) {
+                                    blocks.get(i)[h].setTouchable(true);
+                                    stage.addActor(blocks.get(i)[h]);
+                                    break;
+                                }
                             }
                         }
                     } else {
