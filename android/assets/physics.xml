@@ -714,7 +714,7 @@
 		<is_bullet/>
 		<allow_sleep/>
 		<fixture>
-			<density>8</density>
+			<density>2</density>
 			<friction>0.5</friction>
 			<restitution>0.5</restitution>
 			<filter_category_bits>1</filter_category_bits>
