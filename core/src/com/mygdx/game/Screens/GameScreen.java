@@ -288,6 +288,7 @@ public class GameScreen implements Screen, InputProcessor {
             drawSprite(name, position.x, position.y, degrees);
         }
         while (bullets.size()>30){
+            world.destroyBody(bullets.get(0));
             bullets.remove(0);
         }
         for (int i = 0; i < bullets.size(); i++) {
@@ -469,8 +470,8 @@ public class GameScreen implements Screen, InputProcessor {
                     if ((screenY > Gdx.graphics.getHeight() / 3) && (screenY < Gdx.graphics.getHeight() * 2 / 3)) {
                         Body bullet = createBody("bullet", 0, 0, body3.getAngle());
                         if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 0){
-                            cos3alpha = (float) Math.cos(body3.getAngle() + alpha + i * Math.PI/2);
-                            sin3alpha = (float) Math.sin(body3.getAngle() + alpha + i * Math.PI/2);
+                            cos3alpha = (float) Math.cos(body3.getAngle() + alpha);
+                            sin3alpha = (float) Math.sin(body3.getAngle() + alpha);
                             bullet.setTransform(body3.getPosition().x + 4f*cos3alpha, body3.getPosition().y + 4f*sin3alpha, body3.getAngle()+(float) Math.PI/2*i);
                         }
                         if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 1){
