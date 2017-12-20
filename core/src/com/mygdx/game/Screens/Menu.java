@@ -20,9 +20,9 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     private Stage stage;
     private float oldX = 0, oldY = 0;
 
-    private int[][] blockArr = new int[FIELD_HEIGHT][FIELD_WIDTH];
-    private ArrayList<MoveableImage[]> blocks = new ArrayList<MoveableImage[]>();
+    private boolean[][] blockArr = new boolean[FIELD_HEIGHT][FIELD_WIDTH];
     private MoveableImage[][] cells = new MoveableImage[FIELD_HEIGHT][FIELD_WIDTH];
+    private ArrayList<MoveableImage[]> blocks = new ArrayList<MoveableImage[]>();
     private Label[] labels = new Label[NUMBER_OF_ITEMS];
 
     private int[] inventory = setPrimaryInventory();                                                // Инвентарь игрока
@@ -33,7 +33,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
         for (int i = 0; i < FIELD_HEIGHT; i++) {
             for (int j = 0; j < FIELD_WIDTH; j++) {
-                cells[i][j] = new MoveableImage(FIELD_DELTA_X + BLOCK_SIZE*j, FIELD_DELTA_Y + BLOCK_SIZE*i, BLOCK_SIZE, BLOCK_SIZE,0,"gray.png");
+                cells[i][j] = new MoveableImage(FIELD_DELTA_X + BLOCK_SIZE*j, FIELD_DELTA_Y + BLOCK_SIZE*i, BLOCK_SIZE, BLOCK_SIZE,0, EMPTY_CELL);
                 stage.addActor(cells[i][j]);
             }
         }
@@ -42,8 +42,10 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             blocks.add(new MoveableImage[itemsCount]);
 
         for (int i = 0; i < blocks.size(); i++) {
-            for (int j = 0; j < blocks.get(i).length; j++)
-                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), BLOCK_SIZE, BLOCK_SIZE, 0, getImageName(i));
+            for (int j = 0; j < blocks.get(i).length; j++) {
+                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), BLOCK_SIZE, BLOCK_SIZE, 0, i);
+                blocks.get(i)[blocks.get(i).length - j - 1].rotate();
+            }
             blocks.get(i)[0].isTouchable = true;
             stage.addActor(blocks.get(i)[0]);
         }
@@ -92,21 +94,6 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         }
     }      // Отнимает 1 от числа в строковом виде
 
-
-    private String getImageName(int i) {
-        switch(i){
-            case WOOD_BLOCK: return "woodblock.png";
-            case STEEL_BLOCK: return "steelblock.png";
-            case ENGINE: return "engine.png";
-            case TURBINE: return "turbine.png";
-            case HALF_WOOD_BLOCK: return "halfwoodblock.png";
-            case HALF_STEEL_BLOCK: return "halfsteelblock.png";
-            case GUN_1: return "gun_1.png";
-            case GUN_2: return "gun_2.png";
-        }
-        return "";
-    }
-
     private int[] setPrimaryInventory() {
         int[] inventory = new int[8];
         inventory[WOOD_BLOCK] = 8;
@@ -127,8 +114,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             for (int i = 0; i < FIELD_HEIGHT; i++) {
                 for (int j = 0; j < FIELD_WIDTH; j++) {
                     if (cells[i][j].contains(x,y)) {
-                        if (blockArr[i][j] == 0) {
-                            blockArr[i][j] = image.getNumber();
+                        if (!blockArr[i][j]) {
+                            blockArr[i][j] = true;
                             image.setX(cells[i][j].getX());
                             image.setY(cells[i][j].getY());
                             image.setXinTable(i);
@@ -138,6 +125,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                         }
                         else {
                             image.returnToStartPos();
+                            image.returnBaseRotation();
                             return false;
                         }
 
@@ -147,6 +135,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         }
         else {
             image.returnToStartPos();
+            image.returnBaseRotation();
             return false;
         }
         return true;
@@ -176,7 +165,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                         blocks.get(i)[j].isMoving = true;
 
                         if (blocks.get(i)[j].getXinTable() != 50) {
-                            blockArr[blocks.get(i)[j].getXinTable()][blocks.get(i)[j].getYinTable()] = 0;
+                            blockArr[blocks.get(i)[j].getXinTable()][blocks.get(i)[j].getYinTable()] = false;
                             blocks.get(i)[j].setXinTable(50);
                             blocks.get(i)[j].setYinTable(50);
                         } else {
