@@ -1,5 +1,5 @@
 sprites.png
-size: 2048, 3624
+size: 1926, 3993
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
@@ -12,7 +12,7 @@ background_red_space
   index: -1
 bullet
   rotate: false
-  xy: 1, 3531
+  xy: 988, 2070
   size: 117, 59
   orig: 117, 59
   offset: 0, 0
@@ -26,7 +26,7 @@ button1
   index: -1
 button2
   rotate: false
-  xy: 426, 1316
+  xy: 1401, 476
   size: 524, 473
   orig: 819, 626
   offset: 213, 113
@@ -38,23 +38,37 @@ button3
   orig: 819, 700
   offset: 230, 0
   index: -1
-engine
+buttonfire
   rotate: false
-  xy: 1401, 476
+  xy: 1343, 2010
+  size: 344, 344
+  orig: 344, 344
+  offset: 0, 0
+  index: -1
+buttonturbine
+  rotate: false
+  xy: 1208, 2356
+  size: 344, 344
+  orig: 344, 344
+  offset: 0, 0
+  index: -1
+engine
+  rotate: true
+  xy: 988, 1708
   size: 360, 353
   orig: 360, 353
   offset: 0, 0
   index: -1
 gray
   rotate: false
-  xy: 1739, 2504
+  xy: 1581, 3372
   size: 300, 300
   orig: 300, 300
   offset: 0, 0
   index: -1
 gunone
-  rotate: true
-  xy: 514, 1791
+  rotate: false
+  xy: 426, 1316
   size: 770, 194
   orig: 770, 194
   offset: 0, 0
@@ -67,8 +81,8 @@ gunone90
   offset: 0, 0
   index: -1
 gunone180
-  rotate: true
-  xy: 514, 2563
+  rotate: false
+  xy: 426, 1512
   size: 770, 194
   orig: 770, 194
   offset: 0, 0
@@ -110,77 +124,84 @@ guntwo270
   index: -1
 halfsteelblock
   rotate: false
-  xy: 1380, 3290
+  xy: 1208, 2702
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 halfsteelblock90
   rotate: false
-  xy: 1404, 2195
+  xy: 1246, 3634
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 halfsteelblock180
   rotate: false
-  xy: 1426, 1525
+  xy: 1246, 3299
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 halfsteelblock270
   rotate: false
-  xy: 1404, 1860
+  xy: 1554, 2356
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 halfwoodblock
   rotate: false
-  xy: 1404, 2530
+  xy: 1383, 951
   size: 333, 333
   orig: 333, 333
   offset: 0, 0
   index: -1
 halfwoodblock90
   rotate: false
-  xy: 1442, 2865
+  xy: 1543, 2702
   size: 332, 333
   orig: 332, 333
   offset: 0, 0
   index: -1
 halfwoodblock180
-  rotate: false
-  xy: 710, 3291
+  rotate: true
+  xy: 1581, 3037
   size: 333, 332
   orig: 333, 332
   offset: 0, 0
   index: -1
 halfwoodblock270
-  rotate: true
-  xy: 1045, 3291
+  rotate: false
+  xy: 1545, 1286
   size: 332, 333
   orig: 332, 333
   offset: 0, 0
   index: -1
+lazerbullet
+  rotate: true
+  xy: 426, 1708
+  size: 190, 38
+  orig: 190, 38
+  offset: 0, 0
+  index: -1
 meteorfive
   rotate: false
-  xy: 1773, 1367
+  xy: 1718, 951
   size: 196, 129
   orig: 393, 301
   offset: 51, 36
   index: -1
 meteorfour
   rotate: true
-  xy: 1739, 2170
+  xy: 1, 3531
   size: 332, 301
   orig: 393, 301
   offset: 61, 0
   index: -1
 meteorone
   rotate: false
-  xy: 710, 2925
+  xy: 514, 3316
   size: 364, 364
   orig: 364, 364
   offset: 0, 0
@@ -194,98 +215,98 @@ meteorone1
   index: -1
 meteorone2
   rotate: false
-  xy: 1773, 1143
+  xy: 1690, 1621
   size: 222, 222
   orig: 222, 222
   offset: 0, 0
   index: -1
 meteorone3
   rotate: false
-  xy: 1730, 831
+  xy: 500, 3682
   size: 310, 310
   orig: 310, 310
   offset: 0, 0
   index: -1
 meteorthree
-  rotate: true
-  xy: 1776, 2806
+  rotate: false
+  xy: 1208, 3037
   size: 328, 260
   orig: 328, 260
   offset: 0, 0
   index: -1
 meteortwo
   rotate: false
-  xy: 1076, 2924
+  xy: 880, 3316
   size: 364, 364
   orig: 364, 364
   offset: 0, 0
   index: -1
 meteortwo1
   rotate: false
-  xy: 1739, 1860
+  xy: 812, 3682
   size: 308, 308
   orig: 308, 308
   offset: 0, 0
   index: -1
 meteortwo2
   rotate: false
-  xy: 1763, 476
+  xy: 1581, 3674
   size: 265, 265
   orig: 265, 265
   offset: 0, 0
   index: -1
 meteortwo3
   rotate: false
-  xy: 514, 3335
+  xy: 304, 3544
   size: 194, 194
   orig: 194, 194
   offset: 0, 0
   index: -1
 meteortwo4
   rotate: false
-  xy: 952, 1316
+  xy: 514, 1708
   size: 472, 472
   orig: 472, 472
   offset: 0, 0
   index: -1
 steelblock
   rotate: false
-  xy: 1383, 831
+  xy: 1198, 1316
   size: 345, 345
   orig: 345, 345
   offset: 0, 0
   index: -1
 turbine
   rotate: true
-  xy: 1057, 1790
+  xy: 861, 2182
   size: 565, 345
   orig: 565, 345
   offset: 0, 0
   index: -1
 turbine90
   rotate: false
-  xy: 710, 2358
+  xy: 514, 2749
   size: 345, 565
   orig: 345, 565
   offset: 0, 0
   index: -1
 turbine180
   rotate: true
-  xy: 1057, 2357
+  xy: 861, 2749
   size: 565, 345
   orig: 565, 345
   offset: 0, 0
   index: -1
 turbine270
   rotate: false
-  xy: 710, 1791
+  xy: 514, 2182
   size: 345, 565
   orig: 345, 565
   offset: 0, 0
   index: -1
 woodblock
   rotate: false
-  xy: 1426, 1178
+  xy: 1343, 1663
   size: 345, 345
   orig: 345, 345
   offset: 0, 0

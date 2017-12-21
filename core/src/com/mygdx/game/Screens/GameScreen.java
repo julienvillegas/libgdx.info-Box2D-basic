@@ -41,6 +41,7 @@ public class GameScreen implements Screen, InputProcessor {
 
 
     TextureAtlas textureAtlas;
+    TextureAtlas textureAtlas2;
     SpriteBatch batch;
     final HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 
@@ -104,6 +105,7 @@ public class GameScreen implements Screen, InputProcessor {
         viewport = new ExtendViewport(50, 50, camera);
 
         textureAtlas = new TextureAtlas("sprites.txt");
+        textureAtlas2 = new TextureAtlas("sprites2.txt");
         addSprites();
 
         Box2D.init();
@@ -117,6 +119,18 @@ public class GameScreen implements Screen, InputProcessor {
     private void addSprites() {
         Array<TextureAtlas.AtlasRegion> regions = textureAtlas.getRegions();
 
+        for (TextureAtlas.AtlasRegion region : regions) {
+            Sprite sprite = textureAtlas.createSprite(region.name);
+
+            float width = sprite.getWidth() * SCALE;
+            float height = sprite.getHeight() * SCALE;
+
+            sprite.setSize(width, height);
+            sprite.setOrigin(0, 0);
+
+            sprites.put(region.name, sprite);
+        }
+        regions = textureAtlas2.getRegions();
         for (TextureAtlas.AtlasRegion region : regions) {
             Sprite sprite = textureAtlas.createSprite(region.name);
 
@@ -192,6 +206,7 @@ public class GameScreen implements Screen, InputProcessor {
 
                         namesofBodies[i][j] = name;
                         Bodies[i][j]=createBody(name, x, y, 0);
+                        Bodies[i][j].setBullet(true);
                     }
                 }
 
@@ -300,9 +315,9 @@ public class GameScreen implements Screen, InputProcessor {
             drawSprite(name, position.x, position.y, degrees);
         }
 
-        drawSprite("button2",-5,-5,20,20,0);
-        drawSprite("button3",-7,8.5f,25,32,0);
-        drawSprite("button1",-5, 32,20,20,0);
+        drawSprite("buttonturbine",1,1,10,10,0);
+        drawSprite("buttonfire",1,20,10,10,0);
+        drawSprite("buttonturbine",1, 39,10,10,0);
 
 
         batch.end();
@@ -426,7 +441,8 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+    public boolean touchDown(int x, int y, int pointer, int button) {
+        int h = Gdx.graphics.getHeight()/50;
         //turbine
         if (firstplayerturbine1_I>-1) {
             Body body1 = Bodies[firstplayerturbine1_I][firstplayerturbine1_J];
@@ -438,8 +454,8 @@ public class GameScreen implements Screen, InputProcessor {
                 sin1 = (float) Math.sin(body1.getAngle()+i*Math.PI/2);
             }}
 
-            if (screenY < Gdx.graphics.getHeight() / 3) {
-                Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(20000 * cos1, 20000 * sin1, true);
+            if ((x-6*h)*(x-6*h)+(y-6*h)*(y-6*h)<=25*h*h) {
+                Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1, 15000 * sin1, true);
             }
         }
 
@@ -452,8 +468,8 @@ public class GameScreen implements Screen, InputProcessor {
                     cos2 = (float) Math.cos(body2.getAngle()+i*Math.PI/2);
                     sin2 = (float) Math.sin(body2.getAngle()+i*Math.PI/2);
                 }}
-            if (screenY > Gdx.graphics.getHeight() * 2 / 3) {
-                Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(20000 * cos2, 20000 * sin2, true);
+            if ((x-6*h)*(x-6*h)+(y-44*h)*(y-44*h)<=25*h*h) {
+                Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2, 15000 * sin2, true);
             }
         }
 
@@ -466,7 +482,7 @@ public class GameScreen implements Screen, InputProcessor {
                     cos3 = (float) Math.cos(body3.getAngle() + i * Math.PI/2);
                     sin3 = (float) Math.sin(body3.getAngle() + i * Math.PI/2);
 
-                    if ((screenY > Gdx.graphics.getHeight() / 3) && (screenY < Gdx.graphics.getHeight() * 2 / 3)) {
+                    if ((x-6*h)*(x-6*h)+(y-25*h)*(y-25*h)<=25*h*h) {
                         Body bullet = createBody("bullet", 0, 0, body3.getAngle());
                         if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 0){
                             float alpha = (float) (Math.atan(0.1));
@@ -507,7 +523,7 @@ public class GameScreen implements Screen, InputProcessor {
                     cos3 = (float) Math.cos(body4.getAngle() + i * Math.PI/2);
                     sin3 = (float) Math.sin(body4.getAngle() + i * Math.PI/2);
 
-                    if ((screenY > Gdx.graphics.getHeight() / 3) && (screenY < Gdx.graphics.getHeight() * 2 / 3)) {
+                    if ((x-6*h)*(x-6*h)+(y-25*h)*(y-25*h)<=25*h*h) {
                         Body bullet = createBody("bullet", 0, 0, body4.getAngle());
                         if (player1ship[firstplayergun2_1_I][firstplayergun2_1_J] / 10 == 0){
                             float alpha = (float) (Math.atan(0.195));
@@ -547,7 +563,7 @@ public class GameScreen implements Screen, InputProcessor {
                     cos3 = (float) Math.cos(body4.getAngle() + i * Math.PI/2);
                     sin3 = (float) Math.sin(body4.getAngle() + i * Math.PI/2);
 
-                    if ((screenY > Gdx.graphics.getHeight() / 3) && (screenY < Gdx.graphics.getHeight() * 2 / 3)) {
+                    if ((y > Gdx.graphics.getHeight() / 3) && (y < Gdx.graphics.getHeight() * 2 / 3)) {
                         Body bullet = createBody("bullet", 0, 0, body4.getAngle());
                         if (player1ship[firstplayergun2_2_I][firstplayergun2_2_J] / 10 == 0){
                             float alpha = (float) (Math.atan(0.195));
