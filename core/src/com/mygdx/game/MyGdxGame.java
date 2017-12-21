@@ -21,7 +21,7 @@ public class MyGdxGame extends Game {
 		skin = new Skin(Gdx.files.internal("skin/glassy-ui.json"));
 		textureAtlas = new TextureAtlas();
 		textureAtlas.addRegion("note",new TextureRegion(new Texture("note.png")));
-		this.setScreen(new Menu());
+		this.setScreen(new TitleScreen(this));
 	}
 
 	@Override

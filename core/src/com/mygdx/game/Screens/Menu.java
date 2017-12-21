@@ -1,39 +1,48 @@
 package com.mygdx.game.Screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.Bodies.MoveableImage;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
 import com.mygdx.game.Extra.ItemID;
+import com.mygdx.game.MyGdxGame;
 
 import java.util.ArrayList;
 
 public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoords {
 
     private Stage stage;
+    private Game game;
     private float oldX = 0, oldY = 0;
+    private float currentX=0, currentY=0;
 
-    private boolean[][] blockArr = new boolean[FIELD_HEIGHT][FIELD_WIDTH];
-    private MoveableImage[][] cells = new MoveableImage[FIELD_HEIGHT][FIELD_WIDTH];
+    private int[][] blockArr = new int[FIELD_HEIGHT][FIELD_WIDTH];
     private ArrayList<MoveableImage[]> blocks = new ArrayList<MoveableImage[]>();
+    private MoveableImage[][] cells = new MoveableImage[FIELD_HEIGHT][FIELD_WIDTH];
     private Label[] labels = new Label[NUMBER_OF_ITEMS];
 
     private int[] inventory = setPrimaryInventory();                                                // Инвентарь игрока
 
-    public Menu() {
+    public Menu(Game aGame) {
+        game = aGame;
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(this);
 
         for (int i = 0; i < FIELD_HEIGHT; i++) {
             for (int j = 0; j < FIELD_WIDTH; j++) {
-                cells[i][j] = new MoveableImage(FIELD_DELTA_X + BLOCK_SIZE*j, FIELD_DELTA_Y + BLOCK_SIZE*i, BLOCK_SIZE, BLOCK_SIZE,0, EMPTY_CELL);
+                cells[i][j] = new MoveableImage(FIELD_DELTA_X + BLOCK_SIZE*j, FIELD_DELTA_Y + BLOCK_SIZE*i, BLOCK_SIZE, BLOCK_SIZE,0,"gray.png");
                 stage.addActor(cells[i][j]);
             }
         }
@@ -42,11 +51,9 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             blocks.add(new MoveableImage[itemsCount]);
 
         for (int i = 0; i < blocks.size(); i++) {
-            for (int j = 0; j < blocks.get(i).length; j++) {
-                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), BLOCK_SIZE, BLOCK_SIZE, 0, i);
-                blocks.get(i)[blocks.get(i).length - j - 1].rotate();
-            }
-            blocks.get(i)[0].isTouchable = true;
+            for (int j = 0; j < blocks.get(i).length; j++)
+                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), getWidth(i), getHeight(i), 0, getImageName(i));
+            blocks.get(i)[0].setTouchable(true);
             stage.addActor(blocks.get(i)[0]);
         }
 
@@ -56,43 +63,92 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
         for (int i = 0; i < labels.length; i++) {
             labels[i] = new Label(countToString(blocks.get(i).length), itemsCountLS);
-            labels[i].setX((i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/5 : SCREEN_WIDTH - BLOCK_SIZE*2/5);
+            labels[i].setX((i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/5: SCREEN_WIDTH - BLOCK_SIZE*2/5);
             labels[i].setY(getPosY(i) + BLOCK_SIZE/5);
             stage.addActor(labels[i]);
         }
+
+        TextButton button = new TextButton("Start!", MyGdxGame.skin);
+        button.setWidth(SCREEN_WIDTH/4);
+        button.setPosition(SCREEN_WIDTH - button.getWidth()*3/2, BLOCK_SIZE/2);
+        button.addListener(new InputListener(){
+
+            @Override
+            public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
+                int[][] arr = new int[FIELD_WIDTH][FIELD_HEIGHT];
+                for (int i=0;i<FIELD_WIDTH;i++){
+                    for (int j=0;j<FIELD_HEIGHT;j++){
+                        arr[i][j] = blockArr[FIELD_HEIGHT - j- 1][i];
+                    }
+                }
+                game.setScreen(new GameScreen(arr));
+            }
+            @Override
+            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
+                return true;
+            }
+        });
+
+        stage.addActor(button);
+
+
     }
 
 
 
     private float getPosX(int i) {
-        return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/2 : SCREEN_WIDTH - BLOCK_SIZE*3/2;
+        return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/2 : SCREEN_WIDTH - BLOCK_SIZE/2-getWidth(i);
     }
 
     private float getPosY(int i) {
-        return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE*i + BLOCK_SIZE/2 : BLOCK_SIZE*i + BLOCK_SIZE/2 - BLOCK_SIZE*NUMBER_OF_ITEMS/2;
+        return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE*(i+2)*3/2-getHeight(i)/2: BLOCK_SIZE*(i-2)*3/2-getHeight(i)/2;
+    }
+
+    private float getWidth(int i) {
+        switch(i){
+            case GUN_1: return 770*BLOCK_SIZE/345;
+            case GUN_2: return 765*BLOCK_SIZE/345;
+            case TURBINE: return 565*BLOCK_SIZE/345;
+        }
+        return BLOCK_SIZE;
+    }
+
+    private float getHeight(int i) {
+        switch(i){
+            case GUN_1: return 194*BLOCK_SIZE/345;
+            case GUN_2: return 315*BLOCK_SIZE/345;
+        }
+        return BLOCK_SIZE;
     }
 
 
     private String countToString(int N) {
-        return (N == 0)? "" : "x" + N;
+        return "x" + N;
     }               // Преобразует число N в строку "xN"
 
     private String add1ToString(String N) {
-        if (N.equals(""))
-            return "x1";
-        else {
             int num = Integer.parseInt(N.substring(1)) + 1;
             return "x" + num;
-        }
     }             // Прибавляет 1 к числу в строковом виде
     private String subtract1FromString(String N) {
-        if (N.equals("") || N.equals("x1"))
-            return "";
-        else {
             int num = Integer.parseInt(N.substring(1)) - 1;
             return "x" + num;
-        }
     }      // Отнимает 1 от числа в строковом виде
+
+
+    private String getImageName(int i) {
+        switch(i){
+            case WOOD_BLOCK: return "woodblock.png";
+            case STEEL_BLOCK: return "steelblock.png";
+            case ENGINE: return "engine.png";
+            case TURBINE: return "turbine.png";
+            case HALF_WOOD_BLOCK: return "halfwoodblock.png";
+            case HALF_STEEL_BLOCK: return "halfsteelblock.png";
+            case GUN_1: return "gun_1.png";
+            case GUN_2: return "gun_2.png";
+        }
+        return "";
+    }
 
     private int[] setPrimaryInventory() {
         int[] inventory = new int[8];
@@ -107,37 +163,39 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         return inventory;
     }               // Задаёт изначальное количество предметов для расстановки
 
+    private void setCoordsfromCell(MoveableImage image,float x, float y){
+        image.setX(x + BLOCK_SIZE/2 - image.getOriginX());
+        image.setY(y + BLOCK_SIZE/2 - image.getOriginY());
+    }
+
+
 
     public boolean setEndPosition(MoveableImage image, int x, int y) {
-        if (((x > FIELD_DELTA_X) && (x < SCREEN_WIDTH - FIELD_DELTA_X)) &&
-            ((y > FIELD_DELTA_Y) && (y < SCREEN_HEIGHT - FIELD_DELTA_Y))) {
-            for (int i = 0; i < FIELD_HEIGHT; i++) {
-                for (int j = 0; j < FIELD_WIDTH; j++) {
-                    if (cells[i][j].contains(x,y)) {
-                        if (!blockArr[i][j]) {
-                            blockArr[i][j] = true;
-                            image.setX(cells[i][j].getX());
-                            image.setY(cells[i][j].getY());
-                            image.setXinTable(i);
-                            image.setYinTable(j);
-                            return true;
+            if (((x > FIELD_DELTA_X) && (x < SCREEN_WIDTH - FIELD_DELTA_X)) &&
+                    ((y > FIELD_DELTA_Y) && (y < SCREEN_HEIGHT - FIELD_DELTA_Y))) {
+                for (int i = 0; i < FIELD_HEIGHT; i++) {
+                    for (int j = 0; j < FIELD_WIDTH; j++) {
+                        if (cells[i][j].contains(x, y)) {
+                            if (blockArr[i][j] == 0) {
+                                blockArr[i][j] = image.getNumber();
+                                setCoordsfromCell(image,cells[i][j].getX(),cells[i][j].getY());
+                                image.setXinTable(i);
+                                image.setYinTable(j);
+                                return true;
+
+                            } else {
+                                image.setAngle(0);
+                                image.returnToStartPos();
+                                return false;
+                            }
 
                         }
-                        else {
-                            image.returnToStartPos();
-                            image.returnBaseRotation();
-                            return false;
-                        }
-
                     }
                 }
+            } else {
+                image.returnToStartPos();
+                return false;
             }
-        }
-        else {
-            image.returnToStartPos();
-            image.returnBaseRotation();
-            return false;
-        }
         return true;
     }
 
@@ -161,13 +219,14 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         for (int i = 0; i < blocks.size(); i++) {
             for (int j = 0; j < blocks.get(i).length; j++) {
                 if (blocks.get(i)[j].contains(x, y)) {
-                    if (blocks.get(i)[j].isTouchable) {
-                        blocks.get(i)[j].isMoving = true;
+                    if (blocks.get(i)[j].isTouchable()) {
+                        blocks.get(i)[j].setMoving(true);
+                        blocks.get(i)[j].setAlreadyMoved(false);
 
-                        if (blocks.get(i)[j].getXinTable() != 50) {
-                            blockArr[blocks.get(i)[j].getXinTable()][blocks.get(i)[j].getYinTable()] = false;
-                            blocks.get(i)[j].setXinTable(50);
-                            blocks.get(i)[j].setYinTable(50);
+                        if (blocks.get(i)[j].getXinTable() != NULL) {
+                            blockArr[blocks.get(i)[j].getXinTable()][blocks.get(i)[j].getYinTable()] = 0;
+                            blocks.get(i)[j].setXinTable(NULL);
+                            blocks.get(i)[j].setYinTable(NULL);
                         } else {
                             labels[i].setText(subtract1FromString(labels[i].getText().toString()));
                         }
@@ -177,42 +236,60 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         }
         oldX = x;
         oldY = y;
-        return true;
+        currentX = x;
+        currentY = y;
+        return false;
     }
 
     @Override
     public boolean touchUp (int x, int y, int pointer, int button) {
         for (int i = 0; i < blocks.size(); i++) {
             for (int j = 0; j < blocks.get(i).length; j++) {
-                if (blocks.get(i)[j].isMoving) {
+                if (blocks.get(i)[j].isMoving()) {
+                    if (!blocks.get(i)[j].isAlreadyMoved()){
+                        blocks.get(i)[j].flip90();
+                    }
                     if (setEndPosition(blocks.get(i)[j], x, y)) {
                         if (j < blocks.get(i).length - 1) {
-                            if (blocks.get(i)[j + 1].isInStartPos()) {
-                                blocks.get(i)[j + 1].isTouchable = true;
-                                stage.addActor(blocks.get(i)[j + 1]);
+                            for (int h=j+1;h<blocks.get(i).length;h++){
+                                if (blocks.get(i)[h].isInStartPos()) {
+                                    blocks.get(i)[h].setTouchable(true);
+                                    stage.addActor(blocks.get(i)[h]);
+                                    break;
+                                }
                             }
                         }
                     } else {
                         labels[i].setText(add1ToString(labels[i].getText().toString()));
                         for (int h = j + 1; h < blocks.get(i).length; h++) {
                             if (blocks.get(i)[h].isInStartPos()) {
-                                blocks.get(i)[h].isTouchable = false;
+                                blocks.get(i)[h].setTouchable(false);
                                 blocks.get(i)[h].remove();
+                            }
+                        }
+                        for (int h = 0; h < j; h++) {
+                            if (blocks.get(i)[h].isInStartPos()) {
+                                blocks.get(i)[j].setTouchable(false);
+                                blocks.get(i)[j].remove();
+                                break;
                             }
                         }
                     }
                 }
-                blocks.get(i)[j].isMoving = false;
+                blocks.get(i)[j].setMoving(false);
             }
         }
-        return true;
+        return false;
     }
 
     @Override
     public boolean touchDragged (int x, int y, int pointer) {
         for (int i = 0; i < blocks.size(); i++) {
             for (int j = 0; j < blocks.get(i).length; j++) {
-                if (blocks.get(i)[j].isMoving) {
+                if (blocks.get(i)[j].isMoving()) {
+                    if ((Math.abs(x-currentX)>BLOCK_SIZE/8)||(Math.abs(y-currentY)>BLOCK_SIZE/8)) {
+                        blocks.get(i)[j].setAlreadyMoved(true);
+                    }
                     blocks.get(i)[j].setX(blocks.get(i)[j].getX() + x - oldX);
                     blocks.get(i)[j].setY(blocks.get(i)[j].getY() - y + oldY);
                 }
@@ -220,7 +297,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         }
         oldX = x;
         oldY = y;
-        return true;
+        return false;
     }
 
     @Override
@@ -237,7 +314,10 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(this);
+        InputMultiplexer m = new InputMultiplexer();
+        m.addProcessor(this);
+        m.addProcessor(stage);
+        Gdx.input.setInputProcessor(m);
     }
 
     @Override
