@@ -21,13 +21,14 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
+import com.mygdx.game.Extra.ItemID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
 
-public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoords {
+public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScreenCoords {
 
     private static final float STEP_TIME = 1f / 60f;
     private static final int VELOCITY_ITERATIONS = 6;
@@ -37,26 +38,19 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
 
 
     private TextureAtlas textureAtlas;
+    private TextureAtlas textureAtlas2;
     private SpriteBatch batch;
     private final HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 
     private OrthographicCamera camera;
     private ExtendViewport viewport;
 
-    private TextureAtlas textureAtlas;
-    private TextureAtlas textureAtlas2;
-    private SpriteBatch batch;
-    private final HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
-
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private PhysicsShapeCache physicsBodies;
     private float accumulator = 0;
 
-    private Body upGround;
-    private Body downGround;
-    private Body leftGround;
-    private Body rightGround;
+    private Body[] gameFieldBounds = new Body[4];                           // Границы карты
 
 
     private Body[][] Bodies = new Body[FIELD_WIDTH][FIELD_HEIGHT];
@@ -75,6 +69,10 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
     private int firstplayergun2_2_I = -1;
     private int firstplayergun2_2_J = -1;
 
+    private ArrayList<Integer> p1_enginesCoords = new ArrayList<Integer>();
+    private float p1_turbine1power = 0f;
+    private float p1_turbine2power = 0f;
+
 
     private Body[] meteorBodies = new Body[COUNT];
     private String[] meteorNames = new String[COUNT];
@@ -86,18 +84,6 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
             ){
         this.player1ship = player1ship;
         //this.player2ship = player2ship;
-        //player1ship[0] = new int[]{0, 0, 0, 0, 0};
-        //player1ship[1] = new int[]{0, 6, 1, 6, 0};
-        //player1ship[2] = new int[]{0, 7, 1, 7, 0};
-        //player1ship[3] = new int[]{0, 5, 4, 5, 0};
-        //player1ship[4] = new int[]{0, 0, 0, 0, 0};
-        //player1ship[5] = new int[]{0, 0, 0, 0, 0};
-        //player1ship[0] = new int[]{1, 1, 1, 1, 1};
-        //player1ship[1] = new int[]{1, 1, 1, 1, 1};
-        //player1ship[2] = new int[]{1, 1, 1, 1, 1};
-        //player1ship[3] = new int[]{1, 1, 1, 1, 1};
-        //player1ship[4] = new int[]{1, 1, 1, 1, 1};
-        //player1ship[5] = new int[]{1, 1, 1, 1, 1};
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
@@ -169,6 +155,12 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
                             if (player1ship[i][j]/10 == 1){y = (float) ((40-j*7 - 4.5)*SCALE/0.02);}
                         }
 
+                        //engine
+                        if (player1ship[i][j] % 10 == ENGINE) {
+                            p1_enginesCoords.add(i);
+                            p1_enginesCoords.add(j);
+                        }
+
                         //gunone
                         if (player1ship[i][j]%10 == 6){
                             firstplayergun1_I = i;
@@ -210,6 +202,26 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
                 }
 
             }
+        }
+
+        for (int i = 0; i < p1_enginesCoords.size(); i += 2) {
+
+            int I = p1_enginesCoords.get(i);
+            int J = p1_enginesCoords.get(i + 1);
+
+            int turbineNeighbours = 0;                                                                          // Тут хранятся данные о граничащих с двигателем турбинах
+
+            if (Math.abs(firstplayerturbine1_I - I) + Math.abs(firstplayerturbine1_J - J) == 1)
+                turbineNeighbours += 1;                                                                         // Если двигатель граничит с первой турбиной, то turbineNeighbours % 2 == 1
+            if (Math.abs(firstplayerturbine2_I - I) + Math.abs(firstplayerturbine2_J - J) == 1)
+                turbineNeighbours += 2;                                                                         // Если двигатель граничит со второй турбиной, то turbineNeighbours / 2 == 1
+
+            float additionalPower = 1f / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);     // Добавочный коэффициент силы турбин равен (1 / КОЛИЧЕСТВО_ТУРБИН)
+            if (turbineNeighbours % 2 == 1)
+                p1_turbine1power += additionalPower;                                                            // Если двигатель граничит с первой турбиной, то добавляем коэффициент к первой турбине
+            if (turbineNeighbours / 2 == 1)
+                p1_turbine2power += additionalPower;                                                            // Если двигатель граничит со второй турбиной, то добавляем коэффициент ко второй турбине
+
         }
 
         WeldJointDef jointDef = new WeldJointDef();
@@ -351,17 +363,14 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
     @Override
     public void resize(int width, int height) {
         viewport.update(width, height, true);
-
         batch.setProjectionMatrix(camera.combined);
-
         createGround();
     }
 
     private void createGround() {
-        if (upGround != null) {world.destroyBody(upGround);}
-        if (downGround != null) {world.destroyBody(downGround);}
-        if (leftGround != null) {world.destroyBody(leftGround);}
-        if (rightGround != null) {world.destroyBody(rightGround);}
+        for (Body ground : gameFieldBounds)
+            if (ground != null)
+                world.destroyBody(ground);
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -379,21 +388,11 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
         shape1.setAsBox(1, camera.viewportHeight);
         fixtureDef1.shape = shape1;
 
-        upGround = world.createBody(bodyDef);
-        upGround.createFixture(fixtureDef);
-        upGround.setTransform(0, camera.viewportHeight, 0);
-
-        downGround = world.createBody(bodyDef);
-        downGround.createFixture(fixtureDef);
-        downGround.setTransform(0, 0, 0);
-
-        leftGround = world.createBody(bodyDef);
-        leftGround.createFixture(fixtureDef1);
-        leftGround.setTransform(0, 0, 0);
-
-        rightGround = world.createBody(bodyDef);
-        rightGround.createFixture(fixtureDef1);
-        rightGround.setTransform(camera.viewportWidth, 0, 0);
+        for (int i = 0; i < 4; i++) {
+            gameFieldBounds[i] = world.createBody(bodyDef);
+            gameFieldBounds[i].createFixture((i < 2)? fixtureDef : fixtureDef1);
+            gameFieldBounds[i].setTransform((i == 3)? camera.viewportWidth : 0, (i == 0)? camera.viewportHeight : 0, 0);
+        }
 
         shape.dispose();
         shape1.dispose();
@@ -452,7 +451,7 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
             }}
 
             if ((x-6*h)*(x-6*h)+(y-6*h)*(y-6*h)<=25*h*h) {
-                Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1, 15000 * sin1, true);
+                Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1 * p1_turbine1power, 15000 * sin1 * p1_turbine1power, true);
             }
         }
 
@@ -466,7 +465,7 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
                     sin2 = (float) Math.sin(body2.getAngle()+i*Math.PI/2);
                 }}
             if ((x-6*h)*(x-6*h)+(y-44*h)*(y-44*h)<=25*h*h) {
-                Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2, 15000 * sin2, true);
+                Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2 * p1_turbine2power, 15000 * sin2 * p1_turbine2power, true);
             }
         }
 
@@ -560,7 +559,7 @@ public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoord
                     cos3 = (float) Math.cos(body4.getAngle() + i * Math.PI/2);
                     sin3 = (float) Math.sin(body4.getAngle() + i * Math.PI/2);
 
-                    if ((y > Gdx.graphics.getHeight() / 3) && (y < Gdx.graphics.getHeight() * 2 / 3)) {
+                    if ((x-6*h)*(x-6*h)+(y-25*h)*(y-25*h)<=25*h*h) {
                         Body bullet = createBody("bullet", 0, 0, body4.getAngle());
                         if (player1ship[firstplayergun2_2_I][firstplayergun2_2_J] / 10 == 0){
                             float alpha = (float) (Math.atan(0.195));
