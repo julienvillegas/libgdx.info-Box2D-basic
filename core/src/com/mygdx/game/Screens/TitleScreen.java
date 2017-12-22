@@ -13,9 +13,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.mygdx.game.MyGdxGame;
 
-/**
- * Created by julienvillegas on 17/01/2017.
- */
 public class TitleScreen implements Screen {
 
     private Stage stage;
@@ -25,25 +22,30 @@ public class TitleScreen implements Screen {
         game = aGame;
         stage = new Stage(new ScreenViewport());
 
-        Label title = new Label("Box2D Basic demo", MyGdxGame.skin,"big-black");
+        Label title = new Label("Space Hunters", MyGdxGame.skin,"big-black");
         title.setAlignment(Align.center);
         title.setY(Gdx.graphics.getHeight()*2/3);
         title.setWidth(Gdx.graphics.getWidth());
         stage.addActor(title);
 
-        TextButton playButton = new TextButton("Start!",MyGdxGame.skin);
+        TextButton playButton = new TextButton("Start!", MyGdxGame.skin);
         playButton.setWidth(Gdx.graphics.getWidth()/2);
         playButton.setPosition(Gdx.graphics.getWidth()/2-playButton.getWidth()/2,Gdx.graphics.getHeight()/2-playButton.getHeight()/2);
         playButton.addListener(new InputListener(){
+
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new Menu(game));
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
                 return true;
             }
         });
+        TextButton settings = new TextButton("Settings", MyGdxGame.skin);
+        settings.setWidth(Gdx.graphics.getWidth()/2);
+        settings.setPosition(Gdx.graphics.getWidth()/2-playButton.getWidth()/2,Gdx.graphics.getHeight()/2-playButton.getHeight()*2);
+        stage.addActor(settings);
         stage.addActor(playButton);
 
 

@@ -1,6 +1,6 @@
 android {
     buildToolsVersion "26.0.2"
-    compileSdkVersion 25
+    compileSdkVersion 26
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -20,7 +20,8 @@ android {
     defaultConfig {
         applicationId "com.mygdx.game"
         minSdkVersion 8
-        targetSdkVersion 25
+        targetSdkVersion 26
+        multiDexEnabled true
     }
 }
 
@@ -126,4 +127,11 @@ idea {
             }
         }
     }
+}
+apply plugin: 'kotlin-android'
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }

@@ -1,0 +1,26 @@
+sprites2.png
+size: 1844, 3478
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+buttonfire
+  rotate: false
+  xy: 1441, 2788
+  size: 344, 344
+  orig: 344, 344
+  offset: 0, 0
+  index: -1
+buttonturbine
+  rotate: false
+  xy: 1006, 3133
+  size: 344, 344
+  orig: 344, 344
+  offset: 0, 0
+  index: -1
+lazerbullet
+  rotate: true
+  xy: 1769, 450
+  size: 190, 38
+  orig: 190, 38
+  offset: 0, 0
+  index: -1
