@@ -1,16 +1,13 @@
 package com.mygdx.game.Bodies
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Batch
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.mygdx.game.Extra.AssemblingScreenCoords
-import com.mygdx.game.Extra.ItemID
+import com.mygdx.game.Extra.AssemblingScreenCoords.*
+import com.mygdx.game.Extra.ItemID.*
 
 
-class MoveableImage(private val startPosX: Float, private val startPosY: Float, private var width: Float, private var height: Float, var angle: Int, texture: String) : Image(Texture(texture)), ItemID, AssemblingScreenCoords {
+class MoveableImage(private val startPosX: Float, private val startPosY: Float, private var width: Float, private var height: Float, var angle: Int, texture: String) : Image(Texture(texture)) {
+
     var isMoving = false
     private var isTouchable = false
     var isAlreadyMoved = false
@@ -30,11 +27,10 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
         yinTable = 50
         this.x = startPosX
         this.y = startPosY
-        if (number != ItemID.TURBINE) {
-            this.setOrigin(AssemblingScreenCoords.BLOCK_SIZE / 2, height / 2)
-        } else {
-            this.setOrigin(width - AssemblingScreenCoords.BLOCK_SIZE / 2, height / 2)
-        }
+        if (number != TURBINE)
+            this.setOrigin(BLOCK_SIZE / 2, height / 2)
+        else
+            this.setOrigin(width - BLOCK_SIZE / 2, height / 2)
     }
 
     override fun isTouchable(): Boolean {
@@ -45,41 +41,26 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
         isTouchable = touchable
     }
 
-    fun getString(texture: String): Int {
-        if (texture == "woodblock.png") {
-            return 8
+    private fun getString(texture: String): Int {
+        return when (texture) {
+            "woodblock.png" -> 8
+            "steelblock.png" -> STEEL_BLOCK
+            "engine.png" -> ENGINE
+            "turbine.png" -> TURBINE
+            "halfwoodblock.png" -> HALF_WOOD_BLOCK
+            "halfsteelblock.png" -> HALF_STEEL_BLOCK
+            "gun_1.png" -> GUN_1
+            "gun_2.png" -> GUN_2
+            else -> NULL
         }
-        if (texture == "steelblock.png") {
-            return ItemID.STEEL_BLOCK
-        }
-        if (texture == "engine.png") {
-            return ItemID.ENGINE
-        }
-        if (texture == "turbine.png") {
-            return ItemID.TURBINE
-        }
-        if (texture == "halfwoodblock.png") {
-            return ItemID.HALF_WOOD_BLOCK
-        }
-        if (texture == "halfsteelblock.png") {
-            return ItemID.HALF_STEEL_BLOCK
-        }
-        if (texture == "gun_1.png") {
-            return ItemID.GUN_1
-        }
-        return if (texture == "gun_2.png") {
-            ItemID.GUN_2
-        } else
-            ItemID.NULL
-
     }
 
     fun getNumber(): Int {
         when (angle) {
             0 -> return number
-            90 -> return number + ItemID.UP
-            180 -> return number + ItemID.LEFT
-            270 -> return number + ItemID.DOWN
+            90 -> return number + UP
+            180 -> return number + LEFT
+            270 -> return number + DOWN
         }
         return number
     }
@@ -116,10 +97,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
         this.height = height
     }
 
-    override fun draw(batch: Batch, parentAlpha: Float) {
-        super.draw(batch, parentAlpha)
-    }
-
     override fun act(delta: Float) {
         super.act(delta)
         this.rotation = angle.toFloat()
@@ -128,10 +105,10 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
 
     fun contains(x: Float, y: Float): Boolean {
         when (angle) {
-            0 -> return x > this.x && x < this.x + this.width && y < AssemblingScreenCoords.SCREEN_HEIGHT - this.y && y > AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - this.y - this.height
-            90 -> return x > this.x + originX - this.height + originY && x < this.x + originX + originY && y < AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - this.y - originY + originX && y > AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - this.y - originY + originX - this.width
-            180 -> return x > this.x + 2 * originX - this.width && x < this.x + 2 * originX && y < AssemblingScreenCoords.SCREEN_HEIGHT - this.y && y > AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - this.y - this.height
-            270 -> return x > this.x + originX - originY && x < this.x + originX + this.height - originY && y < AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - this.y - originY - originX + this.width && y > AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - this.y - originY - originX
+            0 -> return x > this.x && x < this.x + this.width && y < SCREEN_HEIGHT - this.y && y > SCREEN_HEIGHT_F - this.y - this.height
+            90 -> return x > this.x + originX - this.height + originY && x < this.x + originX + originY && y < SCREEN_HEIGHT_F - this.y - originY + originX && y > SCREEN_HEIGHT_F - this.y - originY + originX - this.width
+            180 -> return x > this.x + 2 * originX - this.width && x < this.x + 2 * originX && y < SCREEN_HEIGHT - this.y && y > SCREEN_HEIGHT_F - this.y - this.height
+            270 -> return x > this.x + originX - originY && x < this.x + originX + this.height - originY && y < SCREEN_HEIGHT_F - this.y - originY - originX + this.width && y > SCREEN_HEIGHT_F - this.y - originY - originX
         }
         return false
     }
@@ -143,9 +120,7 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
 
     fun flip90() {
         angle += 90
-        if (angle == 360) {
-            angle = 0
-        }
+        if (angle == 360) angle = 0
     }
 
 

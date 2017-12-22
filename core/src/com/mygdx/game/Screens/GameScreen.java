@@ -20,65 +20,60 @@ import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
+import com.mygdx.game.Extra.AssemblingScreenCoords;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-/**
- * Created by artum on 12.12.2017.
- */
 
-public class GameScreen implements Screen, InputProcessor {
+public class GameScreen implements Screen, InputProcessor, AssemblingScreenCoords {
 
-    static final float STEP_TIME = 1f / 60f;
-    static final int VELOCITY_ITERATIONS = 6;
-    static final int POSITION_ITERATIONS = 2;
-    static final float SCALE = 0.005f;
-
-    private int maxwidthofship =6;
-    private int maxheightofship =5;
+    private static final float STEP_TIME = 1f / 60f;
+    private static final int VELOCITY_ITERATIONS = 6;
+    private static final int POSITION_ITERATIONS = 2;
+    private static final float SCALE = 0.005f;
+    private static final int COUNT = 60;
 
 
-    TextureAtlas textureAtlas;
-    SpriteBatch batch;
-    final HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
+    private TextureAtlas textureAtlas;
+    private SpriteBatch batch;
+    private final HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
 
-    OrthographicCamera camera;
-    ExtendViewport viewport;
+    private OrthographicCamera camera;
+    private ExtendViewport viewport;
 
-    World world;
-    Box2DDebugRenderer debugRenderer;
-    PhysicsShapeCache physicsBodies;
-    float accumulator = 0;
-    Body upground;
-    Body downground;
-    Body leftground;
-    Body rightground;
-    static final int COUNT = 60;
+    private World world;
+    private Box2DDebugRenderer debugRenderer;
+    private PhysicsShapeCache physicsBodies;
+    private float accumulator = 0;
 
-    Body[][] Bodies = new Body[maxwidthofship][maxheightofship];
-    String[][] namesofBodies = new String[maxwidthofship][maxheightofship];
-    int [][] player1ship = new int[maxwidthofship][maxheightofship];
-
-    int firstplayerturbine1_I = -1;
-    int firstplayerturbine1_J = -1;
-    int firstplayerturbine2_I = -1;
-    int firstplayerturbine2_J = -1;
-    int firstplayergun1_I = -1;
-    int firstplayergun1_J = -1;
-    int firstplayergun2_1_I = -1;
-    int firstplayergun2_1_J = -1;
-    int firstplayergun2_2_I = -1;
-    int firstplayergun2_2_J = -1;
+    private Body upGround;
+    private Body downGround;
+    private Body leftGround;
+    private Body rightGround;
 
 
+    private Body[][] Bodies = new Body[FIELD_WIDTH][FIELD_HEIGHT];
+    private String[][] namesOfBodies = new String[FIELD_WIDTH][FIELD_HEIGHT];
+    private int [][] player1ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
+    //private int [][] player2ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
 
-    int [][] player2ship = new int[maxwidthofship][maxheightofship];
+    private int firstplayerturbine1_I = -1;
+    private int firstplayerturbine1_J = -1;
+    private int firstplayerturbine2_I = -1;
+    private int firstplayerturbine2_J = -1;
+    private int firstplayergun1_I = -1;
+    private int firstplayergun1_J = -1;
+    private int firstplayergun2_1_I = -1;
+    private int firstplayergun2_1_J = -1;
+    private int firstplayergun2_2_I = -1;
+    private int firstplayergun2_2_J = -1;
 
-    Body[] meteorBodies = new Body[COUNT];
-    String[] meteornames = new String[COUNT];
-    ArrayList<Body> bullets = new ArrayList<Body>();
+
+    private Body[] meteorBodies = new Body[COUNT];
+    private String[] meteorNames = new String[COUNT];
+    private ArrayList<Body> bullets = new ArrayList<Body>();
 
     public GameScreen(
             int [][] player1ship
@@ -135,8 +130,8 @@ public class GameScreen implements Screen, InputProcessor {
 
         int k=0;
         int f=0;
-        for (int j = 0; j < maxheightofship; j++) {
-            for (int i = 0; i < maxwidthofship; i++) {
+        for (int j = 0; j < FIELD_HEIGHT; j++) {
+            for (int i = 0; i < FIELD_WIDTH; i++) {
                 for (int t = 1; t < 9; t++){
                     if (player1ship[i][j]%10 == t){
                         String name = blockNames[t-1];
@@ -190,7 +185,7 @@ public class GameScreen implements Screen, InputProcessor {
                             }
                         }
 
-                        namesofBodies[i][j] = name;
+                        namesOfBodies[i][j] = name;
                         Bodies[i][j]=createBody(name, x, y, 0);
                     }
                 }
@@ -199,21 +194,21 @@ public class GameScreen implements Screen, InputProcessor {
         }
 
         WeldJointDef jointDef = new WeldJointDef();
+        jointDef.dampingRatio = 1;
+        jointDef.frequencyHz = 60;
 
-        for (int j = 0; j < maxheightofship; j++) {
-            for (int i = 1; i < maxwidthofship; i++) {
+        for (int j = 0; j < FIELD_HEIGHT; j++) {
+            for (int i = 1; i < FIELD_WIDTH; i++) {
                 if (player1ship[i][j]!=0&&player1ship[i-1][j]!=0) {
-
                     jointDef.initialize(Bodies[i][j],Bodies[i-1][j], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
             }
         }
-        for (int i = 0; i < maxwidthofship; i++) {
-            for (int j = 1; j < maxheightofship; j++) {
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 1; j < FIELD_HEIGHT; j++) {
                 if (player1ship[i][j] != 0&&player1ship[i][j-1]!=0) {
                     jointDef.initialize(Bodies[i][j],Bodies[i][j-1], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
-                    world.createJoint(jointDef);
                     world.createJoint(jointDef);
                 }
             }
@@ -236,7 +231,7 @@ public class GameScreen implements Screen, InputProcessor {
                 x +=50*(float)(SCALE/0.01);
                 y +=50*(float)(SCALE/0.01);
             }
-            meteornames[i] = name;
+            this.meteorNames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
             meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
         }
@@ -267,11 +262,11 @@ public class GameScreen implements Screen, InputProcessor {
         drawSprite("background_red_space",0,0,camera.viewportWidth,camera.viewportHeight,0);
 
 
-        for (int i = 0; i < maxwidthofship; i++) {
-            for (int j = 0; j < maxheightofship; j++) {
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (player1ship[i][j]!=0) {
                     Body body = Bodies[i][j];
-                    String name = namesofBodies[i][j];
+                    String name = namesOfBodies[i][j];
 
                     Vector2 position = body.getPosition();
                     float degrees = (float) Math.toDegrees(body.getAngle());
@@ -281,7 +276,7 @@ public class GameScreen implements Screen, InputProcessor {
         }
         for (int i = 0; i < meteorBodies.length; i++) {
             Body body = meteorBodies[i];
-            String name = meteornames[i];
+            String name = meteorNames[i];
 
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -308,7 +303,7 @@ public class GameScreen implements Screen, InputProcessor {
         batch.end();
 
         // uncomment to show the polygons
-        debugRenderer.render(world, camera.combined);
+        // debugRenderer.render(world, camera.combined);
 
     }
 
@@ -346,10 +341,10 @@ public class GameScreen implements Screen, InputProcessor {
     }
 
     private void createGround() {
-        if (upground != null) {world.destroyBody(upground);}
-        if (downground != null) {world.destroyBody(downground);}
-        if (leftground != null) {world.destroyBody(leftground);}
-        if (rightground != null) {world.destroyBody(rightground);}
+        if (upGround != null) {world.destroyBody(upGround);}
+        if (downGround != null) {world.destroyBody(downGround);}
+        if (leftGround != null) {world.destroyBody(leftGround);}
+        if (rightGround != null) {world.destroyBody(rightGround);}
 
         BodyDef bodyDef = new BodyDef();
         bodyDef.type = BodyDef.BodyType.StaticBody;
@@ -367,21 +362,21 @@ public class GameScreen implements Screen, InputProcessor {
         shape1.setAsBox(1, camera.viewportHeight);
         fixtureDef1.shape = shape1;
 
-        upground = world.createBody(bodyDef);
-        upground.createFixture(fixtureDef);
-        upground.setTransform(0, camera.viewportHeight, 0);
+        upGround = world.createBody(bodyDef);
+        upGround.createFixture(fixtureDef);
+        upGround.setTransform(0, camera.viewportHeight, 0);
 
-        downground = world.createBody(bodyDef);
-        downground.createFixture(fixtureDef);
-        downground.setTransform(0, 0, 0);
+        downGround = world.createBody(bodyDef);
+        downGround.createFixture(fixtureDef);
+        downGround.setTransform(0, 0, 0);
 
-        leftground = world.createBody(bodyDef);
-        leftground.createFixture(fixtureDef1);
-        leftground.setTransform(0, 0, 0);
+        leftGround = world.createBody(bodyDef);
+        leftGround.createFixture(fixtureDef1);
+        leftGround.setTransform(0, 0, 0);
 
-        rightground = world.createBody(bodyDef);
-        rightground.createFixture(fixtureDef1);
-        rightground.setTransform(camera.viewportWidth, 0, 0);
+        rightGround = world.createBody(bodyDef);
+        rightGround.createFixture(fixtureDef1);
+        rightGround.setTransform(camera.viewportWidth, 0, 0);
 
         shape.dispose();
         shape1.dispose();
