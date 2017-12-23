@@ -36,11 +36,11 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final float SCALE = 0.005f;
     private static final int COUNT = 60;
 
-
     private TextureAtlas textureAtlas;
     private TextureAtlas textureAtlas2;
     private SpriteBatch batch;
     private final HashMap<String, Sprite> sprites = new HashMap<String, Sprite>();
+
 
     private OrthographicCamera camera;
     private ExtendViewport viewport;
@@ -52,11 +52,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     private Body[] gameFieldBounds = new Body[4];                           // Границы карты
 
-
-    private Body[][] Bodies = new Body[FIELD_WIDTH][FIELD_HEIGHT];
-    private String[][] namesOfBodies = new String[FIELD_WIDTH][FIELD_HEIGHT];
+    private Body[][] Bodies1 = new Body[FIELD_WIDTH][FIELD_HEIGHT];
+    private Body[][] Bodies2 = new Body[FIELD_WIDTH][FIELD_HEIGHT];
+    private String[][] namesOfBodies1 = new String[FIELD_WIDTH][FIELD_HEIGHT];
+    private String[][] namesOfBodies2 = new String[FIELD_WIDTH][FIELD_HEIGHT];
     private int [][] player1ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
-    //private int [][] player2ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
+    private int [][] player2ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
 
     private int firstplayerturbine1_I = -1;
     private int firstplayerturbine1_J = -1;
@@ -69,9 +70,22 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private int firstplayergun2_2_I = -1;
     private int firstplayergun2_2_J = -1;
 
+
     private ArrayList<Integer> p1_enginesCoords = new ArrayList<Integer>();
     private float p1_turbine1power = 0f;
     private float p1_turbine2power = 0f;
+
+
+    private int secondplayerturbine1_I = -1;
+    private int secondplayerturbine1_J = -1;
+    private int secondplayerturbine2_I = -1;
+    private int secondplayerturbine2_J = -1;
+    private int secondplayergun1_I = -1;
+    private int secondplayergun1_J = -1;
+    private int secondplayergun2_1_I = -1;
+    private int secondplayergun2_1_J = -1;
+    private int secondplayergun2_2_I = -1;
+    private int secondplayergun2_2_J = -1;
 
 
     private Body[] meteorBodies = new Body[COUNT];
@@ -79,11 +93,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private ArrayList<Body> bullets = new ArrayList<Body>();
 
     public GameScreen(
-            int [][] player1ship
-            // int [][] player2ship
+            int [][] player1ship,
+            int [][] player2ship
             ){
         this.player1ship = player1ship;
-        //this.player2ship = player2ship;
+        this.player2ship = player2ship;
+
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
@@ -195,9 +210,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                             }
                         }
 
-                        namesOfBodies[i][j] = name;
-                        Bodies[i][j]=createBody(name, x, y, 0);
-                        Bodies[i][j].setBullet(true);
+                        namesOfBodies1[i][j] = name;
+                        Bodies1[i][j]=createBody(name, x, y, 0);
+                        Bodies1[i][j].setBullet(true);
                     }
                 }
 
@@ -229,7 +244,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int j = 0; j < FIELD_HEIGHT; j++) {
             for (int i = 1; i < FIELD_WIDTH; i++) {
                 if (player1ship[i][j]!=0&&player1ship[i-1][j]!=0) {
-                    jointDef.initialize(Bodies[i][j],Bodies[i-1][j], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
+                    jointDef.initialize(Bodies1[i][j], Bodies1[i-1][j], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
             }
@@ -237,7 +252,92 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 1; j < FIELD_HEIGHT; j++) {
                 if (player1ship[i][j] != 0&&player1ship[i][j-1]!=0) {
-                    jointDef.initialize(Bodies[i][j],Bodies[i][j-1], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
+                    jointDef.initialize(Bodies1[i][j], Bodies1[i][j-1], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
+                    world.createJoint(jointDef);
+                }
+            }
+        }
+
+        k=0;
+        f=0;
+        for (int j = 0; j < FIELD_HEIGHT; j++) {
+            for (int i = 0; i < FIELD_WIDTH; i++) {
+                for (int t = 1; t < 9; t++){
+                    if (player2ship[i][j]%10 == t){
+                        String name = blockNames[t-1];
+                        if (player2ship[i][j]/10 == 1){name+="90";}
+                        if (player2ship[i][j]/10 == 2){name+="180";}
+                        if (player2ship[i][j]/10 == 3){name+="270";}
+
+                        float x = (float) ((210+i*7)*SCALE/0.02);
+                        float y = (float) ((190 -j*7)*SCALE/0.02);
+
+                        //turbine
+                        if (player2ship[i][j]%10 == 3){
+                            if (k==1){secondplayerturbine2_I = i;secondplayerturbine2_J = j;}
+                            if (k==0){secondplayerturbine1_I = i;secondplayerturbine1_J = j;k+=1;}
+
+                            if (player2ship[i][j]/10 == 0){x = (float) ((210+i*7 - 4.5)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 1){y = (float) ((190-j*7 - 4.5)*SCALE/0.02);}
+                        }
+
+                        //gunone
+                        if (player2ship[i][j]%10 == 6){
+                            secondplayergun1_I = i;
+                            secondplayergun1_J = j;
+
+                            if (player2ship[i][j]/10 == 0){y = (float) ((190 -j*7 +1.2)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 1){x = (float) ((210+i*7+1.2)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 2){
+                                x = (float) ((210+i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((190 -j*7 +1.2)*SCALE/0.02);
+                            }
+                            if (player2ship[i][j]/10 == 3){
+                                x = (float) ((210+i*7 +1.2)*SCALE/0.02);
+                                y = (float) ((190 -j*7 -8.2)*SCALE/0.02);
+                            }
+                        }
+
+                        //guntwo
+                        if (player2ship[i][j]%10 == 7){
+                            if (f==1){secondplayergun2_2_I = i;secondplayergun2_2_J = j;}
+                            if (f==0){secondplayergun2_1_I = i;secondplayergun2_1_J = j;f+=1;}
+
+                            if (player2ship[i][j]/10 == 0){y = (float) ((190 -j*7 +0.1)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 1){x = (float) ((210+i*7+0.1)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 2){
+                                x = (float) ((210+i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((190 -j*7 +0.1)*SCALE/0.02);
+                            }
+                            if (player2ship[i][j]/10 == 3){
+                                x = (float) ((210+i*7 +0.1)*SCALE/0.02);
+                                y = (float) ((190 -j*7 -8.2)*SCALE/0.02);
+                            }
+                        }
+
+                        namesOfBodies2[i][j] = name;
+                        Bodies2[i][j]=createBody(name, x, y, 0);
+                        Bodies2[i][j].setBullet(true);
+                    }
+                }
+
+            }
+        }
+
+        jointDef = new WeldJointDef();
+
+        for (int j = 0; j < FIELD_HEIGHT; j++) {
+            for (int i = 1; i < FIELD_WIDTH; i++) {
+                if (player2ship[i][j]!=0&&player2ship[i-1][j]!=0) {
+                    jointDef.initialize(Bodies2[i][j], Bodies2[i-1][j], new Vector2((float)((150+ 7+7 +3.5)*SCALE/0.02),(float)((120 - 7 -3.5)*SCALE/0.02)));
+                    world.createJoint(jointDef);
+                }
+            }
+        }
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 1; j < FIELD_HEIGHT; j++) {
+                if (player2ship[i][j] != 0&&player2ship[i][j-1]!=0) {
+                    jointDef.initialize(Bodies2[i][j], Bodies2[i][j-1], new Vector2((float)((150 + 7+7 +3.5)*SCALE/0.02),(float)((120- 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
             }
@@ -259,6 +359,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if ((x<50*SCALE/0.02)&&(y<50*SCALE/0.01)){
                 x +=50*(float)(SCALE/0.01);
                 y +=50*(float)(SCALE/0.01);
+            }
+            if ((x>180*SCALE/0.02)&&(y>120*SCALE/0.01)){
+                x -=50*(float)(SCALE/0.01);
+                y -=50*(float)(SCALE/0.01);
             }
             this.meteorNames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
@@ -294,8 +398,20 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (player1ship[i][j]!=0) {
-                    Body body = Bodies[i][j];
-                    String name = namesOfBodies[i][j];
+                    Body body = Bodies1[i][j];
+                    String name = namesOfBodies1[i][j];
+
+                    Vector2 position = body.getPosition();
+                    float degrees = (float) Math.toDegrees(body.getAngle());
+                    drawSprite(name, position.x, position.y, degrees);
+                }
+            }
+        }
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
+                if (player2ship[i][j]!=0) {
+                    Body body = Bodies2[i][j];
+                    String name = namesOfBodies2[i][j];
 
                     Vector2 position = body.getPosition();
                     float degrees = (float) Math.toDegrees(body.getAngle());
@@ -327,6 +443,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         drawSprite("buttonturbine",1,1,10,10,0);
         drawSprite("buttonfire",1,20,10,10,0);
         drawSprite("buttonturbine",1, 39,10,10,0);
+        drawSprite("buttonturbine",66,11,10,10,180);
+        drawSprite("buttonfire",66,31,10,10,180);
+        drawSprite("buttonturbine",66, 49,10,10,180);
 
 
         batch.end();
@@ -441,7 +560,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         int h = Gdx.graphics.getHeight()/50;
         //turbine
         if (firstplayerturbine1_I>-1) {
-            Body body1 = Bodies[firstplayerturbine1_I][firstplayerturbine1_J];
+            Body body1 = Bodies1[firstplayerturbine1_I][firstplayerturbine1_J];
             float cos1 = (float) Math.cos(body1.getAngle());
             float sin1 = (float) Math.sin(body1.getAngle());
             for (int i=1;i<4;i++){
@@ -452,11 +571,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
             if ((x-6*h)*(x-6*h)+(y-6*h)*(y-6*h)<=25*h*h) {
                 Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1 * p1_turbine1power, 15000 * sin1 * p1_turbine1power, true);
+
             }
         }
 
         if (firstplayerturbine2_I>-1) {
-            Body body2 = Bodies[firstplayerturbine2_I][firstplayerturbine2_J];
+            Body body2 = Bodies1[firstplayerturbine2_I][firstplayerturbine2_J];
             float cos2 = (float) Math.cos(body2.getAngle());
             float sin2 = (float) Math.sin(body2.getAngle());
             for (int i=1;i<4;i++){
@@ -466,12 +586,13 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 }}
             if ((x-6*h)*(x-6*h)+(y-44*h)*(y-44*h)<=25*h*h) {
                 Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2 * p1_turbine2power, 15000 * sin2 * p1_turbine2power, true);
+
             }
         }
 
         //gunone
         if (firstplayergun1_I>-1) {
-            Body body3 = Bodies[firstplayergun1_I][firstplayergun1_J];
+            Body body3 = Bodies1[firstplayergun1_I][firstplayergun1_J];
             float cos3;float sin3;float cos3alpha;float sin3alpha;
             for (int i = 0; i < 4; i++) {
                 if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == i) {
@@ -504,7 +625,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
                         bullet.setLinearVelocity(new Vector2(body3.getLinearVelocity().x + 1000 * (float) Math.cos(body3.getAngle() + i*Math.PI/2), body3.getLinearVelocity().y + 1000 * (float) Math.sin(body3.getAngle() + i*Math.PI/2)));
                         bullets.add(bullet);
-                        Bodies[firstplayergun1_I][firstplayergun1_J].applyForceToCenter(-1000 * cos3, -1000 * sin3, true);
+                        Bodies1[firstplayergun1_I][firstplayergun1_J].applyForceToCenter(-1000 * cos3, -1000 * sin3, true);
                     }
                 }
             }
@@ -512,7 +633,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         //guntwo1
         if (firstplayergun2_1_I>-1) {
-            Body body4 = Bodies[firstplayergun2_1_I][firstplayergun2_1_J];
+            Body body4 = Bodies1[firstplayergun2_1_I][firstplayergun2_1_J];
             float cos3;float sin3;float cos3alpha;float sin3alpha;
             for (int i = 0; i < 4; i++) {
                 if (player1ship[firstplayergun2_1_I][firstplayergun2_1_J] / 10 == i) {
@@ -545,14 +666,14 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
                         bullet.setLinearVelocity(new Vector2(body4.getLinearVelocity().x + 500 * (float) Math.cos(body4.getAngle() + i*Math.PI/2), body4.getLinearVelocity().y + 500 * (float) Math.sin(body4.getAngle() + i*Math.PI/2)));
                         bullets.add(bullet);
-                        Bodies[firstplayergun2_1_I][firstplayergun2_1_J].applyForceToCenter(-500 * cos3, -500 * sin3, true);
+                        Bodies1[firstplayergun2_1_I][firstplayergun2_1_J].applyForceToCenter(-500 * cos3, -500 * sin3, true);
                     }
                 }
             }
         }
         //guntwo2
         if (firstplayergun2_2_I>-1) {
-            Body body4 = Bodies[firstplayergun2_2_I][firstplayergun2_2_J];
+            Body body4 = Bodies1[firstplayergun2_2_I][firstplayergun2_2_J];
             float cos3;float sin3;float cos3alpha;float sin3alpha;
             for (int i = 0; i < 4; i++) {
                 if (player1ship[firstplayergun2_2_I][firstplayergun2_2_J] / 10 == i) {
@@ -585,7 +706,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
                         bullet.setLinearVelocity(new Vector2(body4.getLinearVelocity().x + 500 * (float) Math.cos(body4.getAngle() + i*Math.PI/2), body4.getLinearVelocity().y + 500 * (float) Math.sin(body4.getAngle() + i*Math.PI/2)));
                         bullets.add(bullet);
-                        Bodies[firstplayergun2_2_I][firstplayergun2_2_J].applyForceToCenter(-500 * cos3, -500 * sin3, true);
+                        Bodies1[firstplayergun2_2_I][firstplayergun2_2_J].applyForceToCenter(-500 * cos3, -500 * sin3, true);
                     }
                 }
             }

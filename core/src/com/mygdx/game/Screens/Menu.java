@@ -81,7 +81,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                         arr[i][j] = blockArr[FIELD_HEIGHT - j- 1][i];
                     }
                 }
-                game.setScreen(new GameScreen(arr));
+                game.setScreen(new GameScreen(arr,arr));
             }
             @Override
             public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) {
