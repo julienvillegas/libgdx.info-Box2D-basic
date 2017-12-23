@@ -570,7 +570,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }}
 
             if ((x-6*h)*(x-6*h)+(y-6*h)*(y-6*h)<=25*h*h) {
-                Bodies[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1 * p1_turbine1power, 15000 * sin1 * p1_turbine1power, true);
+                Bodies1[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1 * p1_turbine1power, 15000 * sin1 * p1_turbine1power, true);
 
             }
         }
@@ -585,7 +585,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     sin2 = (float) Math.sin(body2.getAngle()+i*Math.PI/2);
                 }}
             if ((x-6*h)*(x-6*h)+(y-44*h)*(y-44*h)<=25*h*h) {
-                Bodies[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2 * p1_turbine2power, 15000 * sin2 * p1_turbine2power, true);
+                Bodies1[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2 * p1_turbine2power, 15000 * sin2 * p1_turbine2power, true);
 
             }
         }
