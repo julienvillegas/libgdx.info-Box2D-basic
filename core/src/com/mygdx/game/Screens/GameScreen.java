@@ -440,12 +440,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             drawSprite(name, position.x, position.y, degrees);
         }
 
-        drawSprite("buttonturbine",1,1,10,10,0);
-        drawSprite("buttonfire",1,20,10,10,0);
-        drawSprite("buttonturbine",1, 39,10,10,0);
-        drawSprite("buttonturbine",66,11,10,10,180);
-        drawSprite("buttonfire",66,31,10,10,180);
-        drawSprite("buttonturbine",66, 49,10,10,180);
+        drawSprite("buttonturbine",1,11,8,8,0);
+        drawSprite("buttonfire",1,21,8,8,0);
+        drawSprite("buttonturbine",1, 31,8,8,0);
+        //drawSprite("buttonturbine",66,11,10,10,180);
+        //drawSprite("buttonfire",66,31,10,10,180);
+        //drawSprite("buttonturbine",66, 49,10,10,180);
 
 
         batch.end();
@@ -569,7 +569,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 sin1 = (float) Math.sin(body1.getAngle()+i*Math.PI/2);
             }}
 
-            if ((x-6*h)*(x-6*h)+(y-6*h)*(y-6*h)<=25*h*h) {
+            if ((x-5*h)*(x-5*h)+(y-15*h)*(y-15*h)<=16*h*h) {
                 Bodies1[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1 * p1_turbine1power, 15000 * sin1 * p1_turbine1power, true);
 
             }
@@ -584,7 +584,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     cos2 = (float) Math.cos(body2.getAngle()+i*Math.PI/2);
                     sin2 = (float) Math.sin(body2.getAngle()+i*Math.PI/2);
                 }}
-            if ((x-6*h)*(x-6*h)+(y-44*h)*(y-44*h)<=25*h*h) {
+            if ((x-5*h)*(x-5*h)+(y-35*h)*(y-35*h)<=16*h*h) {
                 Bodies1[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2 * p1_turbine2power, 15000 * sin2 * p1_turbine2power, true);
 
             }
@@ -599,7 +599,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     cos3 = (float) Math.cos(body3.getAngle() + i * Math.PI/2);
                     sin3 = (float) Math.sin(body3.getAngle() + i * Math.PI/2);
 
-                    if ((x-6*h)*(x-6*h)+(y-25*h)*(y-25*h)<=25*h*h) {
+                    if ((x-5*h)*(x-5*h)+(y-25*h)*(y-25*h)<=16*h*h) {
                         Body bullet = createBody("bullet", 0, 0, body3.getAngle());
                         if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == 0){
                             float alpha = (float) (Math.atan(0.1));
