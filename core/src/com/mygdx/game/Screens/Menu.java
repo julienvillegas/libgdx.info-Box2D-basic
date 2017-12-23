@@ -106,8 +106,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     private float getWidth(int i) {
         switch(i){
-            case GUN_1: return 770*BLOCK_SIZE/345;
-            case GUN_2: return 765*BLOCK_SIZE/345;
+            case WOOD_GUN: return 770*BLOCK_SIZE/345;
+            case STEEL_GUN: return 765*BLOCK_SIZE/345;
             case TURBINE: return 565*BLOCK_SIZE/345;
         }
         return BLOCK_SIZE;
@@ -115,8 +115,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     private float getHeight(int i) {
         switch(i){
-            case GUN_1: return 194*BLOCK_SIZE/345;
-            case GUN_2: return 315*BLOCK_SIZE/345;
+            case WOOD_GUN: return 194*BLOCK_SIZE/345;
+            case STEEL_GUN: return 315*BLOCK_SIZE/345;
         }
         return BLOCK_SIZE;
     }
@@ -144,8 +144,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             case TURBINE: return "turbine.png";
             case HALF_WOOD_BLOCK: return "halfwoodblock.png";
             case HALF_STEEL_BLOCK: return "halfsteelblock.png";
-            case GUN_1: return "gun_1.png";
-            case GUN_2: return "gun_2.png";
+            case WOOD_GUN: return "gun_1.png";
+            case STEEL_GUN: return "gun_2.png";
         }
         return "";
     }
@@ -154,12 +154,12 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         int[] inventory = new int[8];
         inventory[WOOD_BLOCK] = 8;
         inventory[STEEL_BLOCK] = 4;
-        inventory[ENGINE] = 2;
+        inventory[ENGINE] = 3;
         inventory[TURBINE] = 2;
         inventory[HALF_WOOD_BLOCK] = 4;
         inventory[HALF_STEEL_BLOCK] = 2;
-        inventory[GUN_1] = 1;
-        inventory[GUN_2] = 2;
+        inventory[WOOD_GUN] = 1;
+        inventory[STEEL_GUN] = 2;
         return inventory;
     }               // Задаёт изначальное количество предметов для расстановки
 

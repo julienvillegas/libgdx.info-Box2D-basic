@@ -4,6 +4,8 @@ public interface ItemID {
 
     // Здесь хранятся ID составных частей корабля
 
+    int NULL2 = -100;
+
     int NUMBER_OF_ITEMS = 8;                        // Количество видов предметов
 
     int WOOD_BLOCK = 0;
@@ -12,8 +14,9 @@ public interface ItemID {
     int TURBINE = 3;
     int HALF_WOOD_BLOCK = 4;
     int HALF_STEEL_BLOCK = 5;
-    int GUN_1 = 6;
-    int GUN_2 = 7;
+    int WOOD_GUN = 6;
+    int STEEL_GUN = 7;
+
     int NULL = 50;
     int UP = 10;
     int LEFT = 20;
