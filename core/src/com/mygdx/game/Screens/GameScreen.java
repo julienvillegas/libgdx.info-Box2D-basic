@@ -147,27 +147,29 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private void generate() {
         String[] blockNames = new String[]{"steelblock","engine","turbine","halfwoodblock","halfsteelblock","gunone","guntwo", "woodblock"};
 
-        int k=0;
-        int f=0;
-        for (int j = 0; j < FIELD_HEIGHT; j++) {
-            for (int i = 0; i < FIELD_WIDTH; i++) {
-                for (int t = 1; t < 9; t++){
-                    if (player1ship[i][j]%10 == t){
+        int k = 0;
+        int f = 0;
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
+                for (int t = 1; t < 9; t++) {
+                    if (player1ship[i][j] % 10 == t) {
                         String name = blockNames[t-1];
-                        if (player1ship[i][j]/10 == 1){name+="90";}
-                        if (player1ship[i][j]/10 == 2){name+="180";}
-                        if (player1ship[i][j]/10 == 3){name+="270";}
+                        switch (player1ship[i][j] / 10) {
+                            case 1: {name += "90"; break;}
+                            case 2: {name += "180"; break;}
+                            case 3: {name += "270"; break;}
+                        }
 
-                        float x = (float) ((10+i*7)*SCALE/0.02);
-                        float y = (float) ((40 -j*7)*SCALE/0.02);
+                        float x = (float) ((10 + i*7)*SCALE/0.02);
+                        float y = (float) ((40 - j*7)*SCALE/0.02);
 
                         //turbine
-                        if (player1ship[i][j]%10 == 3){
-                            if (k==1){firstplayerturbine2_I = i;firstplayerturbine2_J = j;}
-                            if (k==0){firstplayerturbine1_I = i;firstplayerturbine1_J = j;k+=1;}
+                        if (player1ship[i][j]%10 == 3) {
+                            if (k == 1) {firstplayerturbine2_I = i; firstplayerturbine2_J = j;}
+                            if (k == 0) {firstplayerturbine1_I = i; firstplayerturbine1_J = j; k++;}
 
-                            if (player1ship[i][j]/10 == 0){x = (float) ((10+i*7 - 4.5)*SCALE/0.02);}
-                            if (player1ship[i][j]/10 == 1){y = (float) ((40-j*7 - 4.5)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 0) {x = (float) ((10+i*7 - 4.5)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 1) {y = (float) ((40-j*7 - 4.5)*SCALE/0.02);}
                         }
 
                         //engine
@@ -177,26 +179,26 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         }
 
                         //gunone
-                        if (player1ship[i][j]%10 == 6){
+                        if (player1ship[i][j]%10 == 6) {
                             firstplayergun1_I = i;
                             firstplayergun1_J = j;
 
-                            if (player1ship[i][j]/10 == 0){y = (float) ((40 -j*7 +1.2)*SCALE/0.02);}
-                            if (player1ship[i][j]/10 == 1){x = (float) ((10+i*7+1.2)*SCALE/0.02);}
-                            if (player1ship[i][j]/10 == 2){
-                                x = (float) ((10+i*7 - 8.2)*SCALE/0.02);
-                                y = (float) ((40 -j*7 +1.2)*SCALE/0.02);
+                            if (player1ship[i][j]/10 == 0){y = (float) ((40 - j*7 + 1.2)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 1){x = (float) ((10 + i*7 + 1.2)*SCALE/0.02);}
+                            if (player1ship[i][j]/10 == 2) {
+                                x = (float) ((10 + i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((40 - j*7 + 1.2)*SCALE/0.02);
                             }
-                            if (player1ship[i][j]/10 == 3){
-                                x = (float) ((10+i*7 +1.2)*SCALE/0.02);
-                                y = (float) ((40 -j*7 -8.2)*SCALE/0.02);
+                            if (player1ship[i][j]/10 == 3) {
+                                x = (float) ((10 + i*7 + 1.2)*SCALE/0.02);
+                                y = (float) ((40 - j*7 - 8.2)*SCALE/0.02);
                             }
                         }
 
                         //guntwo
-                        if (player1ship[i][j]%10 == 7){
-                            if (f==1){firstplayergun2_2_I = i;firstplayergun2_2_J = j;}
-                            if (f==0){firstplayergun2_1_I = i;firstplayergun2_1_J = j;f+=1;}
+                        if (player1ship[i][j]%10 == 7) {
+                            if (f == 1) {firstplayergun2_2_I = i; firstplayergun2_2_J = j;}
+                            if (f == 0) {firstplayergun2_1_I = i; firstplayergun2_1_J = j; f++;}
 
                             if (player1ship[i][j]/10 == 0){y = (float) ((40 -j*7 +0.1)*SCALE/0.02);}
                             if (player1ship[i][j]/10 == 1){x = (float) ((10+i*7+0.1)*SCALE/0.02);}
@@ -231,7 +233,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (Math.abs(firstplayerturbine2_I - I) + Math.abs(firstplayerturbine2_J - J) == 1)
                 turbineNeighbours += 2;                                                                         // Если двигатель граничит со второй турбиной, то turbineNeighbours / 2 == 1
 
-            float additionalPower = 1f / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);     // Добавочный коэффициент силы турбин равен (1 / КОЛИЧЕСТВО_ТУРБИН)
+            float additionalPower = 15000f / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);           // Добавочный коэффициент силы турбин равен (15000 / КОЛИЧЕСТВО_ТУРБИН)
             if (turbineNeighbours % 2 == 1)
                 p1_turbine1power += additionalPower;                                                            // Если двигатель граничит с первой турбиной, то добавляем коэффициент к первой турбине
             if (turbineNeighbours / 2 == 1)
@@ -241,82 +243,79 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         WeldJointDef jointDef = new WeldJointDef();
 
-        for (int j = 0; j < FIELD_HEIGHT; j++) {
-            for (int i = 1; i < FIELD_WIDTH; i++) {
-                if (player1ship[i][j]!=0&&player1ship[i-1][j]!=0) {
-                    jointDef.initialize(Bodies1[i][j], Bodies1[i-1][j], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
+        for (int i = 1; i < FIELD_WIDTH; i++)
+            for (int j = 0; j < FIELD_HEIGHT; j++)
+                if (player1ship[i][j] != 0 && player1ship[i-1][j] != 0) {
+                    jointDef.initialize(Bodies1[i][j], Bodies1[i-1][j], new Vector2((float)((10 + 7 + 7 + 3.5)*SCALE/0.02),(float)((40 - 7 - 3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
-            }
-        }
-        for (int i = 0; i < FIELD_WIDTH; i++) {
-            for (int j = 1; j < FIELD_HEIGHT; j++) {
-                if (player1ship[i][j] != 0&&player1ship[i][j-1]!=0) {
-                    jointDef.initialize(Bodies1[i][j], Bodies1[i][j-1], new Vector2((float)((10 + 7+7 +3.5)*SCALE/0.02),(float)((40 - 7 -3.5)*SCALE/0.02)));
-                    world.createJoint(jointDef);
-                }
-            }
-        }
 
-        k=0;
-        f=0;
-        for (int j = 0; j < FIELD_HEIGHT; j++) {
-            for (int i = 0; i < FIELD_WIDTH; i++) {
+        for (int i = 0; i < FIELD_WIDTH; i++)
+            for (int j = 1; j < FIELD_HEIGHT; j++)
+                if (player1ship[i][j] != 0&&player1ship[i][j-1]!=0) {
+                    jointDef.initialize(Bodies1[i][j], Bodies1[i][j-1], new Vector2((float)((10 + 7 + 7 + 3.5)*SCALE/0.02),(float)((40 - 7 - 3.5)*SCALE/0.02)));
+                    world.createJoint(jointDef);
+                }
+
+        k = 0;
+        f = 0;
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
                 for (int t = 1; t < 9; t++){
                     if (player2ship[i][j]%10 == t){
                         String name = blockNames[t-1];
-                        if (player2ship[i][j]/10 == 1){name+="90";}
-                        if (player2ship[i][j]/10 == 2){name+="180";}
-                        if (player2ship[i][j]/10 == 3){name+="270";}
+                        if (player2ship[i][j]/10 == 1) {name += "90";}
+                        if (player2ship[i][j]/10 == 2) {name += "180";}
+                        if (player2ship[i][j]/10 == 3) {name += "270";}
 
-                        float x = (float) ((210+i*7)*SCALE/0.02);
-                        float y = (float) ((190 -j*7)*SCALE/0.02);
+                        float x = (float) ((210 + i*7)*SCALE/0.02);
+                        float y = (float) ((190 - j*7)*SCALE/0.02);
 
                         //turbine
                         if (player2ship[i][j]%10 == 3){
-                            if (k==1){secondplayerturbine2_I = i;secondplayerturbine2_J = j;}
-                            if (k==0){secondplayerturbine1_I = i;secondplayerturbine1_J = j;k+=1;}
+                            if (k == 1) {secondplayerturbine2_I = i; secondplayerturbine2_J = j;}
+                            if (k == 0) {secondplayerturbine1_I = i; secondplayerturbine1_J = j; k++;}
 
-                            if (player2ship[i][j]/10 == 0){x = (float) ((210+i*7 - 4.5)*SCALE/0.02);}
-                            if (player2ship[i][j]/10 == 1){y = (float) ((190-j*7 - 4.5)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 0) {x = (float) ((210+i*7 - 4.5)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 1) {y = (float) ((190-j*7 - 4.5)*SCALE/0.02);}
                         }
 
                         //gunone
-                        if (player2ship[i][j]%10 == 6){
+                        if (player2ship[i][j]%10 == 6) {
                             secondplayergun1_I = i;
                             secondplayergun1_J = j;
 
-                            if (player2ship[i][j]/10 == 0){y = (float) ((190 -j*7 +1.2)*SCALE/0.02);}
-                            if (player2ship[i][j]/10 == 1){x = (float) ((210+i*7+1.2)*SCALE/0.02);}
-                            if (player2ship[i][j]/10 == 2){
-                                x = (float) ((210+i*7 - 8.2)*SCALE/0.02);
-                                y = (float) ((190 -j*7 +1.2)*SCALE/0.02);
+                            if (player2ship[i][j]/10 == 0) {y = (float) ((190 - j*7 + 1.2)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 1) {x = (float) ((210 + i*7 + 1.2)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 2) {
+                                x = (float) ((210 + i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((190 - j*7 + 1.2)*SCALE/0.02);
                             }
                             if (player2ship[i][j]/10 == 3){
-                                x = (float) ((210+i*7 +1.2)*SCALE/0.02);
-                                y = (float) ((190 -j*7 -8.2)*SCALE/0.02);
+                                x = (float) ((210 + i*7 + 1.2)*SCALE/0.02);
+                                y = (float) ((190 - j*7 - 8.2)*SCALE/0.02);
                             }
                         }
 
                         //guntwo
-                        if (player2ship[i][j]%10 == 7){
-                            if (f==1){secondplayergun2_2_I = i;secondplayergun2_2_J = j;}
-                            if (f==0){secondplayergun2_1_I = i;secondplayergun2_1_J = j;f+=1;}
+                        if (player2ship[i][j]%10 == 7) {
+                            if (f == 1) {secondplayergun2_2_I = i; secondplayergun2_2_J = j;}
+                            if (f == 0) {secondplayergun2_1_I = i; secondplayergun2_1_J = j; f++;}
 
-                            if (player2ship[i][j]/10 == 0){y = (float) ((190 -j*7 +0.1)*SCALE/0.02);}
-                            if (player2ship[i][j]/10 == 1){x = (float) ((210+i*7+0.1)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 0){y = (float) ((190 - j*7 + 0.1)*SCALE/0.02);}
+                            if (player2ship[i][j]/10 == 1){x = (float) ((210 + i*7 + 0.1)*SCALE/0.02);}
                             if (player2ship[i][j]/10 == 2){
-                                x = (float) ((210+i*7 - 8.2)*SCALE/0.02);
-                                y = (float) ((190 -j*7 +0.1)*SCALE/0.02);
+                                x = (float) ((210 + i*7 - 8.2)*SCALE/0.02);
+                                y = (float) ((190 - j*7 + 0.1)*SCALE/0.02);
                             }
                             if (player2ship[i][j]/10 == 3){
-                                x = (float) ((210+i*7 +0.1)*SCALE/0.02);
-                                y = (float) ((190 -j*7 -8.2)*SCALE/0.02);
+                                x = (float) ((210 + i*7 + 0.1)*SCALE/0.02);
+                                y = (float) ((190 - j*7 - 8.2)*SCALE/0.02);
                             }
                         }
 
                         namesOfBodies2[i][j] = name;
-                        Bodies2[i][j]=createBody(name, x, y, 0);
+                        Bodies2[i][j] = createBody(name, x, y, 0);
                         Bodies2[i][j].setBullet(true);
                     }
                 }
@@ -326,23 +325,19 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         jointDef = new WeldJointDef();
 
-        for (int j = 0; j < FIELD_HEIGHT; j++) {
-            for (int i = 1; i < FIELD_WIDTH; i++) {
-                if (player2ship[i][j]!=0&&player2ship[i-1][j]!=0) {
+        for (int i = 1; i < FIELD_WIDTH; i++)
+            for (int j = 0; j < FIELD_HEIGHT; j++)
+                if (player2ship[i][j] != 0 && player2ship[i-1][j] != 0) {
                     jointDef.initialize(Bodies2[i][j], Bodies2[i-1][j], new Vector2((float)((150+ 7+7 +3.5)*SCALE/0.02),(float)((120 - 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
-            }
-        }
-        for (int i = 0; i < FIELD_WIDTH; i++) {
-            for (int j = 1; j < FIELD_HEIGHT; j++) {
-                if (player2ship[i][j] != 0&&player2ship[i][j-1]!=0) {
+
+        for (int i = 0; i < FIELD_WIDTH; i++)
+            for (int j = 1; j < FIELD_HEIGHT; j++)
+                if (player2ship[i][j] != 0 && player2ship[i][j-1] != 0) {
                     jointDef.initialize(Bodies2[i][j], Bodies2[i][j-1], new Vector2((float)((150 + 7+7 +3.5)*SCALE/0.02),(float)((120- 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
-            }
-        }
-
     }
 
     private void generateMeteors() {
@@ -354,15 +349,15 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < meteorBodies.length; i++) {
             String name = meteorNames[random.nextInt(meteorNames.length)];
 
-            float x = (random.nextFloat() * 150)*(float)( SCALE/0.01);
-            float y = (random.nextFloat() * 80)*(float)( SCALE/0.01);
-            if ((x<50*SCALE/0.02)&&(y<50*SCALE/0.01)){
-                x +=50*(float)(SCALE/0.01);
-                y +=50*(float)(SCALE/0.01);
+            float x = (random.nextFloat() * 150) * (float) (SCALE/0.01);
+            float y = (random.nextFloat() * 80) * (float) (SCALE/0.01);
+            if ((x < 50*SCALE/0.02) && (y < 50*SCALE/0.01)) {
+                x += 50 * (float) (SCALE/0.01);
+                y += 50 * (float) (SCALE/0.01);
             }
-            if ((x>180*SCALE/0.02)&&(y>120*SCALE/0.01)){
-                x -=50*(float)(SCALE/0.01);
-                y -=50*(float)(SCALE/0.01);
+            if ((x > 180*SCALE/0.02) && (y > 120*SCALE/0.01)) {
+                x -= 50* (float) (SCALE/0.01);
+                y -= 50* (float) (SCALE/0.01);
             }
             this.meteorNames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
@@ -397,7 +392,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                if (player1ship[i][j]!=0) {
+                if (player1ship[i][j] != 0) {
                     Body body = Bodies1[i][j];
                     String name = namesOfBodies1[i][j];
 
@@ -407,9 +402,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 }
             }
         }
+
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                if (player2ship[i][j]!=0) {
+                if (player2ship[i][j] != 0) {
                     Body body = Bodies2[i][j];
                     String name = namesOfBodies2[i][j];
 
@@ -419,6 +415,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 }
             }
         }
+
         for (int i = 0; i < meteorBodies.length; i++) {
             Body body = meteorBodies[i];
             String name = meteorNames[i];
@@ -427,10 +424,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
         }
-        while (bullets.size()>30){
+
+        while (bullets.size() > 30) {
             world.destroyBody(bullets.get(0));
             bullets.remove(0);
         }
+
         for (int i = 0; i < bullets.size(); i++) {
             Body body = bullets.get(i);
             String name = "bullet";
@@ -471,7 +470,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         sprite.setRotation(degrees);
         sprite.draw(batch);
     }
-    private void drawSprite(String name, float x, float y,float width, float height, float degrees){
+    private void drawSprite(String name, float x, float y, float width, float height, float degrees){
         Sprite sprite = sprites.get(name);
         sprite.setPosition(x, y);
         sprite.setRotation(degrees);
@@ -497,7 +496,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.friction = 1;
         FixtureDef fixtureDef1 = new FixtureDef();
-        fixtureDef.friction = 1;
+        fixtureDef1.friction = 1;
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(camera.viewportWidth, 1);
@@ -557,43 +556,43 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     @Override
     public boolean touchDown(int x, int y, int pointer, int button) {
-        int h = Gdx.graphics.getHeight()/50;
+        int h = SCREEN_HEIGHT / 50;
         //turbine
-        if (firstplayerturbine1_I>-1) {
+        if (firstplayerturbine1_I > -1) {
             Body body1 = Bodies1[firstplayerturbine1_I][firstplayerturbine1_J];
             float cos1 = (float) Math.cos(body1.getAngle());
             float sin1 = (float) Math.sin(body1.getAngle());
-            for (int i=1;i<4;i++){
-            if(player1ship[firstplayerturbine1_I][firstplayerturbine1_J]/10 == i){
-                cos1 = (float) Math.cos(body1.getAngle()+i*Math.PI/2);
-                sin1 = (float) Math.sin(body1.getAngle()+i*Math.PI/2);
-            }}
+            for (int i = 1; i < 4; i++)
+                if (player1ship[firstplayerturbine1_I][firstplayerturbine1_J] / 10 == i) {
+                    cos1 = (float) Math.cos(body1.getAngle() + i * Math.PI / 2);
+                    sin1 = (float) Math.sin(body1.getAngle() + i * Math.PI / 2);
+                }
 
-            if ((x-6*h)*(x-6*h)+(y-6*h)*(y-6*h)<=25*h*h) {
-                Bodies1[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(15000 * cos1 * p1_turbine1power, 15000 * sin1 * p1_turbine1power, true);
-
-            }
+            if ((x - 6*h)*(x - 6*h) + (y - 6*h)*(y - 6*h) <= 25*h*h)
+                Bodies1[firstplayerturbine1_I][firstplayerturbine1_J].applyForceToCenter(cos1 * p1_turbine1power, sin1 * p1_turbine1power, true);
         }
 
-        if (firstplayerturbine2_I>-1) {
+        if (firstplayerturbine2_I >- 1) {
             Body body2 = Bodies1[firstplayerturbine2_I][firstplayerturbine2_J];
             float cos2 = (float) Math.cos(body2.getAngle());
             float sin2 = (float) Math.sin(body2.getAngle());
-            for (int i=1;i<4;i++){
+            for (int i = 1; i < 4; i++)
                 if(player1ship[firstplayerturbine2_I][firstplayerturbine2_J]/10 == i){
                     cos2 = (float) Math.cos(body2.getAngle()+i*Math.PI/2);
                     sin2 = (float) Math.sin(body2.getAngle()+i*Math.PI/2);
-                }}
-            if ((x-6*h)*(x-6*h)+(y-44*h)*(y-44*h)<=25*h*h) {
-                Bodies1[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(15000 * cos2 * p1_turbine2power, 15000 * sin2 * p1_turbine2power, true);
+                }
 
-            }
+            if ((x - 6*h)*(x - 6*h) + (y - 44*h)*(y - 44*h) <= 25*h*h)
+                Bodies1[firstplayerturbine2_I][firstplayerturbine2_J].applyForceToCenter(cos2 * p1_turbine2power, sin2 * p1_turbine2power, true);
         }
 
         //gunone
-        if (firstplayergun1_I>-1) {
+        if (firstplayergun1_I > -1) {
             Body body3 = Bodies1[firstplayergun1_I][firstplayergun1_J];
-            float cos3;float sin3;float cos3alpha;float sin3alpha;
+            float cos3;
+            float sin3;
+            float cos3alpha;
+            float sin3alpha;
             for (int i = 0; i < 4; i++) {
                 if (player1ship[firstplayergun1_I][firstplayergun1_J] / 10 == i) {
                     cos3 = (float) Math.cos(body3.getAngle() + i * Math.PI/2);
@@ -634,7 +633,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         //guntwo1
         if (firstplayergun2_1_I>-1) {
             Body body4 = Bodies1[firstplayergun2_1_I][firstplayergun2_1_J];
-            float cos3;float sin3;float cos3alpha;float sin3alpha;
+            float cos3;
+            float sin3;
+            float cos3alpha;
+            float sin3alpha;
             for (int i = 0; i < 4; i++) {
                 if (player1ship[firstplayergun2_1_I][firstplayergun2_1_J] / 10 == i) {
                     cos3 = (float) Math.cos(body4.getAngle() + i * Math.PI/2);
@@ -674,7 +676,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         //guntwo2
         if (firstplayergun2_2_I>-1) {
             Body body4 = Bodies1[firstplayergun2_2_I][firstplayergun2_2_J];
-            float cos3;float sin3;float cos3alpha;float sin3alpha;
+            float cos3;
+            float sin3;
+            float cos3alpha;
+            float sin3alpha;
             for (int i = 0; i < 4; i++) {
                 if (player1ship[firstplayergun2_2_I][firstplayergun2_2_J] / 10 == i) {
                     cos3 = (float) Math.cos(body4.getAngle() + i * Math.PI/2);

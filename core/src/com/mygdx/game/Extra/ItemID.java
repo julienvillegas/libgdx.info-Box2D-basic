@@ -18,6 +18,8 @@ public interface ItemID {
     int STEEL_GUN = 7;
 
     int NULL = 50;
+
+    int RIGHT = 0;
     int UP = 10;
     int LEFT = 20;
     int DOWN = 30;

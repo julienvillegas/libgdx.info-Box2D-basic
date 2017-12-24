@@ -23,8 +23,8 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
 
     init {
         number = getString(texture)
-        xinTable = 50
-        yinTable = 50
+        xinTable = NULL
+        yinTable = NULL
         this.x = startPosX
         this.y = startPosY
         if (number != TURBINE)
@@ -108,6 +108,10 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
         return false
     }
 
+    fun returnToStartPos(currentX: Float, currentY: Float) {
+        this.setX(currentX)
+        this.setY(currentY)
+    }
     fun returnToStartPos() {
         this.setX(startPosX)
         this.setY(startPosY)
