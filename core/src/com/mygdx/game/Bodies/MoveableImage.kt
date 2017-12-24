@@ -2,8 +2,8 @@ package com.mygdx.game.Bodies
 
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.mygdx.game.Extra.AssemblingScreenCoords.*
 import com.mygdx.game.Extra.ItemID.*
+import com.mygdx.game.Extra.AssemblingScreenCoords.*
 
 
 class MoveableImage(private val startPosX: Float, private val startPosY: Float, private var width: Float, private var height: Float, var angle: Int, texture: String) : Image(Texture(texture)) {

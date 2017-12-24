@@ -72,7 +72,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             stage.addActor(labels[i]);
         }
 
-        TextButton button = new TextButton("Start!", MyGdxGame.skin);
+        TextButton button = new TextButton("Start!", MyGdxGame.Companion.getSkin());
         button.setWidth(SCREEN_WIDTH/4);
         button.setPosition(SCREEN_WIDTH - button.getWidth()*3/2, BLOCK_SIZE/2);
         button.addListener(new InputListener(){
