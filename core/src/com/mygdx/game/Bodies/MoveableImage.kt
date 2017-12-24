@@ -36,7 +36,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     override fun isTouchable(): Boolean {
         return isTouchable
     }
-
     fun setTouchable(touchable: Boolean) {
         isTouchable = touchable
     }
@@ -68,7 +67,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     override fun getX(): Float {
         return x
     }
-
     override fun setX(x: Float) {
         this.x = x
     }
@@ -76,7 +74,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     override fun getY(): Float {
         return y
     }
-
     override fun setY(y: Float) {
         this.y = y
     }
@@ -84,7 +81,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     override fun getWidth(): Float {
         return width
     }
-
     override fun setWidth(width: Float) {
         this.width = width
     }
@@ -92,7 +88,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     override fun getHeight(): Float {
         return height
     }
-
     override fun setHeight(height: Float) {
         this.height = height
     }

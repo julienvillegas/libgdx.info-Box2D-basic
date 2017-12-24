@@ -163,40 +163,29 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         return inventory;
     }               // Задаёт изначальное количество предметов для расстановки
 
-    private void setCoordsfromCell(MoveableImage image,float x, float y){
+    private void setCoordsFromCell(MoveableImage image,float x, float y){
         image.setX(x + BLOCK_SIZE/2 - image.getOriginX());
         image.setY(y + BLOCK_SIZE/2 - image.getOriginY());
     }
 
 
 
-    public boolean setEndPosition(MoveableImage image, int x, int y) {
-            if (((x > FIELD_DELTA_X) && (x < SCREEN_WIDTH - FIELD_DELTA_X)) &&
-                    ((y > FIELD_DELTA_Y) && (y < SCREEN_HEIGHT - FIELD_DELTA_Y))) {
-                for (int i = 0; i < FIELD_HEIGHT; i++) {
-                    for (int j = 0; j < FIELD_WIDTH; j++) {
-                        if (cells[i][j].contains(x, y)) {
-                            if (blockArr[i][j] == 0) {
-                                blockArr[i][j] = image.getNumber();
-                                setCoordsfromCell(image,cells[i][j].getX(),cells[i][j].getY());
-                                image.setXinTable(i);
-                                image.setYinTable(j);
-                                return true;
-
-                            } else {
-                                image.setAngle(0);
-                                image.returnToStartPos();
-                                return false;
-                            }
-
-                        }
-                    }
-                }
-            } else {
-                image.returnToStartPos();
-                return false;
-            }
-        return true;
+    private boolean setEndPosition(MoveableImage image, int x, int y) {
+        int iCoord = (int) Math.floor((x - FIELD_DELTA_X) / BLOCK_SIZE);
+        int jCoord = (int) Math.floor((y - FIELD_DELTA_Y) / BLOCK_SIZE);
+        int i = FIELD_HEIGHT - jCoord - 1;
+        int j = iCoord;
+        if ((i >= 0) && (i < FIELD_HEIGHT) && (j >= 0) && (j < FIELD_WIDTH) && (blockArr[i][j] == 0)) {
+            blockArr[i][j] = image.getNumber();
+            setCoordsFromCell(image, cells[i][j].getX(), cells[i][j].getY());
+            image.setXinTable(i);
+            image.setYinTable(j);
+            return true;
+        } else {
+            image.setAngle(0);
+            image.returnToStartPos();
+            return false;
+        }
     }
 
     @Override
