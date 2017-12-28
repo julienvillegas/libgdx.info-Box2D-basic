@@ -42,7 +42,7 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
 
     private fun getString(texture: String): Int {
         return when (texture) {
-            "woodblock.png" -> 8
+            "woodblock.png" -> WOOD_BLOCK
             "steelblock.png" -> STEEL_BLOCK
             "engine.png" -> ENGINE
             "turbine.png" -> TURBINE
@@ -76,6 +76,15 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     }
     override fun setY(y: Float) {
         this.y = y
+    }
+
+    fun setXY(x: Float, y: Float) {
+        this.setX(x)
+        this.setY(y)
+    }
+    fun setXYinTable(x: Int, y: Int) {
+        this.xinTable = x
+        this.yinTable = y
     }
 
     override fun getWidth(): Float {

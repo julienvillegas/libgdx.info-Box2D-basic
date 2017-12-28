@@ -15,11 +15,11 @@ public interface ItemID {
     int WOOD_GUN = 6;
     int STEEL_GUN = 7;
 
-    int NULL = 50;
-
     int RIGHT = 0;
     int UP = 10;
     int LEFT = 20;
     int DOWN = 30;
+
+    int NULL = 1000;
 
 }

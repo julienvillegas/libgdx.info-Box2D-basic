@@ -48,6 +48,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 cells[i][j] = new MoveableImage(FIELD_DELTA_X + BLOCK_SIZE*i, FIELD_DELTA_Y + BLOCK_SIZE*j, BLOCK_SIZE, BLOCK_SIZE,0,"gray.png");
                 stage.addActor(cells[i][j]);
+                blockArr[i][j] = NULL;
             }
         }
 
@@ -66,7 +67,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         Label.LabelStyle itemsCountLS = new Label.LabelStyle(itemsCountBF, Color.BLACK);
 
         for (int i = 0; i < labels.length; i++) {
-            labels[i] = new Label(countToString(blocks.get(i).length), itemsCountLS);
+            labels[i] = new Label("x" + blocks.get(i).length, itemsCountLS);
             labels[i].setX((i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/5: SCREEN_WIDTH - BLOCK_SIZE*2/5);
             labels[i].setY(getPosY(i) + BLOCK_SIZE/5);
             stage.addActor(labels[i]);
@@ -122,19 +123,13 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     }
 
 
-    private String countToString(int N) {
-        return "x" + N;
-    }               // Преобразует число N в строку "xN"
+    private void plus1ToLabel(int index) {
+        labels[index].setText("x" + (Integer.parseInt(labels[index].getText().toString().substring(1)) + 1));
+    }
 
-    private String add1ToString(String N) {
-            int num = Integer.parseInt(N.substring(1)) + 1;
-            return "x" + num;
-    }             // Прибавляет 1 к числу в строковом виде
-
-    private String subtract1FromString(String N) {
-            int num = Integer.parseInt(N.substring(1)) - 1;
-            return "x" + num;
-    }      // Отнимает 1 от числа в строковом виде
+    private void minus1FromLabel(int index) {
+        labels[index].setText("x" + (Integer.parseInt(labels[index].getText().toString().substring(1)) - 1));
+    }
 
 
     private String getImageName(int i) {
@@ -186,8 +181,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             delta_flag = UP;
         }
 
-        image.setX(x + imgCenterX - image.getOriginX());
-        image.setY(y + imgCenterY - image.getOriginY());
+        image.setXY(x + imgCenterX - image.getOriginX(), y + imgCenterY - image.getOriginY());
     }
 
 
@@ -199,7 +193,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         int j = FIELD_HEIGHT - 1 - (int) Math.floor((y - FIELD_DELTA_Y) / BLOCK_SIZE);
 
         if ((i >= 0) && (i < FIELD_WIDTH) && (j >= 0) && (j < FIELD_HEIGHT)) {
-            if (blockArr[i][j] == 0) {
+            if (blockArr[i][j] == NULL) {
                 setCoordsFromCell(image, cells[i][j].getX(), cells[i][j].getY(), relativeX, relativeY);
                 switch (delta_flag) {
                     case RIGHT: i++; break;
@@ -210,9 +204,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                 delta_flag = NULL;
                 if ((i != -1) && (i != FIELD_WIDTH) && (j != -1) && (j != FIELD_HEIGHT)) {
                     if (!isImgOutOfBounds(image, i, j)) {
-                        blockArr[i][j] = image.getNumber();
-                        image.setXinTable(i);
-                        image.setYinTable(j);
+                        setImageOnTable(image, i, j);
                         return true;
                     } else {
                         returnImageBack(image);
@@ -230,15 +222,6 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             image.setAngle(0);
             image.returnToStartPos();
             return false;
-        }
-    }
-
-    private void returnImageBack(MoveableImage image) {
-        image.returnToStartPos(lastX, lastY);
-        if (lastXInTable != -1) {
-            blockArr[lastXInTable][lastYInTable] = image.getNumber();
-            image.setXinTable(lastXInTable);
-            image.setYinTable(lastYInTable);
         }
     }
 
@@ -260,6 +243,23 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     }
 
 
+    private void setImageOnTable(MoveableImage image, int i, int j) {
+        blockArr[i][j] = image.getNumber();
+        image.setXYinTable(i, j);
+    }
+
+    private void removeImageFromTable(MoveableImage image) {
+        blockArr[image.getXinTable()][image.getYinTable()] = NULL;
+        image.setXYinTable(NULL, NULL);
+    }
+
+    private void returnImageBack(MoveableImage image) {
+        image.returnToStartPos(lastX, lastY);
+        if (lastXInTable != NULL)
+            setImageOnTable(image, lastXInTable, lastYInTable);
+    }
+
+
     @Override
     public boolean keyDown (int keycode) {
             return true;
@@ -277,30 +277,25 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     @Override
     public boolean touchDown (int x, int y, int pointer, int button) {
-        for (int i = 0; i < blocks.size(); i++) {
-            for (int j = 0; j < blocks.get(i).length; j++) {
-                if (blocks.get(i)[j].contains(x, y)) {
-                    if (blocks.get(i)[j].isTouchable()) {
-                        blocks.get(i)[j].setMoving(true);
-                        blocks.get(i)[j].setAlreadyMoved(false);
-                        lastX = blocks.get(i)[j].getX();
-                        lastY = blocks.get(i)[j].getY();
-                        if (blocks.get(i)[j].getXinTable() != NULL) {
-                            lastXInTable = blocks.get(i)[j].getXinTable();
-                            lastYInTable = blocks.get(i)[j].getYinTable();
-                            blockArr[blocks.get(i)[j].getXinTable()][blocks.get(i)[j].getYinTable()] = 0;
-                            blocks.get(i)[j].setXinTable(NULL);
-                            blocks.get(i)[j].setYinTable(NULL);
+        for (int i = 0; i < blocks.size(); i++)
+            for (MoveableImage img : blocks.get(i))
+                if (img.contains(x, y))
+                    if (img.isTouchable()) {
+                        img.setMoving(true);
+                        img.setAlreadyMoved(false);
+                        lastX = img.getX();
+                        lastY = img.getY();
+                        if (img.getXinTable() != NULL) {
+                            lastXInTable = img.getXinTable();
+                            lastYInTable = img.getYinTable();
+                            removeImageFromTable(img);
                         } else {
-                            lastXInTable = -1;
-                            lastYInTable = -1;
-                            if (blocks.get(i)[j].isInStartPos())
-                                labels[i].setText(subtract1FromString(labels[i].getText().toString()));
+                            lastXInTable = NULL;
+                            lastYInTable = NULL;
+                            if (img.isInStartPos())
+                                minus1FromLabel(i);
                         }
                     }
-                }
-            }
-        }
         oldX = x;
         oldY = y;
         currentX = x;
@@ -314,15 +309,12 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             for (int j = 0; j < blocks.get(i).length; j++) {
                 if (blocks.get(i)[j].isMoving()) {
                     if (!blocks.get(i)[j].isAlreadyMoved()) {
-                        blocks.get(i)[j].setX(lastX);
-                        blocks.get(i)[j].setY(lastY);
+                        blocks.get(i)[j].setXY(lastX, lastY);
                         if (blocks.get(i)[j].isInStartPos())
-                            labels[i].setText(add1ToString(labels[i].getText().toString()));
+                            plus1ToLabel(i);
                         else {
-                            blocks.get(i)[j].setXinTable(lastXInTable);
-                            blocks.get(i)[j].setYinTable(lastYInTable);
+                            setImageOnTable(blocks.get(i)[j], lastXInTable, lastYInTable);
                             safeRotate(blocks.get(i)[j]);
-                            blockArr[lastXInTable][lastYInTable] = blocks.get(i)[j].getNumber();
                         }
                     }
                     else if (setEndPosition(blocks.get(i)[j], x, y)) {
@@ -336,19 +328,13 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                             }
                         }
                     } else {
-                        if (blocks.get(i)[j].isInStartPos())
-                            labels[i].setText(add1ToString(labels[i].getText().toString()));
-                        for (int h = j + 1; h < blocks.get(i).length; h++) {
-                            if (blocks.get(i)[h].isInStartPos()) {
-                                blocks.get(i)[h].setTouchable(false);
-                                blocks.get(i)[h].remove();
-                            }
-                        }
-                        for (int h = 0; h < j; h++) {
-                            if (blocks.get(i)[h].isInStartPos()) {
-                                blocks.get(i)[j].setTouchable(false);
-                                blocks.get(i)[j].remove();
-                                break;
+                        if (blocks.get(i)[j].isInStartPos()) {
+                            plus1ToLabel(i);
+                            for (int h = 0; h < blocks.get(i).length; h++) {
+                                if ((h != j) && (blocks.get(i)[h].isInStartPos())) {
+                                    blocks.get(i)[h].setTouchable(false);
+                                    blocks.get(i)[h].remove();
+                                }
                             }
                         }
                     }
@@ -362,12 +348,11 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     @Override
     public boolean touchDragged (int x, int y, int pointer) {
         for (int i = 0; i < blocks.size(); i++) {
-            for (int j = 0; j < blocks.get(i).length; j++) {
-                if (blocks.get(i)[j].isMoving()) {
+            for (MoveableImage img : blocks.get(i)) {
+                if (img.isMoving()) {
                     if ((Math.abs(x - currentX) > BLOCK_SIZE/8) || (Math.abs(y - currentY) > BLOCK_SIZE/8))
-                        blocks.get(i)[j].setAlreadyMoved(true);
-                    blocks.get(i)[j].setX(blocks.get(i)[j].getX() + x - oldX);
-                    blocks.get(i)[j].setY(blocks.get(i)[j].getY() - y + oldY);
+                        img.setAlreadyMoved(true);
+                    img.setXY(img.getX() + x - oldX, img.getY() - y + oldY);
                 }
             }
         }
@@ -424,4 +409,5 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     public void dispose() {
         stage.dispose();
     }
+
 }

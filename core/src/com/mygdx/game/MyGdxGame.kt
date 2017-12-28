@@ -17,10 +17,6 @@ class MyGdxGame : Game() {
         this.setScreen(TitleScreen(this))
     }
 
-    override fun render() {
-        super.render()
-    }
-
     override fun dispose() {
         skin.dispose()
     }
