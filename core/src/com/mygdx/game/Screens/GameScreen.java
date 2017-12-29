@@ -152,7 +152,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 for (int t = 1; t < 9; t++) {
-                    if (player1ship[i][j] % 10 == t) {
+                    if (player1ship[i][j] % 10 == t && player1ship[i][j] != NULL) {
                         String name = blockNames[t-1];
                         switch (player1ship[i][j] / 10) {
                             case 1: {name += "90"; break;}
@@ -217,7 +217,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         Bodies1[i][j].setBullet(true);
                     }
                 }
-
             }
         }
 
@@ -245,14 +244,14 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 1; i < FIELD_WIDTH; i++)
             for (int j = 0; j < FIELD_HEIGHT; j++)
-                if (player1ship[i][j] != 0 && player1ship[i-1][j] != 0) {
+                if (player1ship[i][j] != NULL && player1ship[i-1][j] != NULL) {
                     jointDef.initialize(Bodies1[i][j], Bodies1[i-1][j], new Vector2((float)((10 + 7 + 7 + 3.5)*SCALE/0.02),(float)((40 - 7 - 3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
 
         for (int i = 0; i < FIELD_WIDTH; i++)
             for (int j = 1; j < FIELD_HEIGHT; j++)
-                if (player1ship[i][j] != 0&&player1ship[i][j-1]!=0) {
+                if (player1ship[i][j] != NULL && player1ship[i][j-1] != NULL) {
                     jointDef.initialize(Bodies1[i][j], Bodies1[i][j-1], new Vector2((float)((10 + 7 + 7 + 3.5)*SCALE/0.02),(float)((40 - 7 - 3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
@@ -262,7 +261,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 for (int t = 1; t < 9; t++){
-                    if (player2ship[i][j]%10 == t){
+                    if (player2ship[i][j] % 10 == t && player2ship[i][j] != NULL) {
                         String name = blockNames[t-1];
                         if (player2ship[i][j]/10 == 1) {name += "90";}
                         if (player2ship[i][j]/10 == 2) {name += "180";}
@@ -327,14 +326,14 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 1; i < FIELD_WIDTH; i++)
             for (int j = 0; j < FIELD_HEIGHT; j++)
-                if (player2ship[i][j] != 0 && player2ship[i-1][j] != 0) {
+                if (player2ship[i][j] != NULL && player2ship[i-1][j] != NULL) {
                     jointDef.initialize(Bodies2[i][j], Bodies2[i-1][j], new Vector2((float)((150+ 7+7 +3.5)*SCALE/0.02),(float)((120 - 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
 
         for (int i = 0; i < FIELD_WIDTH; i++)
             for (int j = 1; j < FIELD_HEIGHT; j++)
-                if (player2ship[i][j] != 0 && player2ship[i][j-1] != 0) {
+                if (player2ship[i][j] != NULL && player2ship[i][j-1] != NULL) {
                     jointDef.initialize(Bodies2[i][j], Bodies2[i][j-1], new Vector2((float)((150 + 7+7 +3.5)*SCALE/0.02),(float)((120- 7 -3.5)*SCALE/0.02)));
                     world.createJoint(jointDef);
                 }
@@ -392,7 +391,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                if (player1ship[i][j] != 0) {
+                if (player1ship[i][j] != NULL) {
                     Body body = Bodies1[i][j];
                     String name = namesOfBodies1[i][j];
 
@@ -405,7 +404,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                if (player2ship[i][j] != 0) {
+                if (player2ship[i][j] != NULL) {
                     Body body = Bodies2[i][j];
                     String name = namesOfBodies2[i][j];
 

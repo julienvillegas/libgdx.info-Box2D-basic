@@ -25,11 +25,11 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     private Stage stage;
     private Game game;
+
     private float oldX = 0, oldY = 0;
     private float currentX = 0, currentY = 0;
     private float lastX = 0, lastY = 0;
     private int lastXInTable = 0, lastYInTable = 0;
-
     private int delta_flag = NULL;
 
     private int[][] blockArr = new int[FIELD_WIDTH][FIELD_HEIGHT];
@@ -37,7 +37,12 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     private MoveableImage[][] cells = new MoveableImage[FIELD_WIDTH][FIELD_HEIGHT];
     private Label[] labels = new Label[NUMBER_OF_ITEMS];
 
+    private int currI = NULL, currJ = NULL;                                                         // Предмет, который мы сейчас перетаскиваем
+    private boolean isImageDragging = false;                                                        // Перетаскиваем ли мы какой-нибудь из предметов
+
     private int[] inventory = setPrimaryInventory();                                                // Инвентарь игрока
+
+
 
     Menu(Game aGame) {
         game = aGame;
@@ -157,12 +162,12 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         inventory[WOOD_GUN] = 1;
         inventory[STEEL_GUN] = 2;
         return inventory;
-    }               // Задаёт изначальное количество предметов для расстановки
+    }                                                       // Задаёт изначальное количество предметов для расстановки
 
-    private void setCoordsFromCell(MoveableImage image, float x, float y, float relativeX, float relativeY) {
+    private void setCoordsFromCell(float x, float y, float relativeX, float relativeY) {
         float imgCenterX = BLOCK_SIZE/2, imgCenterY = BLOCK_SIZE/2;
-        int ID = image.getNumber() % 10;
-        int facing = image.getNumber() / 10 * 10;
+        int ID = blocks.get(currI)[currJ].getNumber() % 10;
+        int facing = blocks.get(currI)[currJ].getNumber() / 10 * 10;
 
         if (((ID == WOOD_GUN || ID == STEEL_GUN) && facing == RIGHT && relativeX > BLOCK_SIZE) || (ID == TURBINE && facing == LEFT && relativeX > 1.7 * BLOCK_SIZE)) {
             imgCenterX -= BLOCK_SIZE;
@@ -181,20 +186,33 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             delta_flag = UP;
         }
 
-        image.setXY(x + imgCenterX - image.getOriginX(), y + imgCenterY - image.getOriginY());
+        blocks.get(currI)[currJ].setXY(x + imgCenterX - blocks.get(currI)[currJ].getOriginX(), y + imgCenterY - blocks.get(currI)[currJ].getOriginY());
     }
 
 
 
-    private boolean setEndPosition(MoveableImage image, int x, int y) {
-        float relativeX = x - image.getX();
-        float relativeY = SCREEN_HEIGHT - y - image.getY();
+    private void initCurrentImage(int i, int j) {
+        isImageDragging = true;
+        currI = i;
+        currJ = j;
+    }                                               // Запоминает предмет, которое мы сейчас перетаскиваем
+
+    private void resetCurrentImage() {
+        isImageDragging = false;
+        currI = NULL;
+        currJ = NULL;
+    }                                                          // Сбрасывает перетаскиваемый предмет
+
+
+    private boolean setEndPosition(int x, int y) {
+        float relativeX = x - blocks.get(currI)[currJ].getX();
+        float relativeY = SCREEN_HEIGHT - y - blocks.get(currI)[currJ].getY();
         int i = (int) Math.floor((x - FIELD_DELTA_X) / BLOCK_SIZE);
         int j = FIELD_HEIGHT - 1 - (int) Math.floor((y - FIELD_DELTA_Y) / BLOCK_SIZE);
 
         if ((i >= 0) && (i < FIELD_WIDTH) && (j >= 0) && (j < FIELD_HEIGHT)) {
             if (blockArr[i][j] == NULL) {
-                setCoordsFromCell(image, cells[i][j].getX(), cells[i][j].getY(), relativeX, relativeY);
+                setCoordsFromCell(cells[i][j].getX(), cells[i][j].getY(), relativeX, relativeY);
                 switch (delta_flag) {
                     case RIGHT: i++; break;
                     case UP: j++; break;
@@ -203,39 +221,39 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                 }
                 delta_flag = NULL;
                 if ((i != -1) && (i != FIELD_WIDTH) && (j != -1) && (j != FIELD_HEIGHT)) {
-                    if (!isImgOutOfBounds(image, i, j)) {
-                        setImageOnTable(image, i, j);
+                    if (!isImgOutOfBounds(i, j)) {
+                        setImageOnTable(i, j);
                         return true;
                     } else {
-                        returnImageBack(image);
+                        returnImageBack();
                         return false;
                     }
                 } else {
-                    returnImageBack(image);
+                    returnImageBack();
                     return false;
                 }
             } else {
-                returnImageBack(image);
+                returnImageBack();
                 return false;
             }
         } else {
-            image.setAngle(0);
-            image.returnToStartPos();
+            blocks.get(currI)[currJ].setAngle(0);
+            blocks.get(currI)[currJ].returnToStartPos();
             return false;
         }
     }
 
-    private void safeRotate(MoveableImage img) {
-        int x = img.getXinTable();
-        int y = img.getYinTable();
+    private void safeRotate() {
+        int x = blocks.get(currI)[currJ].getXinTable();
+        int y = blocks.get(currI)[currJ].getYinTable();
         do
-            img.flip90();
-        while (isImgOutOfBounds(img, x, y));
+            blocks.get(currI)[currJ].flip90();
+        while (isImgOutOfBounds(x, y));
     }
 
-    private boolean isImgOutOfBounds(MoveableImage img, int x, int y) {
-        int ID = img.getNumber() % 10;
-        int facing = img.getNumber() / 10 * 10;
+    private boolean isImgOutOfBounds(int x, int y) {
+        int ID = blocks.get(currI)[currJ].getNumber() % 10;
+        int facing = blocks.get(currI)[currJ].getNumber() / 10 * 10;
         return ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == LEFT) || (ID == TURBINE && facing == RIGHT)) && x == 0) ||
                 ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == RIGHT) || (ID == TURBINE && facing == LEFT)) && x == FIELD_WIDTH - 1) ||
                 ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == DOWN) || (ID == TURBINE && facing == UP)) && y == 0) ||
@@ -243,20 +261,20 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     }
 
 
-    private void setImageOnTable(MoveableImage image, int i, int j) {
-        blockArr[i][j] = image.getNumber();
-        image.setXYinTable(i, j);
+    private void setImageOnTable(int i, int j) {
+        blockArr[i][j] = blocks.get(currI)[currJ].getNumber();
+        blocks.get(currI)[currJ].setXYinTable(i, j);
     }
 
-    private void removeImageFromTable(MoveableImage image) {
-        blockArr[image.getXinTable()][image.getYinTable()] = NULL;
-        image.setXYinTable(NULL, NULL);
+    private void removeImageFromTable() {
+        blockArr[blocks.get(currI)[currJ].getXinTable()][blocks.get(currI)[currJ].getYinTable()] = NULL;
+        blocks.get(currI)[currJ].setXYinTable(NULL, NULL);
     }
 
-    private void returnImageBack(MoveableImage image) {
-        image.returnToStartPos(lastX, lastY);
+    private void returnImageBack() {
+        blocks.get(currI)[currJ].returnToStartPos(lastX, lastY);
         if (lastXInTable != NULL)
-            setImageOnTable(image, lastXInTable, lastYInTable);
+            setImageOnTable(lastXInTable, lastYInTable);
     }
 
 
@@ -278,24 +296,24 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     @Override
     public boolean touchDown (int x, int y, int pointer, int button) {
         for (int i = 0; i < blocks.size(); i++)
-            for (MoveableImage img : blocks.get(i))
-                if (img.contains(x, y))
-                    if (img.isTouchable()) {
-                        img.setMoving(true);
-                        img.setAlreadyMoved(false);
-                        lastX = img.getX();
-                        lastY = img.getY();
-                        if (img.getXinTable() != NULL) {
-                            lastXInTable = img.getXinTable();
-                            lastYInTable = img.getYinTable();
-                            removeImageFromTable(img);
-                        } else {
-                            lastXInTable = NULL;
-                            lastYInTable = NULL;
-                            if (img.isInStartPos())
-                                minus1FromLabel(i);
-                        }
+            for (int j = 0; j < blocks.get(i).length; j++)
+                if (blocks.get(i)[j].contains(x, y) && blocks.get(i)[j].isTouchable() && !isImageDragging) {
+                    initCurrentImage(i, j);
+                    blocks.get(currI)[currJ].setMoving(true);
+                    blocks.get(currI)[currJ].setAlreadyMoved(false);
+                    lastX = blocks.get(currI)[currJ].getX();
+                    lastY = blocks.get(currI)[currJ].getY();
+                    if (blocks.get(currI)[currJ].getXinTable() != NULL) {
+                        lastXInTable = blocks.get(currI)[currJ].getXinTable();
+                        lastYInTable = blocks.get(currI)[currJ].getYinTable();
+                        removeImageFromTable();
+                    } else {
+                        lastXInTable = NULL;
+                        lastYInTable = NULL;
+                        if (blocks.get(currI)[currJ].isInStartPos())
+                            minus1FromLabel(i);
                     }
+                }
         oldX = x;
         oldY = y;
         currentX = x;
@@ -305,59 +323,52 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     @Override
     public boolean touchUp (int x, int y, int pointer, int button) {
-        for (int i = 0; i < blocks.size(); i++) {
-            for (int j = 0; j < blocks.get(i).length; j++) {
-                if (blocks.get(i)[j].isMoving()) {
-                    if (!blocks.get(i)[j].isAlreadyMoved()) {
-                        blocks.get(i)[j].setXY(lastX, lastY);
-                        if (blocks.get(i)[j].isInStartPos())
-                            plus1ToLabel(i);
-                        else {
-                            setImageOnTable(blocks.get(i)[j], lastXInTable, lastYInTable);
-                            safeRotate(blocks.get(i)[j]);
-                        }
-                    }
-                    else if (setEndPosition(blocks.get(i)[j], x, y)) {
-                        if (j < blocks.get(i).length - 1) {
-                            for (int h = j + 1; h < blocks.get(i).length; h++) {
-                                if (blocks.get(i)[h].isInStartPos()) {
-                                    blocks.get(i)[h].setTouchable(true);
-                                    stage.addActor(blocks.get(i)[h]);
-                                    break;
-                                }
-                            }
-                        }
-                    } else {
-                        if (blocks.get(i)[j].isInStartPos()) {
-                            plus1ToLabel(i);
-                            for (int h = 0; h < blocks.get(i).length; h++) {
-                                if ((h != j) && (blocks.get(i)[h].isInStartPos())) {
-                                    blocks.get(i)[h].setTouchable(false);
-                                    blocks.get(i)[h].remove();
-                                }
-                            }
+        if (isImageDragging) {
+            if (!blocks.get(currI)[currJ].isAlreadyMoved()) {
+                blocks.get(currI)[currJ].setXY(lastX, lastY);
+                if (blocks.get(currI)[currJ].isInStartPos())
+                    plus1ToLabel(currI);
+                else {
+                    setImageOnTable(lastXInTable, lastYInTable);
+                    safeRotate();
+                    blockArr[lastXInTable][lastYInTable] = blocks.get(currI)[currJ].getNumber();
+                }
+            } else if (setEndPosition(x, y)) {
+                if (currJ < blocks.get(currI).length - 1) {
+                    for (int h = currJ + 1; h < blocks.get(currI).length; h++) {
+                        if (blocks.get(currI)[h].isInStartPos()) {
+                            blocks.get(currI)[h].setTouchable(true);
+                            stage.addActor(blocks.get(currI)[h]);
+                            break;
                         }
                     }
                 }
-                blocks.get(i)[j].setMoving(false);
+            } else {
+                if (blocks.get(currI)[currJ].isInStartPos()) {
+                    plus1ToLabel(currI);
+                    for (int h = 0; h < blocks.get(currI).length; h++) {
+                        if ((h != currJ) && (blocks.get(currI)[h].isInStartPos())) {
+                            blocks.get(currI)[h].setTouchable(false);
+                            blocks.get(currI)[h].remove();
+                        }
+                    }
+                }
             }
+            blocks.get(currI)[currJ].setMoving(false);
+            resetCurrentImage();
         }
         return false;
     }
 
     @Override
     public boolean touchDragged (int x, int y, int pointer) {
-        for (int i = 0; i < blocks.size(); i++) {
-            for (MoveableImage img : blocks.get(i)) {
-                if (img.isMoving()) {
-                    if ((Math.abs(x - currentX) > BLOCK_SIZE/8) || (Math.abs(y - currentY) > BLOCK_SIZE/8))
-                        img.setAlreadyMoved(true);
-                    img.setXY(img.getX() + x - oldX, img.getY() - y + oldY);
-                }
-            }
+        if (isImageDragging) {
+            if ((Math.abs(x - currentX) > BLOCK_SIZE/8) || (Math.abs(y - currentY) > BLOCK_SIZE/8))
+                blocks.get(currI)[currJ].setAlreadyMoved(true);
+            blocks.get(currI)[currJ].setXY(blocks.get(currI)[currJ].getX() + x - oldX, blocks.get(currI)[currJ].getY() - y + oldY);
+            oldX = x;
+            oldY = y;
         }
-        oldX = x;
-        oldY = y;
         return false;
     }
 
