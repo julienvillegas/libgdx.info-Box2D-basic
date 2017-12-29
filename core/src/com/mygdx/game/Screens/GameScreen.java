@@ -116,6 +116,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         debugRenderer = new Box2DDebugRenderer();
     }
+
     private void addSprites() {
         Array<TextureAtlas.AtlasRegion> regions = textureAtlas.getRegions();
 
@@ -245,15 +246,19 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 1; i < FIELD_WIDTH; i++)
             for (int j = 0; j < FIELD_HEIGHT; j++)
                 if (player1ship[i][j] != NULL && player1ship[i-1][j] != NULL) {
-                    jointDef.initialize(Bodies1[i][j], Bodies1[i-1][j], new Vector2((float)((10 + 7 + 7 + 3.5)*SCALE/0.02),(float)((40 - 7 - 3.5)*SCALE/0.02)));
-                    world.createJoint(jointDef);
+                    if (canBeJoined(player1ship[i][j], LEFT) && canBeJoined(player1ship[i-1][j], RIGHT)) {
+                        jointDef.initialize(Bodies1[i][j], Bodies1[i - 1][j], new Vector2((float) ((10 + 7 + 7 + 3.5) * SCALE / 0.02), (float) ((40 - 7 - 3.5) * SCALE / 0.02)));
+                        world.createJoint(jointDef);
+                    }
                 }
 
         for (int i = 0; i < FIELD_WIDTH; i++)
             for (int j = 1; j < FIELD_HEIGHT; j++)
                 if (player1ship[i][j] != NULL && player1ship[i][j-1] != NULL) {
-                    jointDef.initialize(Bodies1[i][j], Bodies1[i][j-1], new Vector2((float)((10 + 7 + 7 + 3.5)*SCALE/0.02),(float)((40 - 7 - 3.5)*SCALE/0.02)));
-                    world.createJoint(jointDef);
+                    if (canBeJoined(player1ship[i][j], UP) && canBeJoined(player1ship[i][j-1], DOWN)) {
+                        jointDef.initialize(Bodies1[i][j], Bodies1[i][j - 1], new Vector2((float) ((10 + 7 + 7 + 3.5) * SCALE / 0.02), (float) ((40 - 7 - 3.5) * SCALE / 0.02)));
+                        world.createJoint(jointDef);
+                    }
                 }
 
         k = 0;
@@ -327,15 +332,19 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 1; i < FIELD_WIDTH; i++)
             for (int j = 0; j < FIELD_HEIGHT; j++)
                 if (player2ship[i][j] != NULL && player2ship[i-1][j] != NULL) {
-                    jointDef.initialize(Bodies2[i][j], Bodies2[i-1][j], new Vector2((float)((150+ 7+7 +3.5)*SCALE/0.02),(float)((120 - 7 -3.5)*SCALE/0.02)));
-                    world.createJoint(jointDef);
+                    if (canBeJoined(player2ship[i][j], LEFT) && canBeJoined(player2ship[i-1][j], RIGHT)) {
+                        jointDef.initialize(Bodies2[i][j], Bodies2[i - 1][j], new Vector2((float) ((150 + 7 + 7 + 3.5) * SCALE / 0.02), (float) ((120 - 7 - 3.5) * SCALE / 0.02)));
+                        world.createJoint(jointDef);
+                    }
                 }
 
         for (int i = 0; i < FIELD_WIDTH; i++)
             for (int j = 1; j < FIELD_HEIGHT; j++)
                 if (player2ship[i][j] != NULL && player2ship[i][j-1] != NULL) {
-                    jointDef.initialize(Bodies2[i][j], Bodies2[i][j-1], new Vector2((float)((150 + 7+7 +3.5)*SCALE/0.02),(float)((120- 7 -3.5)*SCALE/0.02)));
-                    world.createJoint(jointDef);
+                    if (canBeJoined(player2ship[i][j], UP) && canBeJoined(player2ship[i][j-1], DOWN)) {
+                        jointDef.initialize(Bodies2[i][j], Bodies2[i][j - 1], new Vector2((float) ((150 + 7 + 7 + 3.5) * SCALE / 0.02), (float) ((120 - 7 - 3.5) * SCALE / 0.02)));
+                        world.createJoint(jointDef);
+                    }
                 }
     }
 
@@ -739,4 +748,32 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     public boolean scrolled(int amount) {
         return false;
     }
+
+
+
+    private static boolean canBeJoined(int ID, int side) {
+        int item = ID % 10;
+        int facing = ID / 10 * 10;
+        switch (item) {
+            case WOOD_BLOCK: case STEEL_BLOCK: case ENGINE:
+                return true;
+            case TURBINE:
+                return (facing == RIGHT && side != LEFT) ||
+                        (facing == UP && side != DOWN) ||
+                        (facing == LEFT && side != RIGHT) ||
+                        (facing == DOWN && side != UP);
+            case WOOD_GUN: case STEEL_GUN:
+                return (facing == RIGHT && side == LEFT) ||
+                        (facing == UP && side == DOWN) ||
+                        (facing == LEFT && side == RIGHT) ||
+                        (facing == DOWN && side == UP);
+            case HALF_WOOD_BLOCK: case HALF_STEEL_BLOCK:
+                return (facing == RIGHT && (side == LEFT || side == DOWN)) ||
+                        (facing == UP && (side == DOWN || side == RIGHT)) ||
+                        (facing == LEFT && (side == RIGHT || side == UP)) ||
+                        (facing == DOWN && (side == UP || side == LEFT));
+        }
+        return false;
+    }
+
 }

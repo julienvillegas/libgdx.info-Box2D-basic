@@ -109,10 +109,22 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
 
     fun contains(x: Float, y: Float): Boolean {
         when (angle) {
-            0 -> return x > this.x && x < this.x + this.width && y < SCREEN_HEIGHT - this.y && y > SCREEN_HEIGHT_F - this.y - this.height
-            90 -> return x > this.x + originX - this.height + originY && x < this.x + originX + originY && y < SCREEN_HEIGHT_F - this.y - originY + originX && y > SCREEN_HEIGHT_F - this.y - originY + originX - this.width
-            180 -> return x > this.x + 2 * originX - this.width && x < this.x + 2 * originX && y < SCREEN_HEIGHT - this.y && y > SCREEN_HEIGHT_F - this.y - this.height
-            270 -> return x > this.x + originX - originY && x < this.x + originX + this.height - originY && y < SCREEN_HEIGHT_F - this.y - originY - originX + this.width && y > SCREEN_HEIGHT_F - this.y - originY - originX
+            0 -> return (x > this.x) &&
+                    (x < this.x + this.width) &&
+                    (y < SCREEN_HEIGHT - this.y) &&
+                    (y > SCREEN_HEIGHT_F - this.y - this.height)
+            90 -> return (x > this.x + originX - this.height + originY) &&
+                    (x < this.x + originX + originY) &&
+                    (y < SCREEN_HEIGHT_F - this.y - originY + originX) &&
+                    (y > SCREEN_HEIGHT_F - this.y - originY + originX - this.width)
+            180 -> return (x > this.x + 2 * originX - this.width) &&
+                    (x < this.x + 2 * originX) &&
+                    (y < SCREEN_HEIGHT - this.y) &&
+                    (y > SCREEN_HEIGHT_F - this.y - this.height)
+            270 -> return (x > this.x + originX - originY) &&
+                    (x < this.x + originX + this.height - originY) &&
+                    (y < SCREEN_HEIGHT_F - this.y - originY - originX + this.width) &&
+                    (y > SCREEN_HEIGHT_F - this.y - originY - originX)
         }
         return false
     }
