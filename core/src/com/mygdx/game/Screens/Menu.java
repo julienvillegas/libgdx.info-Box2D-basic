@@ -35,6 +35,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     private int[][] blockArr = new int[FIELD_WIDTH][FIELD_HEIGHT];
     private ArrayList<MoveableImage[]> blocks = new ArrayList<MoveableImage[]>();
     private MoveableImage[][] cells = new MoveableImage[FIELD_WIDTH][FIELD_HEIGHT];
+    private boolean[][] occupiedCells = new boolean[FIELD_WIDTH][FIELD_HEIGHT];
     private Label[] labels = new Label[NUMBER_OF_ITEMS];
 
     private int currI = NULL, currJ = NULL;                                                         // Предмет, который мы сейчас перетаскиваем
@@ -54,6 +55,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                 cells[i][j] = new MoveableImage(FIELD_DELTA_X + BLOCK_SIZE*i, FIELD_DELTA_Y + BLOCK_SIZE*j, BLOCK_SIZE, BLOCK_SIZE,0,"gray.png");
                 stage.addActor(cells[i][j]);
                 blockArr[i][j] = NULL;
+                occupiedCells[i][j] = false;
             }
         }
 
@@ -222,8 +224,13 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                 delta_flag = NULL;
                 if ((i != -1) && (i != FIELD_WIDTH) && (j != -1) && (j != FIELD_HEIGHT)) {
                     if (!isImgOutOfBounds(i, j)) {
-                        setImageOnTable(i, j);
-                        return true;
+                        if (!occupiedCells[i][j] && !isNearCellOccupied(i, j)) {
+                            setImageOnTable(i, j);
+                            return true;
+                        } else {
+                            returnImageBack();
+                            return false;
+                        }
                     } else {
                         returnImageBack();
                         return false;
@@ -248,7 +255,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         int y = blocks.get(currI)[currJ].getYinTable();
         do
             blocks.get(currI)[currJ].flip90();
-        while (isImgOutOfBounds(x, y));
+        while (isImgOutOfBounds(x, y) || isNearCellOccupied(x, y));
     }
 
     private boolean isImgOutOfBounds(int x, int y) {
@@ -260,15 +267,66 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                 ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == UP) || (ID == TURBINE && facing == DOWN)) && y == FIELD_HEIGHT - 1);
     }
 
+    private boolean isNearCellOccupied(int x, int y) {
+        int ID = blocks.get(currI)[currJ].getNumber();
+        switch (ID) {
+            case TURBINE + LEFT: case WOOD_GUN + RIGHT: case STEEL_GUN + RIGHT:
+                return occupiedCells[x + 1][y];
+            case TURBINE + DOWN: case WOOD_GUN + UP: case STEEL_GUN + UP:
+                return occupiedCells[x][y + 1];
+            case TURBINE + RIGHT: case WOOD_GUN + LEFT: case STEEL_GUN + LEFT:
+                return occupiedCells[x - 1][y];
+            case TURBINE + UP: case WOOD_GUN + DOWN: case STEEL_GUN + DOWN:
+                return occupiedCells[x][y - 1];
+        }
+        return false;
+    }
+
 
     private void setImageOnTable(int i, int j) {
-        blockArr[i][j] = blocks.get(currI)[currJ].getNumber();
+        int ID = blocks.get(currI)[currJ].getNumber();
+
+        blockArr[i][j] = ID;
         blocks.get(currI)[currJ].setXYinTable(i, j);
+        occupiedCells[i][j] = true;
+        switch (ID) {
+            case TURBINE + LEFT: case WOOD_GUN + RIGHT: case STEEL_GUN + RIGHT:
+                occupiedCells[i + 1][j] = true;
+                break;
+            case TURBINE + DOWN: case WOOD_GUN + UP: case STEEL_GUN + UP:
+                occupiedCells[i][j + 1] = true;
+                break;
+            case TURBINE + RIGHT: case WOOD_GUN + LEFT: case STEEL_GUN + LEFT:
+                occupiedCells[i - 1][j] = true;
+                break;
+            case TURBINE + UP: case WOOD_GUN + DOWN: case STEEL_GUN + DOWN:
+                occupiedCells[i][j - 1] = true;
+                break;
+        }
     }
 
     private void removeImageFromTable() {
-        blockArr[blocks.get(currI)[currJ].getXinTable()][blocks.get(currI)[currJ].getYinTable()] = NULL;
+        int i = blocks.get(currI)[currJ].getXinTable();
+        int j = blocks.get(currI)[currJ].getYinTable();
+        int ID = blocks.get(currI)[currJ].getNumber();
+
+        blockArr[i][j] = NULL;
         blocks.get(currI)[currJ].setXYinTable(NULL, NULL);
+        occupiedCells[i][j] = false;
+        switch (ID) {
+            case TURBINE + LEFT: case WOOD_GUN + RIGHT: case STEEL_GUN + RIGHT:
+                occupiedCells[i + 1][j] = false;
+                break;
+            case TURBINE + DOWN: case WOOD_GUN + UP: case STEEL_GUN + UP:
+                occupiedCells[i][j + 1] = false;
+                break;
+            case TURBINE + RIGHT: case WOOD_GUN + LEFT: case STEEL_GUN + LEFT:
+                occupiedCells[i - 1][j] = false;
+                break;
+            case TURBINE + UP: case WOOD_GUN + DOWN: case STEEL_GUN + DOWN:
+                occupiedCells[i][j - 1] = false;
+                break;
+        }
     }
 
     private void returnImageBack() {
@@ -329,9 +387,10 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
                 if (blocks.get(currI)[currJ].isInStartPos())
                     plus1ToLabel(currI);
                 else {
-                    setImageOnTable(lastXInTable, lastYInTable);
-                    safeRotate();
                     blockArr[lastXInTable][lastYInTable] = blocks.get(currI)[currJ].getNumber();
+                    blocks.get(currI)[currJ].setXYinTable(lastXInTable, lastYInTable);
+                    safeRotate();
+                    setImageOnTable(lastXInTable, lastYInTable);
                 }
             } else if (setEndPosition(x, y)) {
                 if (currJ < blocks.get(currI).length - 1) {
