@@ -146,15 +146,15 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
     private void generate() {
-        String[] blockNames = new String[]{"steelblock","engine","turbine","halfwoodblock","halfsteelblock","gunone","guntwo", "woodblock"};
+        String[] blockNames = new String[]{"woodblock", "steelblock", "engine", "turbine", "halfwoodblock", "halfsteelblock", "gunone", "guntwo"};
 
         int k = 0;
         int f = 0;
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                for (int t = 1; t < 9; t++) {
+                for (int t = 0; t < NUMBER_OF_ITEMS; t++) {
                     if (player1ship[i][j] % 10 == t && player1ship[i][j] != NULL) {
-                        String name = blockNames[t-1];
+                        String name = blockNames[t];
                         switch (player1ship[i][j] / 10) {
                             case 1: {name += "90"; break;}
                             case 2: {name += "180"; break;}
@@ -265,9 +265,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         f = 0;
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                for (int t = 1; t < 9; t++){
+                for (int t = 0; t < NUMBER_OF_ITEMS; t++) {
                     if (player2ship[i][j] % 10 == t && player2ship[i][j] != NULL) {
-                        String name = blockNames[t-1];
+                        String name = blockNames[t];
                         if (player2ship[i][j]/10 == 1) {name += "90";}
                         if (player2ship[i][j]/10 == 2) {name += "180";}
                         if (player2ship[i][j]/10 == 3) {name += "270";}
