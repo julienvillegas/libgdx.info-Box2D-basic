@@ -114,8 +114,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     private float getWidth(int i) {
         switch(i) {
-            case WOOD_GUN: return 770*BLOCK_SIZE/345;
             case STEEL_GUN: return 765*BLOCK_SIZE/345;
+            case WOOD_GUN: return 770*BLOCK_SIZE/345;
             case TURBINE: return 565*BLOCK_SIZE/345;
         }
         return BLOCK_SIZE;
@@ -123,8 +123,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
     private float getHeight(int i) {
         switch(i) {
-            case WOOD_GUN: return 194*BLOCK_SIZE/345;
             case STEEL_GUN: return 315*BLOCK_SIZE/345;
+            case WOOD_GUN: return 194*BLOCK_SIZE/345;
         }
         return BLOCK_SIZE;
     }
@@ -147,8 +147,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             case TURBINE: return "turbine.png";
             case HALF_WOOD_BLOCK: return "halfwoodblock.png";
             case HALF_STEEL_BLOCK: return "halfsteelblock.png";
-            case WOOD_GUN: return "gun_1.png";
             case STEEL_GUN: return "gun_2.png";
+            case WOOD_GUN: return "gun_1.png";
         }
         return "";
     }
@@ -161,8 +161,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         inventory[TURBINE] = 2;
         inventory[HALF_WOOD_BLOCK] = 4;
         inventory[HALF_STEEL_BLOCK] = 2;
-        inventory[WOOD_GUN] = 1;
-        inventory[STEEL_GUN] = 2;
+        inventory[STEEL_GUN] = 1;
+        inventory[WOOD_GUN] = 2;
         return inventory;
     }                                                       // Задаёт изначальное количество предметов для расстановки
 
@@ -171,19 +171,19 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         int ID = blocks.get(currI)[currJ].getNumber() % 10;
         int facing = blocks.get(currI)[currJ].getNumber() / 10 * 10;
 
-        if (((ID == WOOD_GUN || ID == STEEL_GUN) && facing == RIGHT && relativeX > BLOCK_SIZE) || (ID == TURBINE && facing == LEFT && relativeX > 1.7 * BLOCK_SIZE)) {
+        if (((ID == STEEL_GUN || ID == WOOD_GUN) && facing == RIGHT && relativeX > BLOCK_SIZE) || (ID == TURBINE && facing == LEFT && relativeX > 1.7 * BLOCK_SIZE)) {
             imgCenterX -= BLOCK_SIZE;
             delta_flag = LEFT;
         }
-        if ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == UP) || (ID == TURBINE && facing == DOWN)) && relativeY > BLOCK_SIZE) {
+        if ((((ID == STEEL_GUN || ID == WOOD_GUN) && facing == UP) || (ID == TURBINE && facing == DOWN)) && relativeY > BLOCK_SIZE) {
             imgCenterY -= BLOCK_SIZE;
             delta_flag = DOWN;
         }
-        if (((ID == WOOD_GUN || ID == STEEL_GUN) && facing == LEFT && relativeX < 0) || (ID == TURBINE && facing == RIGHT && relativeX < 0.7 * BLOCK_SIZE)) {
+        if (((ID == STEEL_GUN || ID == WOOD_GUN) && facing == LEFT && relativeX < 0) || (ID == TURBINE && facing == RIGHT && relativeX < 0.7 * BLOCK_SIZE)) {
             imgCenterX += BLOCK_SIZE;
             delta_flag = RIGHT;
         }
-        if ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == DOWN) || (ID == TURBINE && facing == UP)) && relativeY < 0) {
+        if ((((ID == STEEL_GUN || ID == WOOD_GUN) && facing == DOWN) || (ID == TURBINE && facing == UP)) && relativeY < 0) {
             imgCenterY += BLOCK_SIZE;
             delta_flag = UP;
         }
@@ -261,22 +261,22 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     private boolean isImgOutOfBounds(int x, int y) {
         int ID = blocks.get(currI)[currJ].getNumber() % 10;
         int facing = blocks.get(currI)[currJ].getNumber() / 10 * 10;
-        return ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == LEFT) || (ID == TURBINE && facing == RIGHT)) && x == 0) ||
-                ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == RIGHT) || (ID == TURBINE && facing == LEFT)) && x == FIELD_WIDTH - 1) ||
-                ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == DOWN) || (ID == TURBINE && facing == UP)) && y == 0) ||
-                ((((ID == WOOD_GUN || ID == STEEL_GUN) && facing == UP) || (ID == TURBINE && facing == DOWN)) && y == FIELD_HEIGHT - 1);
+        return ((((ID == STEEL_GUN || ID == WOOD_GUN) && facing == LEFT) || (ID == TURBINE && facing == RIGHT)) && x == 0) ||
+                ((((ID == STEEL_GUN || ID == WOOD_GUN) && facing == RIGHT) || (ID == TURBINE && facing == LEFT)) && x == FIELD_WIDTH - 1) ||
+                ((((ID == STEEL_GUN || ID == WOOD_GUN) && facing == DOWN) || (ID == TURBINE && facing == UP)) && y == 0) ||
+                ((((ID == STEEL_GUN || ID == WOOD_GUN) && facing == UP) || (ID == TURBINE && facing == DOWN)) && y == FIELD_HEIGHT - 1);
     }
 
     private boolean isNearCellOccupied(int x, int y) {
         int ID = blocks.get(currI)[currJ].getNumber();
         switch (ID) {
-            case TURBINE + LEFT: case WOOD_GUN + RIGHT: case STEEL_GUN + RIGHT:
+            case TURBINE + LEFT: case STEEL_GUN + RIGHT: case WOOD_GUN + RIGHT:
                 return occupiedCells[x + 1][y];
-            case TURBINE + DOWN: case WOOD_GUN + UP: case STEEL_GUN + UP:
+            case TURBINE + DOWN: case STEEL_GUN + UP: case WOOD_GUN + UP:
                 return occupiedCells[x][y + 1];
-            case TURBINE + RIGHT: case WOOD_GUN + LEFT: case STEEL_GUN + LEFT:
+            case TURBINE + RIGHT: case STEEL_GUN + LEFT: case WOOD_GUN + LEFT:
                 return occupiedCells[x - 1][y];
-            case TURBINE + UP: case WOOD_GUN + DOWN: case STEEL_GUN + DOWN:
+            case TURBINE + UP: case STEEL_GUN + DOWN: case WOOD_GUN + DOWN:
                 return occupiedCells[x][y - 1];
         }
         return false;
@@ -290,16 +290,16 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         blocks.get(currI)[currJ].setXYinTable(i, j);
         occupiedCells[i][j] = true;
         switch (ID) {
-            case TURBINE + LEFT: case WOOD_GUN + RIGHT: case STEEL_GUN + RIGHT:
+            case TURBINE + LEFT: case STEEL_GUN + RIGHT: case WOOD_GUN + RIGHT:
                 occupiedCells[i + 1][j] = true;
                 break;
-            case TURBINE + DOWN: case WOOD_GUN + UP: case STEEL_GUN + UP:
+            case TURBINE + DOWN: case STEEL_GUN + UP: case WOOD_GUN + UP:
                 occupiedCells[i][j + 1] = true;
                 break;
-            case TURBINE + RIGHT: case WOOD_GUN + LEFT: case STEEL_GUN + LEFT:
+            case TURBINE + RIGHT: case STEEL_GUN + LEFT: case WOOD_GUN + LEFT:
                 occupiedCells[i - 1][j] = true;
                 break;
-            case TURBINE + UP: case WOOD_GUN + DOWN: case STEEL_GUN + DOWN:
+            case TURBINE + UP: case STEEL_GUN + DOWN: case WOOD_GUN + DOWN:
                 occupiedCells[i][j - 1] = true;
                 break;
         }
@@ -314,16 +314,16 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         blocks.get(currI)[currJ].setXYinTable(NULL, NULL);
         occupiedCells[i][j] = false;
         switch (ID) {
-            case TURBINE + LEFT: case WOOD_GUN + RIGHT: case STEEL_GUN + RIGHT:
+            case TURBINE + LEFT: case STEEL_GUN + RIGHT: case WOOD_GUN + RIGHT:
                 occupiedCells[i + 1][j] = false;
                 break;
-            case TURBINE + DOWN: case WOOD_GUN + UP: case STEEL_GUN + UP:
+            case TURBINE + DOWN: case STEEL_GUN + UP: case WOOD_GUN + UP:
                 occupiedCells[i][j + 1] = false;
                 break;
-            case TURBINE + RIGHT: case WOOD_GUN + LEFT: case STEEL_GUN + LEFT:
+            case TURBINE + RIGHT: case STEEL_GUN + LEFT: case WOOD_GUN + LEFT:
                 occupiedCells[i - 1][j] = false;
                 break;
-            case TURBINE + UP: case WOOD_GUN + DOWN: case STEEL_GUN + DOWN:
+            case TURBINE + UP: case STEEL_GUN + DOWN: case WOOD_GUN + DOWN:
                 occupiedCells[i][j - 1] = false;
                 break;
         }

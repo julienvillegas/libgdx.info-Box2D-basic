@@ -48,8 +48,8 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
             "turbine.png" -> TURBINE
             "halfwoodblock.png" -> HALF_WOOD_BLOCK
             "halfsteelblock.png" -> HALF_STEEL_BLOCK
-            "gun_1.png" -> WOOD_GUN
             "gun_2.png" -> STEEL_GUN
+            "gun_1.png" -> WOOD_GUN
             else -> NULL
         }
     }
