@@ -35,6 +35,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     private int[][] blockArr = new int[FIELD_WIDTH][FIELD_HEIGHT];
     private ArrayList<MoveableImage[]> blocks = new ArrayList<MoveableImage[]>();
     private MoveableImage[][] cells = new MoveableImage[FIELD_WIDTH][FIELD_HEIGHT];
+    private ArrayList<MoveableImage> invCells = new ArrayList<MoveableImage>();
     private boolean[][] occupiedCells = new boolean[FIELD_WIDTH][FIELD_HEIGHT];
     private Label[] labels = new Label[NUMBER_OF_ITEMS];
 
@@ -63,8 +64,19 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             blocks.add(new MoveableImage[itemsCount]);
 
         for (int i = 0; i < blocks.size(); i++) {
-            for (int j = 0; j < blocks.get(i).length; j++)
-                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i), getPosY(i), getWidth(i), getHeight(i), 0, getImageName(i));
+            if (i == TURBINE || i == STEEL_GUN || i == WOOD_GUN) {
+                invCells.add(new MoveableImage(getPosX(i, "invCell_left"), getPosY(i, "invCell"), BLOCK_SIZE, BLOCK_SIZE,0,"gray.png"));
+                invCells.add(new MoveableImage(getPosX(i, "invCell_right"), getPosY(i, "invCell"), BLOCK_SIZE, BLOCK_SIZE,0,"gray.png"));
+                stage.addActor(invCells.get(invCells.size() - 2));
+                stage.addActor(invCells.get(invCells.size() - 1));
+            } else {
+                invCells.add(new MoveableImage(getPosX(i, "invCell_mid"), getPosY(i, "invCell"), BLOCK_SIZE, BLOCK_SIZE, 0, "gray.png"));
+                stage.addActor(invCells.get(invCells.size() - 1));
+            }
+
+            for (int j = 0; j < blocks.get(i).length; j++) {
+                blocks.get(i)[blocks.get(i).length - j - 1] = new MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i));
+            }
             blocks.get(i)[0].setTouchable(true);
             stage.addActor(blocks.get(i)[0]);
         }
@@ -75,8 +87,8 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
         for (int i = 0; i < labels.length; i++) {
             labels[i] = new Label("x" + blocks.get(i).length, itemsCountLS);
-            labels[i].setX((i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/5: SCREEN_WIDTH - BLOCK_SIZE*2/5);
-            labels[i].setY(getPosY(i) + BLOCK_SIZE/5);
+            labels[i].setX(getPosX(i, "label"));
+            labels[i].setY(getPosY(i, "label"));
             stage.addActor(labels[i]);
         }
 
@@ -104,12 +116,43 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
 
 
 
-    private float getPosX(int i) {
-        return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/2 : SCREEN_WIDTH - BLOCK_SIZE/2 - getWidth(i);
-    }
+    private float getPosX(int i, String typeOfObj) {
+        if (typeOfObj.equals("item")) {
+            if (i < NUMBER_OF_ITEMS / 2)
+                return (i == TURBINE) ? BLOCK_SIZE * 5 / 2 - getWidth(i) : BLOCK_SIZE;
+            else
+                return (i == STEEL_GUN || i == WOOD_GUN) ? SCREEN_WIDTH - BLOCK_SIZE * 5 / 2 : SCREEN_WIDTH - BLOCK_SIZE * 2;
+        }
 
-    private float getPosY(int i) {
-        return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE*(i + 2)*3/2 - getHeight(i)/2: BLOCK_SIZE*(i - 2)*3/2 - getHeight(i)/2;
+        if (typeOfObj.equals("invCell_mid"))
+            return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE : SCREEN_WIDTH - BLOCK_SIZE*2;
+
+        if (typeOfObj.equals("invCell_left"))
+            return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/2 : SCREEN_WIDTH - BLOCK_SIZE*5/2;
+
+        if (typeOfObj.equals("invCell_right"))
+            return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE*3/2 : SCREEN_WIDTH - BLOCK_SIZE*3/2;
+
+        if (typeOfObj.equals("label")) {
+            if (i < NUMBER_OF_ITEMS / 2)
+                return (i == TURBINE) ? getPosX(i, "invCell_right") + BLOCK_SIZE*4/3 : getPosX(i, "invCell_mid") + BLOCK_SIZE*4/3;
+            else
+                return (i == STEEL_GUN || i == WOOD_GUN) ? getPosX(i, "invCell_left") - BLOCK_SIZE*11/15 : getPosX(i, "invCell_mid") - BLOCK_SIZE*11/15;
+        }
+
+        return 0f;
+    }
+    private float getPosY(int i, String typeOfObj) {
+        if (typeOfObj.equals("item"))
+            return (i < NUMBER_OF_ITEMS / 2) ? BLOCK_SIZE * (i + 2) * 3 / 2 - getHeight(i) / 2 : BLOCK_SIZE * (i - 2) * 3 / 2 - getHeight(i) / 2;
+
+        if (typeOfObj.equals("invCell"))
+            return (i < NUMBER_OF_ITEMS / 2) ? BLOCK_SIZE * (i + 2) * 3 / 2 - BLOCK_SIZE/2 : BLOCK_SIZE * (i - 2) * 3 / 2 - BLOCK_SIZE/2;
+
+        if (typeOfObj.equals("label"))
+            return getPosY(i, "invCell") + BLOCK_SIZE/5;
+
+        return 0f;
     }
 
     private float getWidth(int i) {
@@ -120,7 +163,6 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         }
         return BLOCK_SIZE;
     }
-
     private float getHeight(int i) {
         switch(i) {
             case STEEL_GUN: return 315*BLOCK_SIZE/345;
@@ -171,7 +213,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         int ID = blocks.get(currI)[currJ].getNumber() % 10;
         int facing = blocks.get(currI)[currJ].getNumber() / 10 * 10;
 
-        if (((ID == STEEL_GUN || ID == WOOD_GUN) && facing == RIGHT && relativeX > BLOCK_SIZE) || (ID == TURBINE && facing == LEFT && relativeX > 1.7 * BLOCK_SIZE)) {
+        if (((ID == STEEL_GUN || ID == WOOD_GUN) && facing == RIGHT && relativeX > BLOCK_SIZE) || (ID == TURBINE && facing == LEFT && relativeX > getWidth(TURBINE))) {
             imgCenterX -= BLOCK_SIZE;
             delta_flag = LEFT;
         }
@@ -179,7 +221,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             imgCenterY -= BLOCK_SIZE;
             delta_flag = DOWN;
         }
-        if (((ID == STEEL_GUN || ID == WOOD_GUN) && facing == LEFT && relativeX < 0) || (ID == TURBINE && facing == RIGHT && relativeX < 0.7 * BLOCK_SIZE)) {
+        if (((ID == STEEL_GUN || ID == WOOD_GUN) && facing == LEFT && relativeX < 0) || (ID == TURBINE && facing == RIGHT && relativeX < getWidth(TURBINE) - BLOCK_SIZE)) {
             imgCenterX += BLOCK_SIZE;
             delta_flag = RIGHT;
         }

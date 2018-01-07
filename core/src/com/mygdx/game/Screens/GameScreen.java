@@ -317,44 +317,37 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
 
         WeldJointDef jointDef = new WeldJointDef();
-
-        for (int i = 1; i < FIELD_WIDTH; i++)
-            for (int j = 0; j < FIELD_HEIGHT; j++)
-                if (p1_ship[i][j] != NULL && p1_ship[i-1][j] != NULL) {
-                    if (canBeJoined(p1_ship[i][j], LEFT) && canBeJoined(p1_ship[i-1][j], RIGHT)) {
-                        jointDef.initialize(p1_bodies[i][j], p1_bodies[i - 1][j], new Vector2((float) ((15 + 17.5) * SCALE / 0.02), (float) ((50 - 10.5) * SCALE / 0.02)));
-                        world.createJoint(jointDef);
-                    }
-                }
+        jointDef.frequencyHz = 0f;
+        jointDef.dampingRatio = 0f;
 
         for (int i = 0; i < FIELD_WIDTH; i++)
-            for (int j = 1; j < FIELD_HEIGHT; j++)
-                if (p1_ship[i][j] != NULL && p1_ship[i][j-1] != NULL) {
-                    if (canBeJoined(p1_ship[i][j], UP) && canBeJoined(p1_ship[i][j-1], DOWN)) {
-                        jointDef.initialize(p1_bodies[i][j], p1_bodies[i][j - 1], new Vector2((float) ((15 + 17.5) * SCALE / 0.02), (float) ((50 - 10.5) * SCALE / 0.02)));
-                        world.createJoint(jointDef);
-                    }
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
+                if (i != 0) {
+                    if (p1_ship[i][j] != NULL && p1_ship[i - 1][j] != NULL)
+                        if (canBeJoined(p1_ship[i][j], LEFT) && canBeJoined(p1_ship[i - 1][j], RIGHT)) {
+                            jointDef.initialize(p1_bodies[i][j], p1_bodies[i - 1][j], new Vector2((float) ((15 + 17.5) * SCALE / 0.02), (float) ((50 - 10.5) * SCALE / 0.02)));
+                            world.createJoint(jointDef);
+                        }
+                    if (p2_ship[i][j] != NULL && p2_ship[i - 1][j] != NULL)
+                        if (canBeJoined(p2_ship[i][j], LEFT) && canBeJoined(p2_ship[i - 1][j], RIGHT)) {
+                            jointDef.initialize(p2_bodies[i][j], p2_bodies[i - 1][j], new Vector2((float) ((xCorner + 17.5) * SCALE / 0.02), (float) ((yCorner - 10.5) * SCALE / 0.02)));
+                            world.createJoint(jointDef);
+                        }
                 }
-
-        jointDef = new WeldJointDef();
-
-        for (int i = 1; i < FIELD_WIDTH; i++)
-            for (int j = 0; j < FIELD_HEIGHT; j++)
-                if (p2_ship[i][j] != NULL && p2_ship[i-1][j] != NULL) {
-                    if (canBeJoined(p2_ship[i][j], LEFT) && canBeJoined(p2_ship[i-1][j], RIGHT)) {
-                        jointDef.initialize(p2_bodies[i][j], p2_bodies[i - 1][j], new Vector2((float) ((xCorner + 17.5) * SCALE / 0.02), (float) ((yCorner - 10.5) * SCALE / 0.02)));
-                        world.createJoint(jointDef);
-                    }
+                if (j != 0) {
+                    if (p1_ship[i][j] != NULL && p1_ship[i][j - 1] != NULL)
+                        if (canBeJoined(p1_ship[i][j], UP) && canBeJoined(p1_ship[i][j - 1], DOWN)) {
+                            jointDef.initialize(p1_bodies[i][j], p1_bodies[i][j - 1], new Vector2((float) ((15 + 17.5) * SCALE / 0.02), (float) ((50 - 10.5) * SCALE / 0.02)));
+                            world.createJoint(jointDef);
+                        }
+                    if (p2_ship[i][j] != NULL && p2_ship[i][j - 1] != NULL)
+                        if (canBeJoined(p2_ship[i][j], UP) && canBeJoined(p2_ship[i][j - 1], DOWN)) {
+                            jointDef.initialize(p2_bodies[i][j], p2_bodies[i][j - 1], new Vector2((float) ((xCorner + 17.5) * SCALE / 0.02), (float) ((yCorner - 10.5) * SCALE / 0.02)));
+                            world.createJoint(jointDef);
+                        }
                 }
+            }
 
-        for (int i = 0; i < FIELD_WIDTH; i++)
-            for (int j = 1; j < FIELD_HEIGHT; j++)
-                if (p2_ship[i][j] != NULL && p2_ship[i][j-1] != NULL) {
-                    if (canBeJoined(p2_ship[i][j], UP) && canBeJoined(p2_ship[i][j-1], DOWN)) {
-                        jointDef.initialize(p2_bodies[i][j], p2_bodies[i][j - 1], new Vector2((float) ((xCorner + 17.5) * SCALE / 0.02), (float) ((yCorner - 10.5) * SCALE / 0.02)));
-                        world.createJoint(jointDef);
-                    }
-                }
     }
 
     private void generateMeteors() {
@@ -401,11 +394,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         stepWorld();
+        if (delta > 0.25f) delta = 0.25f;
 
         batch.begin();
 
-        drawSprite("background_red_space",0,0,camera.viewportWidth,camera.viewportHeight,0);
 
+        drawSprite("background_red_space",0,0,camera.viewportWidth,camera.viewportHeight,0);
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
@@ -495,12 +489,18 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             drawSprite(name, position.x, position.y, degrees);
         }
 
-        drawSprite("buttonturbine",1,1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
-        drawSprite("buttonfire",1,HEIGHT_IN_UNITS/2 - BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
-        drawSprite("buttonturbine",1, HEIGHT_IN_UNITS - BUTTON_RADIUS*2 - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
-        drawSprite("buttonturbine",WIDTH_IN_UNITS - 1,BUTTON_RADIUS*2 + 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
-        drawSprite("buttonfire",WIDTH_IN_UNITS - 1,HEIGHT_IN_UNITS/2 + BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
-        drawSprite("buttonturbine",WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+        if (p1_turb2_I != -1)
+            drawSprite("buttonturbine",1,1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+        if ((p1_steelGun_I != -1) || (p1_wGun1_I != -1) || (p1_wGun2_I != -1))
+            drawSprite("buttonfire",1,HEIGHT_IN_UNITS/2 - BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+        if (p1_turb1_I != -1)
+            drawSprite("buttonturbine",1, HEIGHT_IN_UNITS - BUTTON_RADIUS*2 - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+        if (p2_turb1_I != -1)
+            drawSprite("buttonturbine",WIDTH_IN_UNITS - 1,BUTTON_RADIUS*2 + 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+        if ((p2_steelGun_I != -1) || (p2_wGun1_I != -1) || (p2_wGun2_I != -1))
+            drawSprite("buttonfire",WIDTH_IN_UNITS - 1,HEIGHT_IN_UNITS/2 + BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+        if (p2_turb2_I != -1)
+            drawSprite("buttonturbine",WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
 
 
         batch.end();
@@ -512,6 +512,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     private void stepWorld() {
         float delta = Gdx.graphics.getDeltaTime();
+        if (delta > 0.25f) delta = 0.25f;
 
         accumulator += Math.min(delta, 0.25f);
         if (accumulator >= STEP_TIME) {
@@ -555,9 +556,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         bodyDef.type = BodyDef.BodyType.StaticBody;
 
         FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.friction = 1;
+        fixtureDef.friction = 0.5f;
         FixtureDef fixtureDef1 = new FixtureDef();
-        fixtureDef1.friction = 1;
+        fixtureDef1.friction = 0.5f;
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(camera.viewportWidth, 1);
