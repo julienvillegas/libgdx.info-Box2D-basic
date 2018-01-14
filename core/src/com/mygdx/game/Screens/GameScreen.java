@@ -13,7 +13,12 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2D;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactImpulse;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
@@ -52,6 +57,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final int BTN_P2_LEFTTURBINE = 3;
     private static final int BTN_P2_GUN = 4;
     private static final int BTN_P2_RIGHTTURBINE = 5;
+
+    private static final int hp = 1;
+    private static final int bulletUserData = -1;
 
     private TextureAtlas textureAtlas;
     private TextureAtlas textureAtlas2;
@@ -124,6 +132,36 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         Box2D.init();
         world = new World(new Vector2(0, 0), true);
+        world.setContactListener(new ContactListener() {
+            @Override
+            public void beginContact(Contact contact) {
+                Fixture fixtureA = contact.getFixtureA();
+                Fixture fixtureB = contact.getFixtureB();
+
+                if ((fixtureA.getBody().getUserData().equals(1))&&(fixtureB.getBody().getUserData().equals(-1))){
+                    fixtureA.getBody().setUserData(0);
+                }
+                if ((fixtureB.getBody().getUserData().equals(1))&&(fixtureA.getBody().getUserData().equals(-1))){
+                    fixtureB.getBody().setUserData(0);
+               }
+               Gdx.app.log("beginContact", "between " + fixtureA.getBody().getUserData() + " and " + fixtureB.getBody().getUserData());
+            }
+
+            @Override
+            public void endContact(Contact contact) {
+
+            }
+
+            @Override
+            public void preSolve(Contact contact, Manifold oldManifold) {
+
+            }
+
+            @Override
+            public void postSolve(Contact contact, ContactImpulse impulse) {
+
+            }
+        });
         physicsBodies = new PhysicsShapeCache("physics.xml");
         generate();
         generateMeteors();
@@ -213,6 +251,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p1_namesOfBodies[i][j] = name;
                     p1_bodies[i][j] = createBody(name, x, y, 0);
                     p1_bodies[i][j].setBullet(true);
+                    p1_bodies[i][j].setUserData(hp);
                 }
             }
         }
@@ -270,6 +309,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p2_namesOfBodies[i][j] = name;
                     p2_bodies[i][j] = createBody(name, x, y, 0);
                     p2_bodies[i][j].setBullet(true);
+                    p2_bodies[i][j].setUserData(hp);
                 }
             }
         }
@@ -371,6 +411,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
             this.meteorNames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
+            meteorBodies[i].setUserData(-2);
             meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
         }
     }
@@ -403,21 +444,37 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
-                if (p1_ship[i][j] != NULL) {
-                    Body body = p1_bodies[i][j];
-                    String name = p1_namesOfBodies[i][j];
+                if (p1_bodies[i][j] != null) {
+                    if (p1_bodies[i][j].getUserData()!=null){
+                        if(p1_bodies[i][j].getUserData().equals(0)){
+                            p1_bodies[i][j].getJointList().clear();
+                            world.destroyBody(p1_bodies[i][j]);
+                        }
 
-                    Vector2 position = body.getPosition();
-                    float degrees = (float) Math.toDegrees(body.getAngle());
-                    drawSprite(name, position.x, position.y, degrees);
+                        else{
+                        Body body = p1_bodies[i][j];
+                        String name = p1_namesOfBodies[i][j];
+
+
+                        Vector2 position = body.getPosition();
+                        float degrees = (float) Math.toDegrees(body.getAngle());
+                        drawSprite(name, position.x, position.y, degrees);}}
                 }
-                if (p2_ship[i][j] != NULL) {
-                    Body body = p2_bodies[i][j];
-                    String name = p2_namesOfBodies[i][j];
+                if (p2_bodies[i][j] != null) {
+                    if (p2_bodies[i][j].getUserData()!=null){
+                        if(p2_bodies[i][j].getUserData().equals(0)){
+                            p2_bodies[i][j].getJointList().clear();
+                            world.destroyBody(p2_bodies[i][j]);
+                        }
 
-                    Vector2 position = body.getPosition();
-                    float degrees = (float) Math.toDegrees(body.getAngle());
-                    drawSprite(name, position.x, position.y, degrees);
+                        else{
+                            Body body = p2_bodies[i][j];
+                            String name = p2_namesOfBodies[i][j];
+
+
+                            Vector2 position = body.getPosition();
+                            float degrees = (float) Math.toDegrees(body.getAngle());
+                            drawSprite(name, position.x, position.y, degrees);}}
                 }
             }
         }
@@ -481,6 +538,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
         for (int i = 0; i < bullets.size(); i++) {
+            bullets.get(i).setUserData(bulletUserData);
             Body body = bullets.get(i);
             String name = "bullet";
 
@@ -570,6 +628,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < 4; i++) {
             gameFieldBounds[i] = world.createBody(bodyDef);
+            gameFieldBounds[i].setUserData(-3);
             gameFieldBounds[i].createFixture((i < 2)? fixtureDef : fixtureDef1);
             gameFieldBounds[i].setTransform((i == 3)? camera.viewportWidth : 0, (i == 0)? camera.viewportHeight : 0, 0);
         }
