@@ -12,8 +12,8 @@ public interface ItemID {
     int TURBINE = 3;
     int HALF_WOOD_BLOCK = 4;
     int HALF_STEEL_BLOCK = 5;
-    int WOOD_GUN = 6;
-    int STEEL_GUN = 7;
+    int STEEL_GUN = 6;
+    int WOOD_GUN = 7;
 
     int RIGHT = 0;
     int UP = 10;
