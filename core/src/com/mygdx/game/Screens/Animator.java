@@ -1,4 +1,4 @@
-package com.mygdx.game.Screens;
+/*package com.mygdx.game.Screens;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
@@ -68,4 +68,4 @@ public class Animator implements ApplicationListener {
     public void dispose() {
 
     }
-}
+}*/
