@@ -448,6 +448,21 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     if (p1_bodies[i][j].getUserData()!=null){
                         if(p1_bodies[i][j].getUserData().equals(0)){
                             p1_bodies[i][j].getJointList().clear();
+                            if ((i == p1_turb1_I)&&(j == p1_turb1_J)){
+                                p1_turb1_I = -1;
+                            }
+                            if ((i == p1_turb2_I)&&(j == p1_turb2_J)){
+                                p1_turb2_I = -1;
+                            }
+                            if ((i == p1_steelGun_I)&&(j == p1_steelGun_J)){
+                                p1_steelGun_I = -1;
+                            }
+                            if ((i == p1_wGun1_I)&&(j == p1_wGun1_J)){
+                                p1_wGun1_I = -1;
+                            }
+                            if ((i == p1_wGun2_I)&&(j == p1_wGun2_J)){
+                                p1_wGun2_I = -1;
+                            }
                             world.destroyBody(p1_bodies[i][j]);
                         }
 
@@ -464,6 +479,21 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     if (p2_bodies[i][j].getUserData()!=null){
                         if(p2_bodies[i][j].getUserData().equals(0)){
                             p2_bodies[i][j].getJointList().clear();
+                            if ((i == p2_turb1_I)&&(j == p2_turb1_J)){
+                                p2_turb1_I = -1;
+                            }
+                            if ((i == p2_turb2_I)&&(j == p2_turb2_J)){
+                                p2_turb2_I = -1;
+                            }
+                            if ((i == p2_steelGun_I)&&(j == p2_steelGun_J)){
+                                p2_steelGun_I = -1;
+                            }
+                            if ((i == p2_wGun1_I)&&(j == p2_wGun1_J)){
+                                p2_wGun1_I = -1;
+                            }
+                            if ((i == p2_wGun2_I)&&(j == p2_wGun2_J)){
+                                p2_wGun2_I = -1;
+                            }
                             world.destroyBody(p2_bodies[i][j]);
                         }
 
