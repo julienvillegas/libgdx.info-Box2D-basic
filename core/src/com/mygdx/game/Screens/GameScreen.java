@@ -114,6 +114,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private Body[] meteorBodies = new Body[COUNT];
     private String[] meteorNames = new String[COUNT];
     private ArrayList<Body> bullets = new ArrayList<Body>();
+    private ArrayList<Body> bullets2 = new ArrayList<Body>();
 
     GameScreen(
             int[][] player1ship,
@@ -194,7 +195,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
         regions = textureAtlas2.getRegions();
         for (TextureAtlas.AtlasRegion region : regions) {
-            Sprite sprite = textureAtlas.createSprite(region.name);
+            Sprite sprite = textureAtlas2.createSprite(region.name);
 
             float width = sprite.getWidth() * SCALE;
             float height = sprite.getHeight() * SCALE;
@@ -598,11 +599,24 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             world.destroyBody(bullets.get(0));
             bullets.remove(0);
         }
+        while (bullets2.size() > 30) {
+            world.destroyBody(bullets2.get(0));
+            bullets2.remove(0);
+        }
 
         for (int i = 0; i < bullets.size(); i++) {
             bullets.get(i).setUserData(bulletUserData);
             Body body = bullets.get(i);
             String name = "bullet";
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+        }
+        for (int i = 0; i < bullets2.size(); i++) {
+            bullets2.get(i).setUserData(bulletUserData);
+            Body body = bullets2.get(i);
+            String name = "bullet2";
 
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -626,7 +640,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         batch.end();
 
         // uncomment to show the polygons
-        debugRenderer.render(world, camera.combined);
+        //debugRenderer.render(world, camera.combined);
 
     }
 
@@ -953,8 +967,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         float kf2 = (gunNum == 1)? 0.92f: 0.6f;
         float kf3 = (gunNum == 1)? 0.65f: 0.35f;
         int impulse = (gunNum == 1)? 1000 : 500;
-
-        Body bullet = createBody("bullet", 0, 0, body.getAngle());
+        Body bullet;
+         if (gunNum == 1){bullet = createBody("bullet2", 0, 0, body.getAngle());}
+        else { bullet = createBody("bullet", 0, 0, body.getAngle());}
         if (rotate == 0) {
             cosAlpha = (float) Math.cos(body.getAngle() + atan);
             sinAlpha = (float) Math.sin(body.getAngle() + atan);
@@ -977,7 +992,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
         bullet.setLinearVelocity(new Vector2(body.getLinearVelocity().x + impulse * (float) Math.cos(body.getAngle() + rotate*Math.PI/2), body.getLinearVelocity().y + impulse * (float) Math.sin(body.getAngle() + rotate * Math.PI/2)));
-        bullets.add(bullet);
+        if (gunNum == 1){
+         bullets2.add(bullet);}
+         else
+        {bullets.add(bullet);}
         if (player == 1)
             p1_bodies[i][j].applyForceToCenter(-impulse * cos, -impulse * sin, true);
         else

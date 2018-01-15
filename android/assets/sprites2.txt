@@ -1,26 +1,19 @@
 sprites2.png
-size: 1844, 3478
+size: 3973, 2000
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-buttonfire
+meteorone2
   rotate: false
-  xy: 1441, 2788
-  size: 344, 344
-  orig: 344, 344
+  xy: 1814, 1767
+  size: 222, 222
+  orig: 222, 222
   offset: 0, 0
   index: -1
-buttonturbine
+meteorone3
   rotate: false
-  xy: 1006, 3133
-  size: 344, 344
-  orig: 344, 344
-  offset: 0, 0
-  index: -1
-lazerbullet
-  rotate: true
-  xy: 1769, 450
-  size: 190, 38
-  orig: 190, 38
+  xy: 3642, 671
+  size: 310, 310
+  orig: 310, 310
   offset: 0, 0
   index: -1

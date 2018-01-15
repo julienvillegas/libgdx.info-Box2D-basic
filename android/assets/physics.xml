@@ -726,6 +726,25 @@
 		</fixture>
 	</body>
 
+	<body name="bullet2">
+		<is_dynamic/>
+		<linear_damping>0.1</linear_damping>
+		<angular_damping>0.1</angular_damping>
+		<is_bullet/>
+		<allow_sleep/>
+		<fixture>
+			<density>2</density>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
+			<filter_category_bits>1</filter_category_bits>
+			<filter_mask_bits>65535</filter_mask_bits>
+			<filter_group_index>0</filter_group_index>
+			<polygon>-0.5000, 49.0000, -0.5000, 10.0000, 3.0000, 6.5000, 31.0000, 0.5000, 116.5000, 34.0000, 28.0000, 59.5000, 27.0000, 59.5000, 10.0000, 55.5000</polygon>
+			<polygon>116.5000, 25.0000, 116.5000, 34.0000, 31.0000, 0.5000, 69.0000, 1.5000, 98.0000, 10.5000, 113.5000, 20.0000</polygon>
+			<polygon>105.0000, 44.5000, 96.0000, 48.5000, 79.0000, 54.5000, 55.0000, 59.5000, 28.0000, 59.5000, 116.5000, 34.0000, 115.0000, 36.5000</polygon>
+		</fixture>
+	</body>
+
 	<body name="woodblock">
 		<is_dynamic/>
 		<linear_damping>0.5</linear_damping>
