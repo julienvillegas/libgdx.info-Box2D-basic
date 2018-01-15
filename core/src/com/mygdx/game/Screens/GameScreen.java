@@ -18,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.JointEdge;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
@@ -58,7 +59,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final int BTN_P2_GUN = 4;
     private static final int BTN_P2_RIGHTTURBINE = 5;
 
-    private static final int hp = 1;
+    private static final int hp = 10;
     private static final int bulletUserData = -1;
 
     private TextureAtlas textureAtlas;
@@ -137,13 +138,21 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             public void beginContact(Contact contact) {
                 Fixture fixtureA = contact.getFixtureA();
                 Fixture fixtureB = contact.getFixtureB();
-
-                if ((fixtureA.getBody().getUserData().equals(1))&&(fixtureB.getBody().getUserData().equals(-1))){
+                int lifesA = Integer.parseInt(fixtureA.getBody().getUserData().toString());
+                int lifesB = Integer.parseInt(fixtureB.getBody().getUserData().toString());
+                if (lifesB==-1){
+                    fixtureB.getBody().setUserData(0);
+                }
+                if (lifesA==-1){
                     fixtureA.getBody().setUserData(0);
                 }
-                if ((fixtureB.getBody().getUserData().equals(1))&&(fixtureA.getBody().getUserData().equals(-1))){
-                    fixtureB.getBody().setUserData(0);
-               }
+                if ((lifesA>0)&&(lifesB==-1)){
+                    fixtureA.getBody().setUserData(lifesA-1);
+                }
+                if ((lifesB>0)&&(lifesA==-1)){
+                    fixtureB.getBody().setUserData(lifesB-1);
+                }
+
                Gdx.app.log("beginContact", "between " + fixtureA.getBody().getUserData() + " and " + fixtureB.getBody().getUserData());
             }
 
@@ -251,7 +260,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p1_namesOfBodies[i][j] = name;
                     p1_bodies[i][j] = createBody(name, x, y, 0);
                     p1_bodies[i][j].setBullet(true);
-                    p1_bodies[i][j].setUserData(hp);
+                    if (name.contains("gun"))
+                        p1_bodies[i][j].setUserData(-2);
+                    else
+                        p1_bodies[i][j].setUserData(hp);
                 }
             }
         }
@@ -309,7 +321,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p2_namesOfBodies[i][j] = name;
                     p2_bodies[i][j] = createBody(name, x, y, 0);
                     p2_bodies[i][j].setBullet(true);
-                    p2_bodies[i][j].setUserData(hp);
+                    if (name.contains("gun"))
+                        p2_bodies[i][j].setUserData(-2);
+                    else
+                        p2_bodies[i][j].setUserData(hp);
                 }
             }
         }
@@ -445,25 +460,34 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (p1_bodies[i][j] != null) {
-                    if (p1_bodies[i][j].getUserData()!=null){
+                    if (p1_bodies[i][j].getUserData() != null){
                         if(p1_bodies[i][j].getUserData().equals(0)){
-                            p1_bodies[i][j].getJointList().clear();
+                            for (JointEdge joint : p1_bodies[i][j].getJointList()) {
+                                world.destroyJoint(joint.joint);
+                            }
                             if ((i == p1_turb1_I)&&(j == p1_turb1_J)){
                                 p1_turb1_I = -1;
+                                p1_turb1_J = -1;
                             }
                             if ((i == p1_turb2_I)&&(j == p1_turb2_J)){
                                 p1_turb2_I = -1;
+                                p1_turb2_J = -1;
                             }
                             if ((i == p1_steelGun_I)&&(j == p1_steelGun_J)){
                                 p1_steelGun_I = -1;
+                                p1_steelGun_J = -1;
                             }
                             if ((i == p1_wGun1_I)&&(j == p1_wGun1_J)){
                                 p1_wGun1_I = -1;
+                                p1_wGun1_J = -1;
                             }
                             if ((i == p1_wGun2_I)&&(j == p1_wGun2_J)){
                                 p1_wGun2_I = -1;
+                                p1_wGun2_J = -1;
                             }
                             world.destroyBody(p1_bodies[i][j]);
+                            p1_bodies[i][j] = null;
+
                         }
 
                         else{
@@ -476,25 +500,33 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         drawSprite(name, position.x, position.y, degrees);}}
                 }
                 if (p2_bodies[i][j] != null) {
-                    if (p2_bodies[i][j].getUserData()!=null){
+                    if (p2_bodies[i][j].getUserData() != null){
                         if(p2_bodies[i][j].getUserData().equals(0)){
-                            p2_bodies[i][j].getJointList().clear();
+                            for (JointEdge joint : p2_bodies[i][j].getJointList()) {
+                                world.destroyJoint(joint.joint);
+                            }
                             if ((i == p2_turb1_I)&&(j == p2_turb1_J)){
                                 p2_turb1_I = -1;
+                                p2_turb1_J = -1;
                             }
                             if ((i == p2_turb2_I)&&(j == p2_turb2_J)){
                                 p2_turb2_I = -1;
+                                p2_turb2_J = -1;
                             }
                             if ((i == p2_steelGun_I)&&(j == p2_steelGun_J)){
                                 p2_steelGun_I = -1;
+                                p2_steelGun_J = -1;
                             }
                             if ((i == p2_wGun1_I)&&(j == p2_wGun1_J)){
                                 p2_wGun1_I = -1;
+                                p2_wGun1_J = -1;
                             }
                             if ((i == p2_wGun2_I)&&(j == p2_wGun2_J)){
                                 p2_wGun2_I = -1;
+                                p2_wGun2_J = -1;
                             }
                             world.destroyBody(p2_bodies[i][j]);
+                            p2_bodies[i][j] = null;
                         }
 
                         else{
@@ -594,7 +626,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         batch.end();
 
         // uncomment to show the polygons
-        // debugRenderer.render(world, camera.combined);
+        debugRenderer.render(world, camera.combined);
 
     }
 
