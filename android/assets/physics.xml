@@ -745,6 +745,42 @@
 		</fixture>
 	</body>
 
+	<body name="hero1">
+		<is_dynamic/>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
+		<allow_sleep/>
+		<fixture>
+			<density>2</density>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
+			<filter_category_bits>1</filter_category_bits>
+			<filter_mask_bits>65535</filter_mask_bits>
+			<filter_group_index>0</filter_group_index>
+			<polygon>330.0000, 325.5000, 313.0000, 333.5000, 255.0000, 341.5000, 147.0000, 345.5000, 146.0000, 345.5000, 336.5000, 59.0000, 344.5000, 152.0000, 341.5000, 244.0000</polygon>
+			<polygon>14.5000, 21.0000, 23.0000, 13.5000, 137.0000, 0.5000, 241.0000, 2.5000, 12.5000, 324.0000, 0.5000, 230.0000, -0.5000, 135.0000, 6.5000, 61.0000</polygon>
+			<polygon>241.0000, 2.5000, 325.0000, 14.5000, 330.5000, 21.0000, 336.5000, 59.0000, 146.0000, 345.5000, 62.0000, 338.5000, 21.0000, 331.5000, 12.5000, 324.0000</polygon>
+		</fixture>
+	</body>
+
+	<body name="hero2">
+		<is_dynamic/>
+		<linear_damping>0.5</linear_damping>
+		<angular_damping>0.5</angular_damping>
+		<allow_sleep/>
+		<fixture>
+			<density>2</density>
+			<friction>0.5</friction>
+			<restitution>0.5</restitution>
+			<filter_category_bits>1</filter_category_bits>
+			<filter_mask_bits>65535</filter_mask_bits>
+			<filter_group_index>0</filter_group_index>
+			<polygon>330.0000, 325.5000, 313.0000, 333.5000, 255.0000, 341.5000, 147.0000, 345.5000, 146.0000, 345.5000, 336.5000, 59.0000, 344.5000, 152.0000, 341.5000, 244.0000</polygon>
+			<polygon>14.5000, 21.0000, 23.0000, 13.5000, 137.0000, 0.5000, 241.0000, 2.5000, 12.5000, 324.0000, 0.5000, 230.0000, -0.5000, 135.0000, 6.5000, 61.0000</polygon>
+			<polygon>241.0000, 2.5000, 325.0000, 14.5000, 330.5000, 21.0000, 336.5000, 59.0000, 146.0000, 345.5000, 62.0000, 338.5000, 21.0000, 331.5000, 12.5000, 324.0000</polygon>
+		</fixture>
+	</body>
+
 	<body name="woodblock">
 		<is_dynamic/>
 		<linear_damping>0.5</linear_damping>

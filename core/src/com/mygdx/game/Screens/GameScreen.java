@@ -208,7 +208,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
     private void generate() {
-        String[] blockNames = new String[]{"woodblock", "steelblock", "engine", "turbine", "halfwoodblock", "halfsteelblock", "guntwo", "gunone"};
+        String[] blockNames = new String[]{"woodblock", "steelblock", "engine", "turbine", "halfwoodblock", "halfsteelblock", "guntwo", "gunone","hero1"};
 
         boolean turbExist = false;
         boolean wGunExist = false;
@@ -839,7 +839,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         int item = ID % 10;
         int facing = ID / 10 * 10;
         switch (item) {
-            case WOOD_BLOCK: case STEEL_BLOCK: case ENGINE:
+            case WOOD_BLOCK: case STEEL_BLOCK: case ENGINE: case EYE:
                 return true;
             case TURBINE:
                 return (facing == RIGHT && side != LEFT) ||

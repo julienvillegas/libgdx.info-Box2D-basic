@@ -121,11 +121,17 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             if (i < NUMBER_OF_ITEMS / 2)
                 return (i == TURBINE) ? BLOCK_SIZE * 5 / 2 - getWidth(i) : BLOCK_SIZE;
             else
-                return (i == STEEL_GUN || i == WOOD_GUN) ? SCREEN_WIDTH - BLOCK_SIZE * 5 / 2 : SCREEN_WIDTH - BLOCK_SIZE * 2;
+                if (i < NUMBER_OF_ITEMS-1)
+                    return (i == STEEL_GUN || i == WOOD_GUN) ? SCREEN_WIDTH - BLOCK_SIZE * 5 / 2 : SCREEN_WIDTH - BLOCK_SIZE * 2;
+                else
+                    return SCREEN_WIDTH / 2 - BLOCK_SIZE / 2;
         }
 
         if (typeOfObj.equals("invCell_mid"))
-            return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE : SCREEN_WIDTH - BLOCK_SIZE*2;
+            if ( i < NUMBER_OF_ITEMS-1)
+                return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE : SCREEN_WIDTH - BLOCK_SIZE*2;
+            else
+                return SCREEN_WIDTH / 2 - BLOCK_SIZE / 2;
 
         if (typeOfObj.equals("invCell_left"))
             return (i < NUMBER_OF_ITEMS/2)? BLOCK_SIZE/2 : SCREEN_WIDTH - BLOCK_SIZE*5/2;
@@ -144,10 +150,14 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
     }
     private float getPosY(int i, String typeOfObj) {
         if (typeOfObj.equals("item"))
-            return (i < NUMBER_OF_ITEMS / 2) ? BLOCK_SIZE * (i + 2) * 3 / 2 - getHeight(i) / 2 : BLOCK_SIZE * (i - 2) * 3 / 2 - getHeight(i) / 2;
+            if (i < NUMBER_OF_ITEMS-1)
+                return (i < NUMBER_OF_ITEMS / 2) ? BLOCK_SIZE * (i + 2) * 3 / 2 - getHeight(i) / 2 : BLOCK_SIZE * (i - 2) * 3 / 2 - getHeight(i) / 2;
+            else return SCREEN_HEIGHT - getHeight(i) * 3 / 2;
 
         if (typeOfObj.equals("invCell"))
-            return (i < NUMBER_OF_ITEMS / 2) ? BLOCK_SIZE * (i + 2) * 3 / 2 - BLOCK_SIZE/2 : BLOCK_SIZE * (i - 2) * 3 / 2 - BLOCK_SIZE/2;
+            if (i < NUMBER_OF_ITEMS-1)
+                return (i < NUMBER_OF_ITEMS / 2) ? BLOCK_SIZE * (i + 2) * 3 / 2 - BLOCK_SIZE/2 : BLOCK_SIZE * (i - 2) * 3 / 2 - BLOCK_SIZE/2;
+            else return SCREEN_HEIGHT - getHeight(i) * 3 / 2;
 
         if (typeOfObj.equals("label"))
             return getPosY(i, "invCell") + BLOCK_SIZE/5;
@@ -191,12 +201,13 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
             case HALF_STEEL_BLOCK: return "halfsteelblock.png";
             case STEEL_GUN: return "gun_2.png";
             case WOOD_GUN: return "gun_1.png";
+            case EYE: return "eye.png";
         }
         return "";
     }
 
     private int[] setPrimaryInventory() {
-        int[] inventory = new int[8];
+        int[] inventory = new int[9];
         inventory[WOOD_BLOCK] = 8;
         inventory[STEEL_BLOCK] = 4;
         inventory[ENGINE] = 3;
@@ -205,6 +216,7 @@ public class Menu implements Screen, InputProcessor, ItemID, AssemblingScreenCoo
         inventory[HALF_STEEL_BLOCK] = 2;
         inventory[STEEL_GUN] = 1;
         inventory[WOOD_GUN] = 2;
+        inventory[EYE]=1;
         return inventory;
     }                                                       // Задаёт изначальное количество предметов для расстановки
 
