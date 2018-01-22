@@ -59,8 +59,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final int BTN_P2_GUN = 4;
     private static final int BTN_P2_RIGHTTURBINE = 5;
 
-    private static final int hp = 10;
-    private static final int bulletUserData = -1;
+    private static final int hp = 3;
+    private static final int bulletUserData = -12;
 
     private TextureAtlas textureAtlas;
     private TextureAtlas textureAtlas2;
@@ -137,24 +137,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
-                Fixture fixtureA = contact.getFixtureA();
-                Fixture fixtureB = contact.getFixtureB();
-                int lifesA = Integer.parseInt(fixtureA.getBody().getUserData().toString());
-                int lifesB = Integer.parseInt(fixtureB.getBody().getUserData().toString());
-                if (lifesB==-1){
-                    fixtureB.getBody().setUserData(0);
-                }
-                if (lifesA==-1){
-                    fixtureA.getBody().setUserData(0);
-                }
-                if ((lifesA>0)&&(lifesB==-1)){
-                    fixtureA.getBody().setUserData(lifesA-1);
-                }
-                if ((lifesB>0)&&(lifesA==-1)){
-                    fixtureB.getBody().setUserData(lifesB-1);
-                }
 
-               Gdx.app.log("beginContact", "between " + fixtureA.getBody().getUserData() + " and " + fixtureB.getBody().getUserData());
             }
 
             @Override
@@ -169,7 +152,24 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
             @Override
             public void postSolve(Contact contact, ContactImpulse impulse) {
+                Fixture fixtureA = contact.getFixtureA();
+                Fixture fixtureB = contact.getFixtureB();
 
+                int lifesA = Integer.parseInt(fixtureA.getBody().getUserData().toString());
+                int lifesB = Integer.parseInt(fixtureB.getBody().getUserData().toString());
+
+                if ((lifesA > 0) && (lifesB <= -10)) {
+                    fixtureA.getBody().setUserData(lifesA - 1);
+                }
+                if ((lifesB > 0) && (lifesA <= -10)) {
+                    fixtureB.getBody().setUserData(lifesB - 1);
+                }
+                if (lifesB <= -10) {
+                    contact.getFixtureB().getBody().setUserData(lifesB + 1);
+                }
+                if (lifesA <= -10) {
+                    contact.getFixtureA().getBody().setUserData(lifesA + 1);
+                }
             }
         });
         physicsBodies = new PhysicsShapeCache("physics.xml");
@@ -261,10 +261,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p1_namesOfBodies[i][j] = name;
                     p1_bodies[i][j] = createBody(name, x, y, 0);
                     p1_bodies[i][j].setBullet(true);
-                    if (name.contains("gun"))
-                        p1_bodies[i][j].setUserData(-2);
-                    else
-                        p1_bodies[i][j].setUserData(hp);
+                    p1_bodies[i][j].setUserData(hp);
                 }
             }
         }
@@ -322,10 +319,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p2_namesOfBodies[i][j] = name;
                     p2_bodies[i][j] = createBody(name, x, y, 0);
                     p2_bodies[i][j].setBullet(true);
-                    if (name.contains("gun"))
-                        p2_bodies[i][j].setUserData(-2);
-                    else
-                        p2_bodies[i][j].setUserData(hp);
+                    p2_bodies[i][j].setUserData(hp);
                 }
             }
         }
@@ -605,7 +599,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
         for (int i = 0; i < bullets.size(); i++) {
-            bullets.get(i).setUserData(bulletUserData);
+
             Body body = bullets.get(i);
             String name = "bullet";
 
@@ -614,7 +608,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             drawSprite(name, position.x, position.y, degrees);
         }
         for (int i = 0; i < bullets2.size(); i++) {
-            bullets2.get(i).setUserData(bulletUserData);
             Body body = bullets2.get(i);
             String name = "bullet2";
 
@@ -992,14 +985,19 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
         bullet.setLinearVelocity(new Vector2(body.getLinearVelocity().x + impulse * (float) Math.cos(body.getAngle() + rotate*Math.PI/2), body.getLinearVelocity().y + impulse * (float) Math.sin(body.getAngle() + rotate * Math.PI/2)));
+        bullet.setUserData(bulletUserData);
         if (gunNum == 1){
          bullets2.add(bullet);}
          else
         {bullets.add(bullet);}
-        if (player == 1)
+        if (player == 1) {
             p1_bodies[i][j].applyForceToCenter(-impulse * cos, -impulse * sin, true);
-        else
+            p1_bodies[i][j].setUserData(Integer.parseInt(p1_bodies[i][j].getUserData().toString())+2);
+        }
+        else{
             p2_bodies[i][j].applyForceToCenter(-impulse * cos, -impulse * sin, true);
+            p2_bodies[i][j].setUserData(Integer.parseInt(p2_bodies[i][j].getUserData().toString())+2);
+        }
     }
 
 }
