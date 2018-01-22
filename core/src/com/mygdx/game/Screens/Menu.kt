@@ -416,9 +416,16 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
                 if (blocks[currI][currJ]!!.isInStartPos)
                     plus1ToLabel(currI)
                 else {
-                    blockArr[lastXInTable][lastYInTable] = blocks[currI][currJ]!!.getNumber()
+                    val ID = blocks[currI][currJ]!!.getNumber()
+                    blockArr[lastXInTable][lastYInTable] = ID
                     blocks[currI][currJ]!!.setXYinTable(lastXInTable, lastYInTable)
-                    safeRotate()
+                    when (ID % 10) {
+                        ItemID.TURBINE,
+                        ItemID.WOOD_GUN,
+                        ItemID.STEEL_GUN,
+                        ItemID.HALF_WOOD_BLOCK,
+                        ItemID.HALF_STEEL_BLOCK -> safeRotate()
+                    }
                     setImageOnTable(lastXInTable, lastYInTable)
                 }
             } else if (setEndPosition(x, y)) {
