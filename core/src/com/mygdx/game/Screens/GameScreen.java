@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 
+
 public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScreenCoords {
 
     private static final float STEP_TIME = 1f / 60f;
@@ -145,20 +146,25 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if ((blockA.getType()>=0)||(blockB.getType()>=0)){
                     Gdx.app.log("begincontact","bodyA hp:" + blockA.getHp() + "    bodyB hp:" + blockB.getHp());
                     Gdx.app.log("begincontact","bodyA type:" + blockA.getType() + "    bodyB type:" + blockB.getType());}
-                if ((blockA.getType() >= 0) && (blockB.getType() == bulletType)) {
+                if ((blockA.getType() >= 0) && (blockB.getType() == bulletType) && (blockB.isBulletisActivated() == false)) {
                     float x = fixtureB.getBody().getLinearVelocity().x;
                     float y = fixtureB.getBody().getLinearVelocity().y;
                     if (Math.sqrt(x*x+y*y)>20){
-                    blockA.setHp(blockA.getHp()-1f);
-                    fixtureA.getBody().setUserData(blockA);
+                        blockA.setHp(blockA.getHp()-1f);
+                        fixtureA.getBody().setUserData(blockA);
+                        blockB.setBulletisActivated(true);
+                        fixtureB.getBody().setUserData(blockB);
                     }
                 }
-                if ((blockB.getType() >= 0) && (blockA.getType() == bulletType)) {
+                if ((blockB.getType() >= 0) && (blockA.getType() == bulletType)&& (blockA.isBulletisActivated() == false)) {
                     float x = fixtureA.getBody().getLinearVelocity().x;
                     float y = fixtureA.getBody().getLinearVelocity().y;
                     if (Math.sqrt(x*x+y*y)>20){
                         blockB.setHp(blockB.getHp()-1f);
-                        fixtureB.getBody().setUserData(blockB);}
+                        fixtureB.getBody().setUserData(blockB);
+                        blockA.setBulletisActivated(true);
+                        fixtureA.getBody().setUserData(blockA);
+                    }
                 }
                 if ((blockA.getType()>=0)||(blockB.getType()>=0)){
                 Gdx.app.log("endcontact","bodyA hp:" + blockA.getHp() + "    bodyB hp:" + blockB.getHp());
@@ -167,6 +173,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
             @Override
             public void endContact(Contact contact) {
+
 
             }
 
@@ -181,7 +188,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         });
         physicsBodies = new PhysicsShapeCache("physics.xml");
         generate();
-        //generateMeteors();
+        generateMeteors();
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -594,14 +601,14 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
 
-        /*for (int i = 0; i < meteorBodies.length; i++) {
+        for (int i = 0; i < meteorBodies.length; i++) {
             Body body = meteorBodies[i];
             String name = meteorNames[i];
 
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
-        }*/
+        }
 
         while (bullets.size() > 30) {
             world.destroyBody(bullets.get(0));
@@ -612,6 +619,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             bullets2.remove(0);
         }
 
+
         for (int i = 0; i < bullets.size(); i++) {
 
             Body body = bullets.get(i);
@@ -620,6 +628,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
+            MyBlock block = (MyBlock)body.getUserData();
+            if (block.isBulletisActivated()){
+                //drawSprite("hero2", position.x, position.y, degrees);
+                block.setBulletisActivated(false);
+            }
+            bullets2.get(i).setUserData(block);
         }
         for (int i = 0; i < bullets2.size(); i++) {
             Body body = bullets2.get(i);
@@ -628,6 +642,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
+            MyBlock block = (MyBlock)body.getUserData();
+            if (block.isBulletisActivated()){
+                //drawSprite("hero2", position.x, position.y, degrees);
+                block.setBulletisActivated(false);
+            }
+            bullets2.get(i).setUserData(block);
         }
 
         if (p1_turb2_I != -1)

@@ -14,6 +14,15 @@ import static com.mygdx.game.Extra.ItemID.WOOD_GUN;
 public class MyBlock {
     float hp = 999f;
     int type;
+    boolean bulletisActivated = false;
+
+    public boolean isBulletisActivated() {
+        return bulletisActivated;
+    }
+
+    public void setBulletisActivated(boolean bulletisActivated) {
+        this.bulletisActivated = bulletisActivated;
+    }
 
     public MyBlock(int type) {
         this.type = type;
