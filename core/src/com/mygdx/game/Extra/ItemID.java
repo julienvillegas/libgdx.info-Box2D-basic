@@ -16,6 +16,8 @@ public interface ItemID {
     int WOOD_GUN = 7;
     int EYE = 8;
 
+    int HP = 2;//жизни деревянного блока
+
     int RIGHT = 0;
     int UP = 10;
     int LEFT = 20;

@@ -26,6 +26,7 @@ import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
+import com.mygdx.game.Bodies.MyBlock;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
 import com.mygdx.game.Extra.ItemID;
 
@@ -60,7 +61,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final int BTN_P2_RIGHTTURBINE = 5;
 
     private static final int hp = 3;
-    private static final int bulletUserData = -12;
+    private static final int bulletType = -1;
 
     private TextureAtlas textureAtlas;
     private TextureAtlas textureAtlas2;
@@ -137,7 +138,31 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         world.setContactListener(new ContactListener() {
             @Override
             public void beginContact(Contact contact) {
-
+                Fixture fixtureA = contact.getFixtureA();
+                Fixture fixtureB = contact.getFixtureB();
+                MyBlock blockA = (MyBlock)fixtureA.getBody().getUserData();
+                MyBlock blockB = (MyBlock)fixtureB.getBody().getUserData();
+                if ((blockA.getType()>=0)||(blockB.getType()>=0)){
+                    Gdx.app.log("begincontact","bodyA hp:" + blockA.getHp() + "    bodyB hp:" + blockB.getHp());
+                    Gdx.app.log("begincontact","bodyA type:" + blockA.getType() + "    bodyB type:" + blockB.getType());}
+                if ((blockA.getType() >= 0) && (blockB.getType() == bulletType)) {
+                    float x = fixtureB.getBody().getLinearVelocity().x;
+                    float y = fixtureB.getBody().getLinearVelocity().y;
+                    if (Math.sqrt(x*x+y*y)>20){
+                    blockA.setHp(blockA.getHp()-1f);
+                    fixtureA.getBody().setUserData(blockA);
+                    }
+                }
+                if ((blockB.getType() >= 0) && (blockA.getType() == bulletType)) {
+                    float x = fixtureA.getBody().getLinearVelocity().x;
+                    float y = fixtureA.getBody().getLinearVelocity().y;
+                    if (Math.sqrt(x*x+y*y)>20){
+                        blockB.setHp(blockB.getHp()-1f);
+                        fixtureB.getBody().setUserData(blockB);}
+                }
+                if ((blockA.getType()>=0)||(blockB.getType()>=0)){
+                Gdx.app.log("endcontact","bodyA hp:" + blockA.getHp() + "    bodyB hp:" + blockB.getHp());
+                Gdx.app.log("endcontact","bodyA type:" + blockA.getType() + "    bodyB type:" + blockB.getType());}
             }
 
             @Override
@@ -152,29 +177,11 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
             @Override
             public void postSolve(Contact contact, ContactImpulse impulse) {
-                Fixture fixtureA = contact.getFixtureA();
-                Fixture fixtureB = contact.getFixtureB();
-
-                int lifesA = Integer.parseInt(fixtureA.getBody().getUserData().toString());
-                int lifesB = Integer.parseInt(fixtureB.getBody().getUserData().toString());
-
-                if ((lifesA > 0) && (lifesB <= -10)) {
-                    fixtureA.getBody().setUserData(lifesA - 1);
-                }
-                if ((lifesB > 0) && (lifesA <= -10)) {
-                    fixtureB.getBody().setUserData(lifesB - 1);
-                }
-                if (lifesB <= -10) {
-                    contact.getFixtureB().getBody().setUserData(lifesB + 1);
-                }
-                if (lifesA <= -10) {
-                    contact.getFixtureA().getBody().setUserData(lifesA + 1);
-                }
             }
         });
         physicsBodies = new PhysicsShapeCache("physics.xml");
         generate();
-        generateMeteors();
+        //generateMeteors();
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -216,6 +223,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (p1_ship[i][j] != NULL) {
                     int type = p1_ship[i][j] % 10;
+                    MyBlock block = new MyBlock(type);
                     int facing = p1_ship[i][j] / 10 * 10;
 
                     String name = blockNames[type];
@@ -261,7 +269,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p1_namesOfBodies[i][j] = name;
                     p1_bodies[i][j] = createBody(name, x, y, 0);
                     p1_bodies[i][j].setBullet(true);
-                    p1_bodies[i][j].setUserData(hp);
+                    Gdx.app.log("Block","Block Hp: " +block.getHp() + "Block Type: " + block.getType());
+                    p1_bodies[i][j].setUserData(block);
                 }
             }
         }
@@ -274,6 +283,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (p2_ship[i][j] != NULL) {
                     int type = p2_ship[i][j] % 10;
+                    MyBlock block = new MyBlock(type);
                     int facing = p2_ship[i][j] / 10 * 10;
 
                     String name = blockNames[type];
@@ -319,7 +329,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     p2_namesOfBodies[i][j] = name;
                     p2_bodies[i][j] = createBody(name, x, y, 0);
                     p2_bodies[i][j].setBullet(true);
-                    p2_bodies[i][j].setUserData(hp);
+                    Gdx.app.log("Block","Block Hp: " +block.getHp() + "Block Type: " + block.getType());
+                    p2_bodies[i][j].setUserData(block);
                 }
             }
         }
@@ -421,7 +432,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
             this.meteorNames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
-            meteorBodies[i].setUserData(-2);
+            MyBlock block = new MyBlock(-2);
+            meteorBodies[i].setUserData(block);
             meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
         }
     }
@@ -456,7 +468,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (p1_bodies[i][j] != null) {
                     if (p1_bodies[i][j].getUserData() != null){
-                        if(p1_bodies[i][j].getUserData().equals(0)){
+                        MyBlock block = (MyBlock) p1_bodies[i][j].getUserData();
+                        if(block.getHp()<=0){
                             for (JointEdge joint : p1_bodies[i][j].getJointList()) {
                                 world.destroyJoint(joint.joint);
                             }
@@ -496,7 +509,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 }
                 if (p2_bodies[i][j] != null) {
                     if (p2_bodies[i][j].getUserData() != null){
-                        if(p2_bodies[i][j].getUserData().equals(0)){
+                        MyBlock block = (MyBlock) p2_bodies[i][j].getUserData();
+                        if(block.getHp()<=0){
                             for (JointEdge joint : p2_bodies[i][j].getJointList()) {
                                 world.destroyJoint(joint.joint);
                             }
@@ -580,14 +594,14 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
 
-        for (int i = 0; i < meteorBodies.length; i++) {
+        /*for (int i = 0; i < meteorBodies.length; i++) {
             Body body = meteorBodies[i];
             String name = meteorNames[i];
 
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
-        }
+        }*/
 
         while (bullets.size() > 30) {
             world.destroyBody(bullets.get(0));
@@ -697,7 +711,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < 4; i++) {
             gameFieldBounds[i] = world.createBody(bodyDef);
-            gameFieldBounds[i].setUserData(-3);
+            MyBlock block = new MyBlock(-2);
+            gameFieldBounds[i].setUserData(block);
+            Gdx.app.log("Ground","Ground Hp: " +block.getHp() + "Ground Type: " + block.getType());
             gameFieldBounds[i].createFixture((i < 2)? fixtureDef : fixtureDef1);
             gameFieldBounds[i].setTransform((i == 3)? camera.viewportWidth : 0, (i == 0)? camera.viewportHeight : 0, 0);
         }
@@ -957,46 +973,56 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         float cosAlpha, sinAlpha;
         float atan = (gunNum == 1)? ATAN_0195 : ATAN_01;
         float asin = (gunNum == 1)? ASIN_0975 : ASIN_0985;
-        float kf2 = (gunNum == 1)? 0.92f: 0.6f;
+        float kf2 = (gunNum == 1)? 0.93f: 0.61f;
         float kf3 = (gunNum == 1)? 0.65f: 0.35f;
-        int impulse = (gunNum == 1)? 1000 : 500;
+        int impulse = (gunNum == 1)? 100 : 70;
         Body bullet;
          if (gunNum == 1){bullet = createBody("bullet2", 0, 0, body.getAngle());}
         else { bullet = createBody("bullet", 0, 0, body.getAngle());}
         if (rotate == 0) {
             cosAlpha = (float) Math.cos(body.getAngle() + atan);
             sinAlpha = (float) Math.sin(body.getAngle() + atan);
-            bullet.setTransform(body.getPosition().x + 3.8f * cosAlpha, body.getPosition().y + 3.8f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
+            bullet.setTransform(body.getPosition().x + 4.0f * cosAlpha, body.getPosition().y + 4.0f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
         else if (rotate == 1) {
             cosAlpha = (float) Math.cos(body.getAngle() + asin);
             sinAlpha = (float) Math.sin(body.getAngle() + asin);
-            bullet.setTransform(body.getPosition().x + 3.8f * cosAlpha, body.getPosition().y + 3.8f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
+            bullet.setTransform(body.getPosition().x + 4.0f * cosAlpha, body.getPosition().y + 4.0f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
         else if (rotate == 2) {
             cosAlpha = (float) Math.cos(body.getAngle() + Math.PI / 2);
             sinAlpha = (float) Math.sin(body.getAngle() + Math.PI / 2);
-            bullet.setTransform(body.getPosition().x + kf2 * cosAlpha, body.getPosition().y + kf2 * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
+            float cosAlpha1 = (float) Math.cos(body.getAngle());
+            float sinAlpha1 = (float) Math.sin(body.getAngle());
+            bullet.setTransform(body.getPosition().x + kf2 * cosAlpha -0.2f*cosAlpha1, body.getPosition().y + kf2 * sinAlpha-0.2f*sinAlpha1, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
         else if (rotate == 3) {
             cosAlpha = (float) Math.cos(body.getAngle());
             sinAlpha = (float) Math.sin(body.getAngle());
-            bullet.setTransform(body.getPosition().x + kf3 * cosAlpha, body.getPosition().y + kf3 * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
+            float cosAlpha1 = (float) Math.cos(body.getAngle() + Math.PI / 2);
+            float sinAlpha1 = (float) Math.sin(body.getAngle() + Math.PI / 2);
+            bullet.setTransform(body.getPosition().x + kf3 * cosAlpha -0.2f*cosAlpha1, body.getPosition().y + kf3 * sinAlpha-0.2f*sinAlpha1, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
 
         bullet.setLinearVelocity(new Vector2(body.getLinearVelocity().x + impulse * (float) Math.cos(body.getAngle() + rotate*Math.PI/2), body.getLinearVelocity().y + impulse * (float) Math.sin(body.getAngle() + rotate * Math.PI/2)));
-        bullet.setUserData(bulletUserData);
+        MyBlock block = new MyBlock(bulletType);
+        //Gdx.app.log("Bullet","Bullet Hp: " +block.getHp() + "Bullet Type: " + block.getType());
+        bullet.setUserData(block);
         if (gunNum == 1){
          bullets2.add(bullet);}
          else
         {bullets.add(bullet);}
         if (player == 1) {
             p1_bodies[i][j].applyForceToCenter(-impulse * cos, -impulse * sin, true);
-            p1_bodies[i][j].setUserData(Integer.parseInt(p1_bodies[i][j].getUserData().toString())+2);
+            MyBlock bodyblock = (MyBlock) p1_bodies[i][j].getUserData();
+            bodyblock.setHp(bodyblock.getHp());
+            p1_bodies[i][j].setUserData(bodyblock);
         }
         else{
             p2_bodies[i][j].applyForceToCenter(-impulse * cos, -impulse * sin, true);
-            p2_bodies[i][j].setUserData(Integer.parseInt(p2_bodies[i][j].getUserData().toString())+2);
+            MyBlock bodyblock = (MyBlock) p2_bodies[i][j].getUserData();
+            bodyblock.setHp(bodyblock.getHp());
+            p2_bodies[i][j].setUserData(bodyblock);
         }
     }
 
