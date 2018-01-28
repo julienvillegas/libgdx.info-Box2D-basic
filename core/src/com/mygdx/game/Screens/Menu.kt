@@ -33,7 +33,7 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
     private var lastY = 0f
     private var lastXInTable = 0
     private var lastYInTable = 0
-    private var delta_flag = ItemID.NULL
+    private var deltaFlag = ItemID.NULL
 
     private val blockArr = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
     private val blocks = ArrayList<Array<MoveableImage?>>()
@@ -228,19 +228,19 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
 
         if ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.RIGHT && relativeX > AssemblingScreenCoords.BLOCK_SIZE || ID == ItemID.TURBINE && facing == ItemID.LEFT && relativeX > getWidth(ItemID.TURBINE)) {
             imgCenterX -= AssemblingScreenCoords.BLOCK_SIZE
-            delta_flag = ItemID.LEFT
+            deltaFlag = ItemID.LEFT
         }
         if (((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.UP || ID == ItemID.TURBINE && facing == ItemID.DOWN) && relativeY > AssemblingScreenCoords.BLOCK_SIZE) {
             imgCenterY -= AssemblingScreenCoords.BLOCK_SIZE
-            delta_flag = ItemID.DOWN
+            deltaFlag = ItemID.DOWN
         }
         if ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.LEFT && relativeX < 0 || ID == ItemID.TURBINE && facing == ItemID.RIGHT && relativeX < getWidth(ItemID.TURBINE) - AssemblingScreenCoords.BLOCK_SIZE) {
             imgCenterX += AssemblingScreenCoords.BLOCK_SIZE
-            delta_flag = ItemID.RIGHT
+            deltaFlag = ItemID.RIGHT
         }
         if (((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.DOWN || ID == ItemID.TURBINE && facing == ItemID.UP) && relativeY < 0) {
             imgCenterY += AssemblingScreenCoords.BLOCK_SIZE
-            delta_flag = ItemID.UP
+            deltaFlag = ItemID.UP
         }
 
         blocks[currI][currJ]!!.setXY(x + imgCenterX - blocks[currI][currJ]!!.originX, y + imgCenterY - blocks[currI][currJ]!!.originY)
@@ -269,13 +269,13 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
         if (i >= 0 && i < AssemblingScreenCoords.FIELD_WIDTH && j >= 0 && j < AssemblingScreenCoords.FIELD_HEIGHT) {
             if (blockArr[i][j] == ItemID.NULL) {
                 setCoordsFromCell(cells[i][j]!!.x, cells[i][j]!!.y, relativeX, relativeY)
-                when (delta_flag) {
+                when (deltaFlag) {
                     ItemID.RIGHT -> i++
                     ItemID.UP -> j++
                     ItemID.LEFT -> i--
                     ItemID.DOWN -> j--
                 }
-                delta_flag = ItemID.NULL
+                deltaFlag = ItemID.NULL
                 if (i != -1 && i != AssemblingScreenCoords.FIELD_WIDTH && j != -1 && j != AssemblingScreenCoords.FIELD_HEIGHT) {
                     if (!isImgOutOfBounds(i, j)) {
                         if (!occupiedCells[i][j] && !isNearCellOccupied(i, j)) {
