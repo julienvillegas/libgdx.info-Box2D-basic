@@ -10,7 +10,7 @@ public interface AssemblingScreenCoords {
 
     int SCREEN_HEIGHT = Gdx.graphics.getHeight();                                       // Высота экрана
     int SCREEN_WIDTH = Gdx.graphics.getWidth();                                         // Ширина экрана
-    float SCREEN_HEIGHT_F = Gdx.graphics.getHeight();                                   // То же, но float
+    float SCREEN_HEIGHT_F = Gdx.graphics.getHeight();                                   // То же, но float очень логичная константа, Миша
 
     int FIELD_HEIGHT = 6;                                                               // Высота поля сборки (в блоках)
     int FIELD_WIDTH = 8;                                                                // Ширина поля сборки (в блоках)

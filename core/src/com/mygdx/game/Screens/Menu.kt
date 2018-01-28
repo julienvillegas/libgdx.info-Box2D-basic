@@ -7,7 +7,9 @@ import com.badlogic.gdx.InputProcessor
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -16,12 +18,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.mygdx.game.Bodies.MoveableImage
 import com.mygdx.game.Extra.AssemblingScreenCoords
+import com.mygdx.game.Extra.AssemblingScreenCoords.SCREEN_HEIGHT
+import com.mygdx.game.Extra.AssemblingScreenCoords.SCREEN_WIDTH
 import com.mygdx.game.Extra.ItemID
 import com.mygdx.game.MyGdxGame
 
 import java.util.ArrayList
 
-class Menu internal constructor(private val game: Game) : Screen, InputProcessor, ItemID, AssemblingScreenCoords {
+class Menu internal constructor(private val game : Game, private val shipChoosingScreen: ShipChoosingScreen, private val i : Int) : Screen, InputProcessor, ItemID, AssemblingScreenCoords {
 
     private val stage: Stage
 
@@ -41,11 +45,11 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
     private val invCells = ArrayList<MoveableImage>()
     private val occupiedCells = Array(AssemblingScreenCoords.FIELD_WIDTH) { BooleanArray(AssemblingScreenCoords.FIELD_HEIGHT) }
     private val labels = arrayOfNulls<Label>(ItemID.NUMBER_OF_ITEMS)
+    private val background = Texture("table.png")
 
     private var currI = ItemID.NULL
     private var currJ = ItemID.NULL                                                         // Предмет, который мы сейчас перетаскиваем
-    private var isImageDragging = false                                                        // Перетаскиваем ли мы какой-нибудь из предметов
-
+    private var isImageDragging = false // Перетаскиваем ли мы какой-нибудь из предметов
     private val inventory = setPrimaryInventory()                                                // Инвентарь игрока
 
 
@@ -94,8 +98,7 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
             stage.addActor(labels[i])
         }
 
-        val button = TextButton("Start!", MyGdxGame.skin)
-        button.width = (AssemblingScreenCoords.SCREEN_WIDTH / 4).toFloat()
+        val button = TextButton("Ship is created!", MyGdxGame.skin)
         button.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - button.width * 3 / 2, AssemblingScreenCoords.BLOCK_SIZE / 2)
         button.addListener(object : InputListener() {
 
@@ -104,7 +107,8 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
                 for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH)
                     for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT)
                         arr[i][j] = blockArr[i][AssemblingScreenCoords.FIELD_HEIGHT - 1 - j]
-                game.screen = GameScreen(arr, arr)
+                shipChoosingScreen.setArray(arr, i)
+                game.screen = shipChoosingScreen
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
@@ -485,6 +489,9 @@ class Menu internal constructor(private val game: Game) : Screen, InputProcessor
     override fun render(delta: Float) {
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        stage.batch.begin()
+        stage.batch.draw(background,0.toFloat(),0.toFloat(),(SCREEN_WIDTH).toFloat(),(SCREEN_HEIGHT).toFloat())
+        stage.batch.end()
         stage.act()
         stage.draw()
     }
