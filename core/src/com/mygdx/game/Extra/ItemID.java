@@ -16,13 +16,23 @@ public interface ItemID {
     int WOOD_GUN = 7;
     int EYE = 8;
 
-    int HP = 2;//жизни деревянного блока
-
     int RIGHT = 0;
     int UP = 10;
     int LEFT = 20;
     int DOWN = 30;
 
     int NULL = 1000;
+
+    // Здесь хранятся максимальные ХП для каждого из блоков
+
+    float HP_WOOD_BLOCK = 2f;
+    float HP_STEEL_BLOCK = 4f;
+    float HP_ENGINE = 3f;
+    float HP_TURBINE = 3f;
+    float HP_HALF_WOOD_BLOCK = 1f;
+    float HP_HALF_STEEL_BLOCK = 2f;
+    float HP_STEEL_GUN = 5f;
+    float HP_WOOD_GUN = 3f;
+    float HP_EYE = 1f;
 
 }
