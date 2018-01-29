@@ -132,6 +132,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         camera = new OrthographicCamera();
         viewport = new ExtendViewport(50, 50, camera);
 
+
         textureAtlas = new TextureAtlas("sprites.txt");
         textureAtlas2 = new TextureAtlas("sprites2.txt");
         addSprites();
@@ -235,8 +236,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         case DOWN: name += "270"; break;
                     }
 
-                    float x = getXOnField(p1_ship[i][j], i, 15);
-                    float y = getYOnField(p1_ship[i][j], j, 50);
+                    float x = getXOnField(p1_ship[i][j], i, 0);
+                    float y = getYOnField(p1_ship[i][j], j, 40);
 
                     if (type == TURBINE) {
                         if (turbExist) {
@@ -277,8 +278,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
         }
 
-        int xCorner = 355 - FIELD_WIDTH*7 - 15;
-        int yCorner = 270 - FIELD_HEIGHT*7 - 50;
+        int xCorner = (int)(WIDTH_IN_UNITS/SCALE*0.02f) - FIELD_WIDTH*7;
+        int yCorner = (int)(HEIGHT_IN_UNITS/SCALE*0.02f)- FIELD_HEIGHT*7+30;
         turbExist = false;
         wGunExist = false;
         for (int i = 0; i < FIELD_WIDTH; i++) {
@@ -428,16 +429,16 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < meteorBodies.length; i++) {
             String name = meteorNames[random.nextInt(meteorNames.length)];
 
-            float x = (random.nextFloat() * 150) * (float) (SCALE/0.01);
-            float y = (random.nextFloat() * 80) * (float) (SCALE/0.01);
-            if ((x < 50*SCALE/0.02) && (y < 50*SCALE/0.01)) {
+            float x = (random.nextFloat() * (int)(WIDTH_IN_UNITS/SCALE*0.02)) * (float) (SCALE/0.02);
+            float y = (random.nextFloat() * (int)(HEIGHT_IN_UNITS/SCALE*0.02)) * (float) (SCALE/0.02);
+            /*if ((x < 50*SCALE/0.02) && (y < 50*SCALE/0.01)) {
                 x += 50 * (float) (SCALE/0.01);
                 y += 50 * (float) (SCALE/0.01);
             }
-            if ((x > 180*SCALE/0.02) && (y > 120*SCALE/0.01)) {
+            if ((x > WIDTH_IN_UNITS-FIELD_WIDTH*BLOCK_SIZE) && (y > HEIGHT_IN_UNITS - BLOCK_SIZE*FIELD_HEIGHT)) {
                 x -= 50* (float) (SCALE/0.01);
                 y -= 50* (float) (SCALE/0.01);
-            }
+            }*/
             this.meteorNames[i] = name;
             meteorBodies[i] = createBody(name, x, y, 0);
             BlockData block = new BlockData(-2);
@@ -679,24 +680,33 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             bullets2.get(i).setUserData(block);
         }
 
-        if (p1_turb2power > 10)
-            drawSprite("buttonturbine",1,1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+        if (p1_turb2_I != -1)
+            if (p1_turb2power > 10)
+                drawSprite("buttonturbine",1,1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+
         if ((p1_steelGun_I != -1) || (p1_wGun1_I != -1) || (p1_wGun2_I != -1))
             drawSprite("buttonfire",1,HEIGHT_IN_UNITS/2 - BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
-        if (p1_turb1power > 10)
-            drawSprite("buttonturbine",1, HEIGHT_IN_UNITS - BUTTON_RADIUS*2 - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
-        if (p2_turb1power > 10)
-            drawSprite("buttonturbine",WIDTH_IN_UNITS - 1,BUTTON_RADIUS*2 + 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+
+        if (p1_turb1_I != -1)
+            if (p1_turb1power > 10)
+                drawSprite("buttonturbine",1, HEIGHT_IN_UNITS - BUTTON_RADIUS*2 - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+
+        if (p2_turb1_I != -1)
+            if (p2_turb1power > 10)
+                drawSprite("buttonturbine",WIDTH_IN_UNITS - 1,BUTTON_RADIUS*2 + 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+
         if ((p2_steelGun_I != -1) || (p2_wGun1_I != -1) || (p2_wGun2_I != -1))
             drawSprite("buttonfire",WIDTH_IN_UNITS - 1,HEIGHT_IN_UNITS/2 + BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
-        if (p2_turb2power > 10)
-            drawSprite("buttonturbine",WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+
+        if (p2_turb2_I != -1)
+            if (p2_turb2power > 10)
+                drawSprite("buttonturbine",WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
 
 
         batch.end();
 
         // uncomment to show the polygons
-        //debugRenderer.render(world, camera.combined);
+        debugRenderer.render(world, camera.combined);
 
     }
 
