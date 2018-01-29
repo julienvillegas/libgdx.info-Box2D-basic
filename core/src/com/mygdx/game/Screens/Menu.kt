@@ -9,7 +9,6 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -55,7 +54,27 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
 
     init {
         stage = Stage(ScreenViewport())
-        Gdx.input.inputProcessor = this
+
+        val button = TextButton("Ship is created!", MyGdxGame.skin)
+        button.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - button.width * 3 / 2, AssemblingScreenCoords.BLOCK_SIZE / 2)
+        button.addListener(object : InputListener() {
+
+            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
+                val arr = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
+                for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH)
+                    for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT)
+                        arr[i][j] = blockArr[i][AssemblingScreenCoords.FIELD_HEIGHT - 1 - j]
+                shipChoosingScreen.setArray(arr, i)
+                game.screen = shipChoosingScreen
+            }
+
+            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                System.out.println("touchDown in button")
+                return true
+            }
+        })
+
+        stage.addActor(button)
 
         for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH) {
             for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT) {
@@ -98,25 +117,7 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
             stage.addActor(labels[i])
         }
 
-        val button = TextButton("Ship is created!", MyGdxGame.skin)
-        button.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - button.width * 3 / 2, AssemblingScreenCoords.BLOCK_SIZE / 2)
-        button.addListener(object : InputListener() {
 
-            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                val arr = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
-                for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH)
-                    for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT)
-                        arr[i][j] = blockArr[i][AssemblingScreenCoords.FIELD_HEIGHT - 1 - j]
-                shipChoosingScreen.setArray(arr, i)
-                game.screen = shipChoosingScreen
-            }
-
-            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                return true
-            }
-        })
-
-        stage.addActor(button)
     }
 
 
@@ -390,6 +391,7 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
         for (i in blocks.indices)
             for (j in 0 until blocks[i].size)
                 if (blocks[i][j]!!.contains(x.toFloat(), y.toFloat()) && blocks[i][j]!!.isTouchable && !isImageDragging) {
+                    System.out.println("touchDown in block ${i} ${j} ")
                     initCurrentImage(i, j)
                     blocks[currI][currJ]!!.isMoving = true
                     blocks[currI][currJ]!!.isAlreadyMoved = false
@@ -471,18 +473,18 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     }
 
     override fun mouseMoved(x: Int, y: Int): Boolean {
-        return true
+        return false
     }
 
     override fun scrolled(amount: Int): Boolean {
-        return true
+        return false
     }
 
 
     override fun show() {
         val m = InputMultiplexer()
-        m.addProcessor(this)
         m.addProcessor(stage)
+        m.addProcessor(this)
         Gdx.input.inputProcessor = m
     }
 
