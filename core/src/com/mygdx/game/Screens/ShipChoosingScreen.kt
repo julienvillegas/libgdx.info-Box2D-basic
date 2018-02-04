@@ -10,51 +10,50 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.mygdx.game.Extra.AssemblingScreenCoords
-import com.mygdx.game.Extra.AssemblingScreenCoords.SCREEN_HEIGHT
-import com.mygdx.game.Extra.AssemblingScreenCoords.SCREEN_WIDTH
+import com.mygdx.game.Extra.AssemblingScreenCoords.*
+import com.mygdx.game.Extra.ItemID
+import com.mygdx.game.Extra.ItemID.NULL
+import com.mygdx.game.Extra.ItemID.NUMBER_OF_ITEMS
 import com.mygdx.game.MyGdxGame
 
 class ShipChoosingScreen(private val game: Game) : Screen {
 
-    private val stage: Stage
-    var p1_ship = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
-    var p2_ship = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
-    fun TextButton.contains( x : Float, y : Float ) = ( x > this.x ) && ( x < this.x + this.width ) && (y < SCREEN_HEIGHT - this.y) &&
-            (y > SCREEN_HEIGHT - this.y - this.height)
+    private val stage: Stage = Stage(ScreenViewport())
 
-    fun setArray( arr : Array<IntArray> , i : Int  ){
-        if (i == 1)
-            p1_ship = arr
-        else
-            p2_ship = arr
-    }
+    var p1_ship = setPrimaryShip()
+    var p2_ship = setPrimaryShip()
+    var p1_inventory = setPrimaryInventory()
+    var p2_inventory = setPrimaryInventory()
+
 
     fun getMe() = this
 
     init {
-        stage = Stage(ScreenViewport())
 
-        val p1shipbutton = TextButton("Create your ship",MyGdxGame.skin)
+        val p1shipbutton = TextButton("Create 1st ship", MyGdxGame.skin)
+        val p2shipbutton = TextButton("Create 2nd ship", MyGdxGame.skin)
+        val playButton = TextButton("Start!", MyGdxGame.skin)
+
+        playButton.width = (SCREEN_WIDTH / 2).toFloat()
+
         p1shipbutton.setPosition( p1shipbutton.width / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
-        p1shipbutton.addListener(object : InputListener() {
+        p2shipbutton.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - p2shipbutton.width * 5 / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
+        playButton.setPosition(SCREEN_WIDTH / 2 - playButton.width / 2, SCREEN_HEIGHT / 2 - playButton.height / 2)
 
+
+        p1shipbutton.addListener(object : InputListener() {
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                game.screen = Menu(game, getMe(), 1)
+                game.screen = Menu(game, getMe(), 1, p1_ship, p1_inventory)
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
                 return true
             }
         })
-
-
-        val p2shipbutton = TextButton("Create your ship",MyGdxGame.skin)
-        p2shipbutton.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - p2shipbutton.width * 5 / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
 
         p2shipbutton.addListener(object : InputListener() {
-
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                    game.screen = Menu(game,getMe(), 2)
+                game.screen = Menu(game,getMe(), 2, p2_ship, p2_inventory)
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
@@ -62,26 +61,22 @@ class ShipChoosingScreen(private val game: Game) : Screen {
             }
         })
 
-        val playButton = TextButton("Start!", MyGdxGame.skin)
-        playButton.width = (SCREEN_WIDTH / 2).toFloat()
-        playButton.setPosition(SCREEN_WIDTH / 2 - playButton.width / 2, SCREEN_HEIGHT / 2 - playButton.height / 2)
         playButton.addListener(object : InputListener() {
-
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                game.screen = GameScreen(p1_ship,p2_ship)
+                game.screen = GameScreen(p1_ship, p2_ship)
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
                 return true
             }
         })
-        stage.addActor(playButton)
+
+
         stage.addActor(p1shipbutton)
         stage.addActor(p2shipbutton)
-
+        stage.addActor(playButton)
 
     }
-
 
 
 
@@ -115,4 +110,40 @@ class ShipChoosingScreen(private val game: Game) : Screen {
     override fun dispose() {
         stage.dispose()
     }
+
+
+
+    fun TextButton.contains( x : Float, y : Float ) = ( x > this.x ) && ( x < this.x + this.width ) && (y < SCREEN_HEIGHT - this.y) &&
+            (y > SCREEN_HEIGHT - this.y - this.height)
+
+
+    private fun setPrimaryShip(): Array<IntArray> {                                                 // Задаёт изначальный вариант корабля (т.е. пустое поле)
+        val resShip = Array(FIELD_WIDTH) { IntArray(FIELD_HEIGHT) }
+        for (i in 0 until FIELD_WIDTH) {
+            for (j in 0 until FIELD_HEIGHT) {
+                resShip[i][j] = NULL
+            }
+        }
+        return resShip
+    }                                             // Задаёт изначальный корабль (т.е. пустое поле)
+    private fun setPrimaryInventory(): IntArray {
+        val inventory = IntArray(NUMBER_OF_ITEMS)
+        for (i in 0 until ItemID.NUMBER_OF_ITEMS)
+            inventory[i] = ItemID.ITEMS_MAX_CNT[i]
+        return inventory
+    }                                               // Задаёт изначальное количество предметов для расстановки
+
+    fun setShipData(ship: Array<IntArray>, player: Int, inventory: IntArray) {
+        when (player) {
+            1 -> {
+                p1_ship = ship
+                p1_inventory = inventory
+            }
+            2 -> {
+                p2_ship = ship
+                p2_inventory = inventory
+            }
+        }
+    }
+
 }

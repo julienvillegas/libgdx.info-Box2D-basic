@@ -35,4 +35,20 @@ public interface ItemID {
     float HP_WOOD_GUN = 3f;
     float HP_EYE = 1f;
 
+    // Здесь хранятся максимальное количество блоков каждого из видов в окне сборки
+
+    int WOOD_BLOCK_MAXCNT = 8;
+    int STEEL_BLOCK_MAXCNT = 4;
+    int ENGINE_MAXCNT = 3;
+    int TURBINE_MAXCNT = 2;
+    int HALF_WOOD_BLOCK_MAXCNT = 4;
+    int HALF_STEEL_BLOCK_MAXCNT = 2;
+    int STEEL_GUN_MAXCNT = 1;
+    int WOOD_GUN_MAXCNT = 2;
+    int EYE_MAXCNT = 1;
+
+    int[] ITEMS_MAX_CNT = {WOOD_BLOCK_MAXCNT, STEEL_BLOCK_MAXCNT, ENGINE_MAXCNT,
+            TURBINE_MAXCNT, HALF_WOOD_BLOCK_MAXCNT, HALF_STEEL_BLOCK_MAXCNT,
+            STEEL_GUN_MAXCNT, WOOD_GUN_MAXCNT, EYE_MAXCNT};
+
 }

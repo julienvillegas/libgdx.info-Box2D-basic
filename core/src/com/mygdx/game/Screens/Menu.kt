@@ -1,10 +1,6 @@
 package com.mygdx.game.Screens
 
-import com.badlogic.gdx.Game
-import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.InputMultiplexer
-import com.badlogic.gdx.InputProcessor
-import com.badlogic.gdx.Screen
+import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
@@ -17,16 +13,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.mygdx.game.Bodies.MoveableImage
 import com.mygdx.game.Extra.AssemblingScreenCoords
-import com.mygdx.game.Extra.AssemblingScreenCoords.SCREEN_HEIGHT
-import com.mygdx.game.Extra.AssemblingScreenCoords.SCREEN_WIDTH
+import com.mygdx.game.Extra.AssemblingScreenCoords.*
 import com.mygdx.game.Extra.ItemID
+import com.mygdx.game.Extra.ItemID.TURBINE
+import com.mygdx.game.Extra.ItemID.WOOD_GUN
 import com.mygdx.game.MyGdxGame
 
-import java.util.ArrayList
+class Menu internal constructor (private val game : Game, private val shipChoosingScreen: ShipChoosingScreen,
+                                 private val player: Int, private val ship: Array<IntArray>, private val inventory: IntArray) : Screen, InputProcessor, ItemID, AssemblingScreenCoords {
 
-class Menu internal constructor(private val game : Game, private val shipChoosingScreen: ShipChoosingScreen, private val i : Int) : Screen, InputProcessor, ItemID, AssemblingScreenCoords {
-
-    private val stage: Stage
+    private val stage: Stage = Stage(ScreenViewport())
 
     private var oldX = 0f
     private var oldY = 0f
@@ -38,33 +34,31 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     private var lastYInTable = 0
     private var deltaFlag = ItemID.NULL
 
-    private val blockArr = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
-    private val blocks = ArrayList<Array<MoveableImage?>>()
+    private val blocks = getPrimaryImages()
     private val cells = Array<Array<MoveableImage?>>(AssemblingScreenCoords.FIELD_WIDTH) { arrayOfNulls(AssemblingScreenCoords.FIELD_HEIGHT) }
     private val invCells = ArrayList<MoveableImage>()
     private val occupiedCells = Array(AssemblingScreenCoords.FIELD_WIDTH) { BooleanArray(AssemblingScreenCoords.FIELD_HEIGHT) }
     private val labels = arrayOfNulls<Label>(ItemID.NUMBER_OF_ITEMS)
+
     private val background = Texture("table.png")
 
     private var currI = ItemID.NULL
-    private var currJ = ItemID.NULL                                                         // Предмет, который мы сейчас перетаскиваем
-    private var isImageDragging = false // Перетаскиваем ли мы какой-нибудь из предметов
-    private val inventory = setPrimaryInventory()                                                // Инвентарь игрока
+    private var currJ = ItemID.NULL                                                 // Предмет, который мы сейчас перетаскиваем
+    private var isImageDragging = false                                             // Перетаскиваем ли мы какой-нибудь из предметов
 
 
     init {
-        stage = Stage(ScreenViewport())
 
         val button = TextButton("Ship is created!", MyGdxGame.skin)
         button.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - button.width * 3 / 2, AssemblingScreenCoords.BLOCK_SIZE / 2)
         button.addListener(object : InputListener() {
 
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                val arr = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
+                val returnShip = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
                 for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH)
                     for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT)
-                        arr[i][j] = blockArr[i][AssemblingScreenCoords.FIELD_HEIGHT - 1 - j]
-                shipChoosingScreen.setArray(arr, i)
+                        returnShip[i][j] = ship[i][j]
+                shipChoosingScreen.setShipData(returnShip, player, inventory)
                 game.screen = shipChoosingScreen
             }
 
@@ -80,13 +74,11 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
             for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT) {
                 cells[i][j] = MoveableImage(AssemblingScreenCoords.FIELD_DELTA_X + AssemblingScreenCoords.BLOCK_SIZE * i, AssemblingScreenCoords.FIELD_DELTA_Y + AssemblingScreenCoords.BLOCK_SIZE * j, AssemblingScreenCoords.BLOCK_SIZE, AssemblingScreenCoords.BLOCK_SIZE, 0, "gray.png")
                 stage.addActor(cells[i][j])
-                blockArr[i][j] = ItemID.NULL
                 occupiedCells[i][j] = false
             }
         }
 
-        for (itemsCount in inventory)
-            blocks.add(arrayOfNulls(itemsCount))
+        val shipItemsCoords: Array<ArrayList<Int>> = getPrimaryItemsCoords()                                               // Список координат, на котором уже есть блоки, сохранённые с предыдущих разов
 
         for (i in blocks.indices) {
             if (i == ItemID.TURBINE || i == ItemID.STEEL_GUN || i == ItemID.WOOD_GUN) {
@@ -100,10 +92,27 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
             }
 
             for (j in 0 until blocks[i].size) {
-                blocks[i][blocks[i].size - j - 1] = MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i))
+                if (j < inventory[i])
+                    blocks[i][blocks[i].size - j - 1] = MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i))
+                else {
+                    currI = i
+                    currJ = blocks[i].size - j - 1
+                    blocks[currI][currJ] = MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i))
+                    val iInField = shipItemsCoords[i][2*(j - inventory[i])]
+                    val jInField = shipItemsCoords[i][2*(j - inventory[i]) + 1]
+                    var id = ship[iInField][jInField]
+                    while (id >= 10) {
+                        blocks[currI][currJ].flip90()
+                        id -= 10
+                    }
+                    blocks[currI][currJ].setXY(AssemblingScreenCoords.FIELD_DELTA_X + AssemblingScreenCoords.BLOCK_SIZE * iInField + getDeltaXForLongBlocks(id),
+                            AssemblingScreenCoords.FIELD_DELTA_Y + AssemblingScreenCoords.BLOCK_SIZE * jInField + getDeltaYForLongBlocks(id))
+                    blocks[currI][currJ].xinTable = iInField
+                    blocks[currI][currJ].yinTable = jInField
+                }
+                blocks[i][blocks[i].size - j - 1].isTouchable = true
+                stage.addActor(blocks[i][blocks[i].size - j - 1])
             }
-            blocks[i][0]!!.isTouchable = true
-            stage.addActor(blocks[i][0])
         }
 
         val itemsCountBF = BitmapFont()
@@ -111,13 +120,40 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
         val itemsCountLS = Label.LabelStyle(itemsCountBF, Color.BLACK)
 
         for (i in labels.indices) {
-            labels[i] = Label("x" + blocks[i].size, itemsCountLS)
-            labels[i]!!.setX(getPosX(i, "label"))
-            labels[i]!!.setY(getPosY(i, "label"))
+            labels[i] = Label("x" + inventory[i], itemsCountLS)
+            labels[i]!!.x = getPosX(i, "label")
+            labels[i]!!.y = getPosY(i, "label")
             stage.addActor(labels[i])
         }
 
 
+    }
+
+
+
+    private fun getPrimaryImages(): Array<ArrayList<MoveableImage>> {
+        val res = Array(ItemID.NUMBER_OF_ITEMS) { ArrayList<MoveableImage>() }
+        for (i in 0 until res.size)
+            for (j in 0 until ItemID.ITEMS_MAX_CNT[i])
+                res[i].add(MoveableImage(0f,0f,0f,0f,0, "gray.png"))
+        return res
+    }
+
+    private fun getPrimaryItemsCoords(): Array<ArrayList<Int>> {
+        val res = Array(ItemID.NUMBER_OF_ITEMS) {ArrayList<Int>()}
+        for (i in 0 until ship.size) {
+            for (j in 0 until ship[0].size) {
+                if (ship[i][j] != ItemID.NULL) {
+                    res[ship[i][j] % 10].add(i)
+                    res[ship[i][j] % 10].add(j)
+                }
+            }
+        }
+        print("SHIP DATA: ")
+        for (i in 0 until res.size)
+            print(res[i] + " ")
+        println()
+        return res
     }
 
 
@@ -170,29 +206,47 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     }
 
     private fun getWidth(i: Int): Float {
-        when (i) {
-            ItemID.STEEL_GUN -> return 765 * AssemblingScreenCoords.BLOCK_SIZE / 345
-            ItemID.WOOD_GUN -> return 770 * AssemblingScreenCoords.BLOCK_SIZE / 345
-            ItemID.TURBINE -> return 565 * AssemblingScreenCoords.BLOCK_SIZE / 345
+        return when (i) {
+            ItemID.STEEL_GUN -> 765 * AssemblingScreenCoords.BLOCK_SIZE / 345
+            ItemID.WOOD_GUN -> 770 * AssemblingScreenCoords.BLOCK_SIZE / 345
+            ItemID.TURBINE -> 565 * AssemblingScreenCoords.BLOCK_SIZE / 345
+            else -> AssemblingScreenCoords.BLOCK_SIZE
         }
-        return AssemblingScreenCoords.BLOCK_SIZE
     }
 
     private fun getHeight(i: Int): Float {
-        when (i) {
-            ItemID.STEEL_GUN -> return 315 * AssemblingScreenCoords.BLOCK_SIZE / 345
-            ItemID.WOOD_GUN -> return 194 * AssemblingScreenCoords.BLOCK_SIZE / 345
+        return when (i) {
+            ItemID.STEEL_GUN -> 315 * AssemblingScreenCoords.BLOCK_SIZE / 345
+            ItemID.WOOD_GUN -> 194 * AssemblingScreenCoords.BLOCK_SIZE / 345
+            else -> AssemblingScreenCoords.BLOCK_SIZE
         }
-        return AssemblingScreenCoords.BLOCK_SIZE
+    }
+
+    private fun getDeltaXForLongBlocks(id: Int): Float {
+        // Сдвигает блоки, у которых визуальная х-координата не совпадает с реальной
+        return if (id == TURBINE)
+            BLOCK_SIZE - getWidth(id)
+        else
+            0f
+    }
+
+    private fun getDeltaYForLongBlocks(id: Int): Float {
+        // Сдвигает блоки, у которых визуальная y-координата не совпадает с реальной
+        return if (id == WOOD_GUN)
+            (BLOCK_SIZE - getHeight(id)) / 2f
+        else
+            0f
     }
 
 
-    private fun plus1ToLabel(index: Int) {
-        labels[index]!!.setText("x" + (Integer.parseInt(labels[index]!!.getText().toString().substring(1)) + 1))
+    private fun plus1item(index: Int) {
+        labels[index]!!.setText("x" + (Integer.parseInt(labels[index]!!.text.toString().substring(1)) + 1))
+        inventory[index]++
     }
 
-    private fun minus1FromLabel(index: Int) {
-        labels[index]!!.setText("x" + (Integer.parseInt(labels[index]!!.getText().toString().substring(1)) - 1))
+    private fun minus1item(index: Int) {
+        labels[index]!!.setText("x" + (Integer.parseInt(labels[index]!!.text.toString().substring(1)) - 1))
+        inventory[index]--
     }
 
 
@@ -211,44 +265,30 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
         return ""
     }
 
-    private fun setPrimaryInventory(): IntArray {
-        val inventory = IntArray(9)
-        inventory[ItemID.WOOD_BLOCK] = 8
-        inventory[ItemID.STEEL_BLOCK] = 4
-        inventory[ItemID.ENGINE] = 3
-        inventory[ItemID.TURBINE] = 2
-        inventory[ItemID.HALF_WOOD_BLOCK] = 4
-        inventory[ItemID.HALF_STEEL_BLOCK] = 2
-        inventory[ItemID.STEEL_GUN] = 1
-        inventory[ItemID.WOOD_GUN] = 2
-        inventory[ItemID.EYE] = 1
-        return inventory
-    }                                                       // Задаёт изначальное количество предметов для расстановки
-
     private fun setCoordsFromCell(x: Float, y: Float, relativeX: Float, relativeY: Float) {
         var imgCenterX = AssemblingScreenCoords.BLOCK_SIZE / 2
         var imgCenterY = AssemblingScreenCoords.BLOCK_SIZE / 2
-        val ID = blocks[currI][currJ]!!.getNumber() % 10
-        val facing = blocks[currI][currJ]!!.getNumber() / 10 * 10
+        val id = blocks[currI][currJ].getNumber() % 10
+        val facing = blocks[currI][currJ].getNumber() / 10 * 10
 
-        if ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.RIGHT && relativeX > AssemblingScreenCoords.BLOCK_SIZE || ID == ItemID.TURBINE && facing == ItemID.LEFT && relativeX > getWidth(ItemID.TURBINE)) {
+        if ((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.RIGHT && relativeX > AssemblingScreenCoords.BLOCK_SIZE || id == ItemID.TURBINE && facing == ItemID.LEFT && relativeX > getWidth(ItemID.TURBINE)) {
             imgCenterX -= AssemblingScreenCoords.BLOCK_SIZE
             deltaFlag = ItemID.LEFT
         }
-        if (((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.UP || ID == ItemID.TURBINE && facing == ItemID.DOWN) && relativeY > AssemblingScreenCoords.BLOCK_SIZE) {
+        if (((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.UP || id == ItemID.TURBINE && facing == ItemID.DOWN) && relativeY > AssemblingScreenCoords.BLOCK_SIZE) {
             imgCenterY -= AssemblingScreenCoords.BLOCK_SIZE
             deltaFlag = ItemID.DOWN
         }
-        if ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.LEFT && relativeX < 0 || ID == ItemID.TURBINE && facing == ItemID.RIGHT && relativeX < getWidth(ItemID.TURBINE) - AssemblingScreenCoords.BLOCK_SIZE) {
+        if ((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.LEFT && relativeX < 0 || id == ItemID.TURBINE && facing == ItemID.RIGHT && relativeX < getWidth(ItemID.TURBINE) - AssemblingScreenCoords.BLOCK_SIZE) {
             imgCenterX += AssemblingScreenCoords.BLOCK_SIZE
             deltaFlag = ItemID.RIGHT
         }
-        if (((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.DOWN || ID == ItemID.TURBINE && facing == ItemID.UP) && relativeY < 0) {
+        if (((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.DOWN || id == ItemID.TURBINE && facing == ItemID.UP) && relativeY < 0) {
             imgCenterY += AssemblingScreenCoords.BLOCK_SIZE
             deltaFlag = ItemID.UP
         }
 
-        blocks[currI][currJ]!!.setXY(x + imgCenterX - blocks[currI][currJ]!!.originX, y + imgCenterY - blocks[currI][currJ]!!.originY)
+        blocks[currI][currJ].setXY(x + imgCenterX - blocks[currI][currJ].originX, y + imgCenterY - blocks[currI][currJ].originY)
     }
 
 
@@ -256,23 +296,23 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
         isImageDragging = true
         currI = i
         currJ = j
-    }                                               // Запоминает предмет, которое мы сейчас перетаскиваем
+    }                                              // Запоминает предмет, которое мы сейчас перетаскиваем
 
     private fun resetCurrentImage() {
         isImageDragging = false
         currI = ItemID.NULL
         currJ = ItemID.NULL
-    }                                                          // Сбрасывает перетаскиваемый предмет
+    }                                                           // Сбрасывает перетаскиваемый предмет
 
 
     private fun setEndPosition(x: Int, y: Int): Boolean {
-        val relativeX = x - blocks[currI][currJ]!!.x
-        val relativeY = AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - y.toFloat() - blocks[currI][currJ]!!.y
+        val relativeX = x - blocks[currI][currJ].x
+        val relativeY = AssemblingScreenCoords.SCREEN_HEIGHT.toFloat() - y.toFloat() - blocks[currI][currJ].y
         var i = Math.floor(((x - AssemblingScreenCoords.FIELD_DELTA_X) / AssemblingScreenCoords.BLOCK_SIZE).toDouble()).toInt()
         var j = AssemblingScreenCoords.FIELD_HEIGHT - 1 - Math.floor(((y - AssemblingScreenCoords.FIELD_DELTA_Y) / AssemblingScreenCoords.BLOCK_SIZE).toDouble()).toInt()
 
         if (i >= 0 && i < AssemblingScreenCoords.FIELD_WIDTH && j >= 0 && j < AssemblingScreenCoords.FIELD_HEIGHT) {
-            if (blockArr[i][j] == ItemID.NULL) {
+            if (ship[i][j] == ItemID.NULL) {
                 setCoordsFromCell(cells[i][j]!!.x, cells[i][j]!!.y, relativeX, relativeY)
                 when (deltaFlag) {
                     ItemID.RIGHT -> i++
@@ -282,17 +322,17 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
                 }
                 deltaFlag = ItemID.NULL
                 if (i != -1 && i != AssemblingScreenCoords.FIELD_WIDTH && j != -1 && j != AssemblingScreenCoords.FIELD_HEIGHT) {
-                    if (!isImgOutOfBounds(i, j)) {
+                    return if (!isImgOutOfBounds(i, j)) {
                         if (!occupiedCells[i][j] && !isNearCellOccupied(i, j)) {
                             setImageOnTable(i, j)
-                            return true
+                            true
                         } else {
                             returnImageBack()
-                            return false
+                            false
                         }
                     } else {
                         returnImageBack()
-                        return false
+                        false
                     }
                 } else {
                     returnImageBack()
@@ -303,48 +343,53 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
                 return false
             }
         } else {
-            blocks[currI][currJ]!!.angle = 0
-            blocks[currI][currJ]!!.returnToStartPos()
+            blocks[currI][currJ].angle = 0
+            blocks[currI][currJ].returnToStartPos()
             return false
         }
     }
 
     private fun safeRotate() {
-        val x = blocks[currI][currJ]!!.xinTable
-        val y = blocks[currI][currJ]!!.yinTable
+        val x = blocks[currI][currJ].xinTable
+        val y = blocks[currI][currJ].yinTable
         do
-            blocks[currI][currJ]!!.flip90()
+            blocks[currI][currJ].flip90()
         while (isImgOutOfBounds(x, y) || isNearCellOccupied(x, y))
     }
 
     private fun isImgOutOfBounds(x: Int, y: Int): Boolean {
-        val ID = blocks[currI][currJ]!!.getNumber() % 10
-        val facing = blocks[currI][currJ]!!.getNumber() / 10 * 10
-        return ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.LEFT || ID == ItemID.TURBINE && facing == ItemID.RIGHT) && x == 0 ||
-                ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.RIGHT || ID == ItemID.TURBINE && facing == ItemID.LEFT) && x == AssemblingScreenCoords.FIELD_WIDTH - 1 ||
-                ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.DOWN || ID == ItemID.TURBINE && facing == ItemID.UP) && y == 0 ||
-                ((ID == ItemID.STEEL_GUN || ID == ItemID.WOOD_GUN) && facing == ItemID.UP || ID == ItemID.TURBINE && facing == ItemID.DOWN) && y == AssemblingScreenCoords.FIELD_HEIGHT - 1
+        val id = blocks[currI][currJ].getNumber() % 10
+        val facing = blocks[currI][currJ].getNumber() / 10 * 10
+        return ((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.LEFT || id == ItemID.TURBINE && facing == ItemID.RIGHT) && x == 0 ||
+                ((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.RIGHT || id == ItemID.TURBINE && facing == ItemID.LEFT) && x == AssemblingScreenCoords.FIELD_WIDTH - 1 ||
+                ((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.DOWN || id == ItemID.TURBINE && facing == ItemID.UP) && y == 0 ||
+                ((id == ItemID.STEEL_GUN || id == ItemID.WOOD_GUN) && facing == ItemID.UP || id == ItemID.TURBINE && facing == ItemID.DOWN) && y == AssemblingScreenCoords.FIELD_HEIGHT - 1
     }
 
     private fun isNearCellOccupied(x: Int, y: Int): Boolean {
-        val ID = blocks[currI][currJ]!!.getNumber()
-        when (ID) {
-            ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> return occupiedCells[x + 1][y]
-            ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> return occupiedCells[x][y + 1]
-            ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> return occupiedCells[x - 1][y]
-            ItemID.TURBINE + ItemID.UP, ItemID.STEEL_GUN + ItemID.DOWN, ItemID.WOOD_GUN + ItemID.DOWN -> return occupiedCells[x][y - 1]
+        val id = blocks[currI][currJ].getNumber()
+        return when (id) {
+            ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT
+                -> occupiedCells[x + 1][y]
+            ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP
+                -> occupiedCells[x][y + 1]
+            ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT
+                -> occupiedCells[x - 1][y]
+            ItemID.TURBINE + ItemID.UP, ItemID.STEEL_GUN + ItemID.DOWN, ItemID.WOOD_GUN + ItemID.DOWN
+                -> occupiedCells[x][y - 1]
+            else
+                -> false
         }
-        return false
     }
 
 
     private fun setImageOnTable(i: Int, j: Int) {
-        val ID = blocks[currI][currJ]!!.getNumber()
+        val id = blocks[currI][currJ].getNumber()
 
-        blockArr[i][j] = ID
-        blocks[currI][currJ]!!.setXYinTable(i, j)
+        ship[i][j] = id
+        blocks[currI][currJ].setXYinTable(i, j)
         occupiedCells[i][j] = true
-        when (ID) {
+        when (id) {
             ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> occupiedCells[i + 1][j] = true
             ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> occupiedCells[i][j + 1] = true
             ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> occupiedCells[i - 1][j] = true
@@ -353,14 +398,14 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     }
 
     private fun removeImageFromTable() {
-        val i = blocks[currI][currJ]!!.xinTable
-        val j = blocks[currI][currJ]!!.yinTable
-        val ID = blocks[currI][currJ]!!.getNumber()
+        val i = blocks[currI][currJ].xinTable
+        val j = blocks[currI][currJ].yinTable
+        val id = blocks[currI][currJ].getNumber()
 
-        blockArr[i][j] = ItemID.NULL
-        blocks[currI][currJ]!!.setXYinTable(ItemID.NULL, ItemID.NULL)
+        ship[i][j] = ItemID.NULL
+        blocks[currI][currJ].setXYinTable(ItemID.NULL, ItemID.NULL)
         occupiedCells[i][j] = false
-        when (ID) {
+        when (id) {
             ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> occupiedCells[i + 1][j] = false
             ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> occupiedCells[i][j + 1] = false
             ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> occupiedCells[i - 1][j] = false
@@ -369,10 +414,11 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     }
 
     private fun returnImageBack() {
-        blocks[currI][currJ]!!.returnToStartPos(lastX, lastY)
+        blocks[currI][currJ].returnToStartPos(lastX, lastY)
         if (lastXInTable != ItemID.NULL)
             setImageOnTable(lastXInTable, lastYInTable)
     }
+
 
 
     override fun keyDown(keycode: Int): Boolean {
@@ -390,22 +436,22 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     override fun touchDown(x: Int, y: Int, pointer: Int, button: Int): Boolean {
         for (i in blocks.indices)
             for (j in 0 until blocks[i].size)
-                if (blocks[i][j]!!.contains(x.toFloat(), y.toFloat()) && blocks[i][j]!!.isTouchable && !isImageDragging) {
-                    System.out.println("touchDown in block ${i} ${j} ")
+                if (blocks[i][j].contains(x.toFloat(), y.toFloat()) && blocks[i][j].isTouchable && !isImageDragging) {
+                    System.out.println("touchDown in block $i $j ")
                     initCurrentImage(i, j)
-                    blocks[currI][currJ]!!.isMoving = true
-                    blocks[currI][currJ]!!.isAlreadyMoved = false
-                    lastX = blocks[currI][currJ]!!.x
-                    lastY = blocks[currI][currJ]!!.y
-                    if (blocks[currI][currJ]!!.xinTable != ItemID.NULL) {
-                        lastXInTable = blocks[currI][currJ]!!.xinTable
-                        lastYInTable = blocks[currI][currJ]!!.yinTable
+                    blocks[currI][currJ].isMoving = true
+                    blocks[currI][currJ].isAlreadyMoved = false
+                    lastX = blocks[currI][currJ].x
+                    lastY = blocks[currI][currJ].y
+                    if (blocks[currI][currJ].xinTable != ItemID.NULL) {
+                        lastXInTable = blocks[currI][currJ].xinTable
+                        lastYInTable = blocks[currI][currJ].yinTable
                         removeImageFromTable()
                     } else {
                         lastXInTable = ItemID.NULL
                         lastYInTable = ItemID.NULL
-                        if (blocks[currI][currJ]!!.isInStartPos)
-                            minus1FromLabel(i)
+                        if (blocks[currI][currJ].isInStartPos)
+                            minus1item(i)
                     }
                 }
         oldX = x.toFloat()
@@ -417,15 +463,15 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
 
     override fun touchUp(x: Int, y: Int, pointer: Int, button: Int): Boolean {
         if (isImageDragging) {
-            if (!blocks[currI][currJ]!!.isAlreadyMoved) {
-                blocks[currI][currJ]!!.setXY(lastX, lastY)
-                if (blocks[currI][currJ]!!.isInStartPos)
-                    plus1ToLabel(currI)
+            if (!blocks[currI][currJ].isAlreadyMoved) {
+                blocks[currI][currJ].setXY(lastX, lastY)
+                if (blocks[currI][currJ].isInStartPos)
+                    plus1item(currI)
                 else {
-                    val ID = blocks[currI][currJ]!!.getNumber()
-                    blockArr[lastXInTable][lastYInTable] = ID
-                    blocks[currI][currJ]!!.setXYinTable(lastXInTable, lastYInTable)
-                    when (ID % 10) {
+                    val id = blocks[currI][currJ].getNumber()
+                    ship[lastXInTable][lastYInTable] = id
+                    blocks[currI][currJ].setXYinTable(lastXInTable, lastYInTable)
+                    when (id % 10) {
                         ItemID.TURBINE,
                         ItemID.WOOD_GUN,
                         ItemID.STEEL_GUN,
@@ -437,25 +483,25 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
             } else if (setEndPosition(x, y)) {
                 if (currJ < blocks[currI].size - 1) {
                     for (h in currJ + 1 until blocks[currI].size) {
-                        if (blocks[currI][h]!!.isInStartPos) {
-                            blocks[currI][h]!!.isTouchable = true
+                        if (blocks[currI][h].isInStartPos) {
+                            blocks[currI][h].isTouchable = true
                             stage.addActor(blocks[currI][h])
                             break
                         }
                     }
                 }
             } else {
-                if (blocks[currI][currJ]!!.isInStartPos) {
-                    plus1ToLabel(currI)
+                if (blocks[currI][currJ].isInStartPos) {
+                    plus1item(currI)
                     for (h in 0 until blocks[currI].size) {
-                        if (h != currJ && blocks[currI][h]!!.isInStartPos) {
-                            blocks[currI][h]!!.isTouchable = false
-                            blocks[currI][h]!!.remove()
+                        if (h != currJ && blocks[currI][h].isInStartPos) {
+                            blocks[currI][h].isTouchable = false
+                            blocks[currI][h].remove()
                         }
                     }
                 }
             }
-            blocks[currI][currJ]!!.isMoving = false
+            blocks[currI][currJ].isMoving = false
             resetCurrentImage()
         }
         return false
@@ -464,8 +510,8 @@ class Menu internal constructor(private val game : Game, private val shipChoosin
     override fun touchDragged(x: Int, y: Int, pointer: Int): Boolean {
         if (isImageDragging) {
             if (Math.abs(x - currentX) > AssemblingScreenCoords.BLOCK_SIZE / 8 || Math.abs(y - currentY) > AssemblingScreenCoords.BLOCK_SIZE / 8)
-                blocks[currI][currJ]!!.isAlreadyMoved = true
-            blocks[currI][currJ]!!.setXY(blocks[currI][currJ]!!.x + x - oldX, blocks[currI][currJ]!!.y - y + oldY)
+                blocks[currI][currJ].isAlreadyMoved = true
+            blocks[currI][currJ].setXY(blocks[currI][currJ].x + x - oldX, blocks[currI][currJ].y - y + oldY)
             oldX = x.toFloat()
             oldY = y.toFloat()
         }
