@@ -1,19 +1,19 @@
 sprites2.png
-size: 3973, 2000
+size: 3948, 2319
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-meteorone2
-  rotate: false
-  xy: 1814, 1767
-  size: 222, 222
-  orig: 222, 222
-  offset: 0, 0
+meteorfour
+  rotate: true
+  xy: 3631, 665
+  size: 332, 301
+  orig: 393, 301
+  offset: 61, 0
   index: -1
-meteorone3
-  rotate: false
-  xy: 3642, 671
-  size: 310, 310
-  orig: 310, 310
+meteorthree
+  rotate: true
+  xy: 3679, 999
+  size: 328, 260
+  orig: 328, 260
   offset: 0, 0
   index: -1

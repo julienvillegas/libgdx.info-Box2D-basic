@@ -1,5 +1,6 @@
 package com.mygdx.game.Screens;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
@@ -113,7 +114,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private float p1_gunTimer = 0f;
     private float p2_gunTimer = 0f;
 
+    private Game game;
+    private ShipChoosingScreen shipChoosingScreen;
 
+    private boolean isPause = false;
 
     private Body[] meteorBodies = new Body[COUNT];
     private String[] meteorNames = new String[COUNT];
@@ -121,9 +125,13 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private ArrayList<Body> bullets2 = new ArrayList<Body>();
 
     GameScreen(
+            ShipChoosingScreen shipChoosingScreen,
+            Game game,
             int[][] player1ship,
             int[][] player2ship
     ){
+        this.game = game;
+        this.shipChoosingScreen = shipChoosingScreen;
         this.p1_ship = shipFlipHorizontal(player1ship);
         this.p2_ship = shipFlipHorizontal(shipRotate(player2ship));
 
@@ -236,8 +244,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         case DOWN: name += "270"; break;
                     }
 
-                    float x = getXOnField(p1_ship[i][j], i, 15);
-                    float y = getYOnField(p1_ship[i][j], j, 50);
+                    float x = getXOnField(p1_ship[i][j], i, 7);
+                    float y = getYOnField(p1_ship[i][j], j, 7*FIELD_HEIGHT);
 
                     if (type == TURBINE) {
                         if (turbExist) {
@@ -278,8 +286,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
         }
 
-        int xCorner = (int)(WIDTH_IN_UNITS/SCALE*0.02f) - FIELD_WIDTH*7;
-        int yCorner = (int)(HEIGHT_IN_UNITS/SCALE*0.02f)- FIELD_HEIGHT*7+30;
+        int xCorner = (int)(WIDTH_IN_UNITS/SCALE*0.02f) - (FIELD_WIDTH+1)*7;
+        int yCorner = (int)(HEIGHT_IN_UNITS/SCALE*0.02f)- 7*2;
         turbExist = false;
         wGunExist = false;
         for (int i = 0; i < FIELD_WIDTH; i++) {
@@ -429,23 +437,18 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < meteorBodies.length; i++) {
             String name = meteorNames[random.nextInt(meteorNames.length)];
 
-            float x = (random.nextFloat() * (int)(WIDTH_IN_UNITS/SCALE*0.02)) * (float) (SCALE/0.02);
-            float y = (random.nextFloat() * (int)(HEIGHT_IN_UNITS/SCALE*0.02)) * (float) (SCALE/0.02);
-            /*if ((x < 50*SCALE/0.02) && (y < 50*SCALE/0.01)) {
-                x += 50 * (float) (SCALE/0.01);
-                y += 50 * (float) (SCALE/0.01);
+            float x = (random.nextFloat() * (int)(WIDTH_IN_UNITS/SCALE*0.02-1)) * (float) (SCALE/0.02);
+            float y = (random.nextFloat() * (int)(HEIGHT_IN_UNITS/SCALE*0.02-1)) * (float) (SCALE/0.02);
+
+                this.meteorNames[i] = name;
+                meteorBodies[i] = createBody(name, x, y, 0);
+                BlockData block = new BlockData(-2);
+                meteorBodies[i].setUserData(block);
+                meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
             }
-            if ((x > WIDTH_IN_UNITS-FIELD_WIDTH*BLOCK_SIZE) && (y > HEIGHT_IN_UNITS - BLOCK_SIZE*FIELD_HEIGHT)) {
-                x -= 50* (float) (SCALE/0.01);
-                y -= 50* (float) (SCALE/0.01);
-            }*/
-            this.meteorNames[i] = name;
-            meteorBodies[i] = createBody(name, x, y, 0);
-            BlockData block = new BlockData(-2);
-            meteorBodies[i].setUserData(block);
-            meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
+
         }
-    }
+
 
     private Body createBody(String name, float x, float y, float rotation) {
         Body body = physicsBodies.createBody(name, world, SCALE, SCALE);
@@ -461,7 +464,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     @Override
     public void render(float delta) {
-        //Gdx.gl.glClearColor(0.57f, 0.77f, 0.85f, 1);
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -495,6 +497,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                                             break;
                                     }
                             }
+
                             if ((i == p1_turb1_I)&&(j == p1_turb1_J)){
                                 p1_turb1_I = -1;
                                 p1_turb1_J = -1;
@@ -702,7 +705,13 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (p2_turb2power > 10)
                 drawSprite("buttonturbine",WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
 
-
+        if (!isPause) {
+            drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
+        }
+        if (isPause){
+            drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
+            drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+        }
         batch.end();
 
         // uncomment to show the polygons
@@ -826,6 +835,18 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+        if ((screenX>SCREEN_WIDTH*0.47)&&(screenY>0)&&(screenX<SCREEN_WIDTH*0.53)&&(screenY<SCREEN_WIDTH*0.06)){
+            isPause = true;
+            //game.setScreen(shipChoosingScreen);
+        }
+        if (isPause){
+            if (isInCircle(screenX,screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f)){
+                game.setScreen(shipChoosingScreen);
+            }
+            if (isInCircle(screenX,screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f)){
+                isPause = false;
+            }
+        }
         return false;
     }
 
@@ -979,8 +1000,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         return res;
     }
-
-
 
     private void workTurbine(int player, int turbNum, float delta) {
         int i = 0, j = 0;

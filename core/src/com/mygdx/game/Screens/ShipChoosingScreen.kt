@@ -63,7 +63,7 @@ class ShipChoosingScreen(private val game: Game) : Screen {
 
         playButton.addListener(object : InputListener() {
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                game.screen = GameScreen(p1_ship, p2_ship)
+                game.screen = GameScreen(getMe(), game,p1_ship, p2_ship)
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {

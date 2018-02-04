@@ -11,8 +11,7 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
     var isMoving = false
     private var isTouchable = false
     var isAlreadyMoved = false
-    private var x: Float = 0.toFloat()
-    private var y: Float = 0.toFloat()
+
     private val number: Int
     var xinTable: Int = 0
     var yinTable: Int = 0
@@ -65,19 +64,6 @@ class MoveableImage(private val startPosX: Float, private val startPosY: Float, 
         return number
     }
 
-    override fun getX(): Float {
-        return x
-    }
-    override fun setX(x: Float) {
-        this.x = x
-    }
-
-    override fun getY(): Float {
-        return y
-    }
-    override fun setY(y: Float) {
-        this.y = y
-    }
 
     fun setXY(x: Float, y: Float) {
         this.setX(x)
