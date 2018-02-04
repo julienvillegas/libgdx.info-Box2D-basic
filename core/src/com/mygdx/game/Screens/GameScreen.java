@@ -124,8 +124,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             int[][] player1ship,
             int[][] player2ship
     ){
-        this.p1_ship = player1ship;
-        this.p2_ship = shipRotate(player2ship);
+        this.p1_ship = shipFlipHorizontal(player1ship);
+        this.p2_ship = shipFlipHorizontal(shipRotate(player2ship));
 
 
         batch = new SpriteBatch();
@@ -236,8 +236,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         case DOWN: name += "270"; break;
                     }
 
-                    float x = getXOnField(p1_ship[i][j], i, 0);
-                    float y = getYOnField(p1_ship[i][j], j, 40);
+                    float x = getXOnField(p1_ship[i][j], i, 15);
+                    float y = getYOnField(p1_ship[i][j], j, 50);
 
                     if (type == TURBINE) {
                         if (turbExist) {
@@ -706,7 +706,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         batch.end();
 
         // uncomment to show the polygons
-        debugRenderer.render(world, camera.combined);
+        // debugRenderer.render(world, camera.combined);
 
     }
 
@@ -872,6 +872,16 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 }
             }
 
+        return res;
+    }
+
+    private static int[][] shipFlipHorizontal(int[][] ship) {
+        int[][] res = new int[ship.length][ship[0].length];
+        for (int i = 0; i < res.length; i++) {
+            for (int j = 0; j < res[0].length; j++) {
+                res[i][j] = ship[i][FIELD_HEIGHT - 1 - j];
+            }
+        }
         return res;
     }
 
