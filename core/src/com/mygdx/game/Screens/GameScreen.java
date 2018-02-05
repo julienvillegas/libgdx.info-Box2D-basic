@@ -42,7 +42,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     public enum State{
         PAUSE,
-        RUN
+        RUN,
+        END
     }
 
     private State state = State.RUN;
@@ -125,6 +126,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private ShipChoosingScreen shipChoosingScreen;
 
     private boolean isPause = false;
+    private boolean isEnd = false;
+
 
     private Body[] meteorBodies = new Body[COUNT];
     private String[] meteorNames = new String[COUNT];
@@ -484,7 +487,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if (delta > 0.25f) delta = 0.25f;
                 break;
             case PAUSE:
-                break;}
+                break;
+            case END:
+                break;
+        }
 
 
             drawSprite("background_red_space", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
@@ -498,7 +504,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                                 for (JointEdge joint : p1_bodies[i][j].getJointList()) {
                                     world.destroyJoint(joint.joint);
                                 }
-
+                                if (p1_ship[i][j] == EYE){
+                                    isEnd = true;
+                                    state = State.END;
+                                }
                                 if (p1_ship[i][j] == ENGINE) {
                                     ArrayList<Integer> labels = ((BlockData) p1_bodies[i][j].getUserData()).getEngineLabels();
                                     for (int label : labels)
@@ -554,7 +563,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                                 for (JointEdge joint : p2_bodies[i][j].getJointList()) {
                                     world.destroyJoint(joint.joint);
                                 }
-
+                                if (p2_ship[i][j] == EYE){
+                                    isEnd = true;
+                                    state = State.END;
+                                }
                                 if (p2_ship[i][j] == ENGINE) {
                                     ArrayList<Integer> labels = ((BlockData) p2_bodies[i][j].getUserData()).getEngineLabels();
                                     for (int label : labels)
@@ -719,25 +731,24 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if (p2_turb2power > 10)
                     drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
 
-            if (!isPause) {
-                drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-            }
-            if (isPause) {
-                drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-                drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
-            }
+
 
 
             // uncomment to show the polygons
             // debugRenderer.render(world, camera.combined);
 
 
-        if (!isPause) {
-            drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-        }
+
         if (isPause) {
             drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
             drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+        }
+        else
+            if (isEnd){
+                drawSprite("end", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+            }
+            else{
+            drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
         }
         batch.end();
 
@@ -870,6 +881,17 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 isPause = false;
                 this.state = State.RUN;
             }
+        }
+        if (isEnd){
+            if (isInCircle(screenX,screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f)){
+                game.setScreen(shipChoosingScreen);
+            }
+            if (isInCircle(screenX,screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f)){
+                //isEnd = false;
+                //this.state = State.RUN;
+                game.setScreen(new GameScreen(shipChoosingScreen,game,p1_ship,p2_ship));
+            }
+
         }
         return false;
     }
