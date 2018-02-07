@@ -17,7 +17,6 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.JointEdge;
 import com.badlogic.gdx.physics.box2d.Manifold;
@@ -30,7 +29,6 @@ import com.codeandweb.physicseditor.PhysicsShapeCache;
 import com.mygdx.game.Bodies.BlockData;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
 import com.mygdx.game.Extra.ItemID;
-import com.sun.org.apache.bcel.internal.generic.ALOAD;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,11 +49,15 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final float STEP_TIME = 1f / 60f;
     private static final int VELOCITY_ITERATIONS = 6;
     private static final int POSITION_ITERATIONS = 2;
-    private static final float SCALE = 0.005f;
-    private static final int COUNT = 60;
+    private static final float GUNSHOT_DELTA = 0.2f;
+    private static final float MAX_RENDER_DELTA = 0.15f;
+    private static final float MAX_BULLET_LIFETIME = 7f;
+
+    private static final int METEORS_COUNT = 60;
 
     private static final float TURB_MAX_POWER = 54000f;
 
+    private static final float SCALE = 0.005f;
     private static final float UNIT_SIZE = SCREEN_HEIGHT / 50f;
     private static final float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;
     private static final float HEIGHT_IN_UNITS = 50f;
@@ -129,8 +131,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private boolean isEnd = false;
 
 
-    private Body[] meteorBodies = new Body[COUNT];
-    private String[] meteorNames = new String[COUNT];
+    private Body[] meteorBodies = new Body[METEORS_COUNT];
+    private String[] meteorNames = new String[METEORS_COUNT];
     private ArrayList<Body> bullets = new ArrayList<Body>();
     private ArrayList<Body> bullets2 = new ArrayList<Body>();
 
@@ -475,16 +477,17 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     @Override
     public void render(float delta) {
 
-            Gdx.gl.glClearColor(0, 0, 0, 1);
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glClearColor(0, 0, 0, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (delta > MAX_RENDER_DELTA)
+            delta = MAX_RENDER_DELTA;
 
 
-
-            batch.begin();
+        batch.begin();
         switch (state) {
             case RUN:
                 stepWorld(delta);
-                if (delta > 0.25f) delta = 0.25f;
                 break;
             case PAUSE:
                 break;
@@ -493,261 +496,255 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
 
-            drawSprite("background_red_space", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
+        drawSprite("background_red_space", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
 
-            for (int i = 0; i < FIELD_WIDTH; i++) {
-                for (int j = 0; j < FIELD_HEIGHT; j++) {
-                    if (p1_bodies[i][j] != null) {
-                        if (p1_bodies[i][j].getUserData() != null) {
-                            BlockData block = (BlockData) p1_bodies[i][j].getUserData();
-                            if (block.getHp() <= 0) {
-                                for (JointEdge joint : p1_bodies[i][j].getJointList()) {
-                                    world.destroyJoint(joint.joint);
-                                }
-                                if (p1_ship[i][j] == EYE){
-                                    isEnd = true;
-                                    state = State.END;
-                                }
-                                if (p1_ship[i][j] == ENGINE) {
-                                    ArrayList<Integer> labels = ((BlockData) p1_bodies[i][j].getUserData()).getEngineLabels();
-                                    for (int label : labels)
-                                        switch (label) {
-                                            case 1:
-                                                p1_turb1power -= TURB_MAX_POWER / (float) (labels.size());
-                                                break;
-                                            case 2:
-                                                p1_turb2power -= TURB_MAX_POWER / (float) (labels.size());
-                                                break;
-                                        }
-                                }
-
-                                if ((i == p1_turb1_I) && (j == p1_turb1_J)) {
-                                    p1_turb1_I = -1;
-                                    p1_turb1_J = -1;
-                                }
-                                if ((i == p1_turb2_I) && (j == p1_turb2_J)) {
-                                    p1_turb2_I = -1;
-                                    p1_turb2_J = -1;
-                                }
-                                if ((i == p1_steelGun_I) && (j == p1_steelGun_J)) {
-                                    p1_steelGun_I = -1;
-                                    p1_steelGun_J = -1;
-                                }
-                                if ((i == p1_wGun1_I) && (j == p1_wGun1_J)) {
-                                    p1_wGun1_I = -1;
-                                    p1_wGun1_J = -1;
-                                }
-                                if ((i == p1_wGun2_I) && (j == p1_wGun2_J)) {
-                                    p1_wGun2_I = -1;
-                                    p1_wGun2_J = -1;
-                                }
-
-                                world.destroyBody(p1_bodies[i][j]);
-                                p1_bodies[i][j] = null;
-
-                            } else {
-                                Body body = p1_bodies[i][j];
-                                String name = p1_namesOfBodies[i][j];
-
-
-                                Vector2 position = body.getPosition();
-                                float degrees = (float) Math.toDegrees(body.getAngle());
-                                drawSprite(name, position.x, position.y, degrees);
+        for (int i = 0; i < FIELD_WIDTH; i++) {
+            for (int j = 0; j < FIELD_HEIGHT; j++) {
+                if (p1_bodies[i][j] != null) {
+                    if (p1_bodies[i][j].getUserData() != null) {
+                        BlockData block = (BlockData) p1_bodies[i][j].getUserData();
+                        if (block.getHp() <= 0) {
+                            for (JointEdge joint : p1_bodies[i][j].getJointList()) {
+                                world.destroyJoint(joint.joint);
                             }
-                        }
-                    }
-                    if (p2_bodies[i][j] != null) {
-                        if (p2_bodies[i][j].getUserData() != null) {
-                            BlockData block = (BlockData) p2_bodies[i][j].getUserData();
-                            if (block.getHp() <= 0) {
-                                for (JointEdge joint : p2_bodies[i][j].getJointList()) {
-                                    world.destroyJoint(joint.joint);
-                                }
-                                if (p2_ship[i][j] == EYE){
-                                    isEnd = true;
-                                    state = State.END;
-                                }
-                                if (p2_ship[i][j] == ENGINE) {
-                                    ArrayList<Integer> labels = ((BlockData) p2_bodies[i][j].getUserData()).getEngineLabels();
-                                    for (int label : labels)
-                                        switch (label) {
-                                            case 1:
-                                                p2_turb1power -= TURB_MAX_POWER / (float) (labels.size());
-                                                break;
-                                            case 2:
-                                                p2_turb2power -= TURB_MAX_POWER / (float) (labels.size());
-                                                break;
-                                        }
-                                }
-                                if ((i == p2_turb1_I) && (j == p2_turb1_J)) {
-                                    p2_turb1_I = -1;
-                                    p2_turb1_J = -1;
-                                }
-                                if ((i == p2_turb2_I) && (j == p2_turb2_J)) {
-                                    p2_turb2_I = -1;
-                                    p2_turb2_J = -1;
-                                }
-                                if ((i == p2_steelGun_I) && (j == p2_steelGun_J)) {
-                                    p2_steelGun_I = -1;
-                                    p2_steelGun_J = -1;
-                                }
-                                if ((i == p2_wGun1_I) && (j == p2_wGun1_J)) {
-                                    p2_wGun1_I = -1;
-                                    p2_wGun1_J = -1;
-                                }
-                                if ((i == p2_wGun2_I) && (j == p2_wGun2_J)) {
-                                    p2_wGun2_I = -1;
-                                    p2_wGun2_J = -1;
-                                }
-
-                                world.destroyBody(p2_bodies[i][j]);
-                                p2_bodies[i][j] = null;
-                            } else {
-                                Body body = p2_bodies[i][j];
-                                String name = p2_namesOfBodies[i][j];
-
-
-                                Vector2 position = body.getPosition();
-                                float degrees = (float) Math.toDegrees(body.getAngle());
-                                drawSprite(name, position.x, position.y, degrees);
+                            if (p1_ship[i][j] == EYE) {
+                                isEnd = true;
+                                state = State.END;
                             }
+                            if (p1_ship[i][j] == ENGINE) {
+                                ArrayList<Integer> labels = ((BlockData) p1_bodies[i][j].getUserData()).getEngineLabels();
+                                for (int label : labels)
+                                    switch (label) {
+                                        case 1:
+                                            p1_turb1power -= TURB_MAX_POWER / (float) (labels.size());
+                                            break;
+                                        case 2:
+                                            p1_turb2power -= TURB_MAX_POWER / (float) (labels.size());
+                                            break;
+                                    }
+                            }
+
+                            if ((i == p1_turb1_I) && (j == p1_turb1_J)) {
+                                p1_turb1_I = -1;
+                                p1_turb1_J = -1;
+                            }
+                            if ((i == p1_turb2_I) && (j == p1_turb2_J)) {
+                                p1_turb2_I = -1;
+                                p1_turb2_J = -1;
+                            }
+                            if ((i == p1_steelGun_I) && (j == p1_steelGun_J)) {
+                                p1_steelGun_I = -1;
+                                p1_steelGun_J = -1;
+                            }
+                            if ((i == p1_wGun1_I) && (j == p1_wGun1_J)) {
+                                p1_wGun1_I = -1;
+                                p1_wGun1_J = -1;
+                            }
+                            if ((i == p1_wGun2_I) && (j == p1_wGun2_J)) {
+                                p1_wGun2_I = -1;
+                                p1_wGun2_J = -1;
+                            }
+
+                            world.destroyBody(p1_bodies[i][j]);
+                            p1_bodies[i][j] = null;
+
+                        } else {
+                            Body body = p1_bodies[i][j];
+                            String name = p1_namesOfBodies[i][j];
+
+
+                            Vector2 position = body.getPosition();
+                            float degrees = (float) Math.toDegrees(body.getAngle());
+                            drawSprite(name, position.x, position.y, degrees);
                         }
                     }
                 }
-            }
+                if (p2_bodies[i][j] != null) {
+                    if (p2_bodies[i][j].getUserData() != null) {
+                        BlockData block = (BlockData) p2_bodies[i][j].getUserData();
+                        if (block.getHp() <= 0) {
+                            for (JointEdge joint : p2_bodies[i][j].getJointList()) {
+                                world.destroyJoint(joint.joint);
+                            }
+                            if (p2_ship[i][j] == EYE) {
+                                isEnd = true;
+                                state = State.END;
+                            }
+                            if (p2_ship[i][j] == ENGINE) {
+                                ArrayList<Integer> labels = ((BlockData) p2_bodies[i][j].getUserData()).getEngineLabels();
+                                for (int label : labels)
+                                    switch (label) {
+                                        case 1:
+                                            p2_turb1power -= TURB_MAX_POWER / (float) (labels.size());
+                                            break;
+                                        case 2:
+                                            p2_turb2power -= TURB_MAX_POWER / (float) (labels.size());
+                                            break;
+                                    }
+                            }
+                            if ((i == p2_turb1_I) && (j == p2_turb1_J)) {
+                                p2_turb1_I = -1;
+                                p2_turb1_J = -1;
+                            }
+                            if ((i == p2_turb2_I) && (j == p2_turb2_J)) {
+                                p2_turb2_I = -1;
+                                p2_turb2_J = -1;
+                            }
+                            if ((i == p2_steelGun_I) && (j == p2_steelGun_J)) {
+                                p2_steelGun_I = -1;
+                                p2_steelGun_J = -1;
+                            }
+                            if ((i == p2_wGun1_I) && (j == p2_wGun1_J)) {
+                                p2_wGun1_I = -1;
+                                p2_wGun1_J = -1;
+                            }
+                            if ((i == p2_wGun2_I) && (j == p2_wGun2_J)) {
+                                p2_wGun2_I = -1;
+                                p2_wGun2_J = -1;
+                            }
+
+                            world.destroyBody(p2_bodies[i][j]);
+                            p2_bodies[i][j] = null;
+                        } else {
+                            Body body = p2_bodies[i][j];
+                            String name = p2_namesOfBodies[i][j];
 
 
-            boolean[] pressedButtons = pressedButtons(readTouchPositions());
-
-            if (pressedButtons[BTN_P1_LEFTTURBINE])
-                if (p1_turb1_I != -1)
-                    workTurbine(1, 1, delta);
-
-            if (pressedButtons[BTN_P1_RIGHTTURBINE])
-                if (p1_turb2_I != -1)
-                    workTurbine(1, 2, delta);
-
-            if (pressedButtons[BTN_P1_GUN]) {
-                if (p1_gunTimer >= 0.2f) {
-                    p1_gunTimer = 0f;
-                    if (p1_steelGun_I != -1)
-                        gunShot(1, 1);
-                    if (p1_wGun1_I != -1)
-                        gunShot(1, 2);
-                    if (p1_wGun2_I != -1)
-                        gunShot(1, 3);
+                            Vector2 position = body.getPosition();
+                            float degrees = (float) Math.toDegrees(body.getAngle());
+                            drawSprite(name, position.x, position.y, degrees);
+                        }
+                    }
                 }
             }
-
-            if (pressedButtons[BTN_P2_LEFTTURBINE])
-                if (p2_turb1_I != -1)
-                    workTurbine(2, 1, delta);
-
-            if (pressedButtons[BTN_P2_RIGHTTURBINE])
-                if (p2_turb2_I != -1)
-                    workTurbine(2, 2, delta);
-
-            if (pressedButtons[BTN_P2_GUN]) {
-                if (p2_gunTimer >= 0.2f) {
-                    p2_gunTimer = 0f;
-                    if (p2_steelGun_I != -1)
-                        gunShot(2, 1);
-                    if (p2_wGun1_I != -1)
-                        gunShot(2, 2);
-                    if (p2_wGun2_I != -1)
-                        gunShot(2, 3);
-                }
-            }
+        }
 
 
-            for (int i = 0; i < meteorBodies.length; i++) {
-                Body body = meteorBodies[i];
-                String name = meteorNames[i];
+        boolean[] pressedButtons = pressedButtons(readTouchPositions());
 
-                Vector2 position = body.getPosition();
-                float degrees = (float) Math.toDegrees(body.getAngle());
-                drawSprite(name, position.x, position.y, degrees);
-            }
-
-            while (bullets.size() > 30) {
-                world.destroyBody(bullets.get(0));
-                bullets.remove(0);
-            }
-            while (bullets2.size() > 30) {
-                world.destroyBody(bullets2.get(0));
-                bullets2.remove(0);
-            }
-
-
-            for (int i = 0; i < bullets.size(); i++) {
-
-                Body body = bullets.get(i);
-                String name = "bullet";
-
-                Vector2 position = body.getPosition();
-                float degrees = (float) Math.toDegrees(body.getAngle());
-                drawSprite(name, position.x, position.y, degrees);
-                BlockData block = (BlockData) body.getUserData();
-                if (block.isBulletActivated()) {
-                    //drawSprite("hero2", position.x, position.y, degrees);
-                    block.setBulletActivated(false);
-                }
-                bullets.get(i).setUserData(block);
-            }
-            for (int i = 0; i < bullets2.size(); i++) {
-                Body body = bullets2.get(i);
-                String name = "bullet2";
-
-                Vector2 position = body.getPosition();
-                float degrees = (float) Math.toDegrees(body.getAngle());
-                drawSprite(name, position.x, position.y, degrees);
-                BlockData block = (BlockData) body.getUserData();
-                if (block.isBulletActivated()) {
-                    //drawSprite("hero2", position.x, position.y, degrees);
-                    block.setBulletActivated(false);
-                }
-                bullets2.get(i).setUserData(block);
-            }
-
-            if (p1_turb2_I != -1)
-                if (p1_turb2power > 10)
-                    drawSprite("buttonturbine", 1, 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
-
-            if ((p1_steelGun_I != -1) || (p1_wGun1_I != -1) || (p1_wGun2_I != -1))
-                drawSprite("buttonfire", 1, HEIGHT_IN_UNITS / 2 - BUTTON_RADIUS, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
-
+        if (pressedButtons[BTN_P1_LEFTTURBINE])
             if (p1_turb1_I != -1)
-                if (p1_turb1power > 10)
-                    drawSprite("buttonturbine", 1, HEIGHT_IN_UNITS - BUTTON_RADIUS * 2 - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
+                workTurbine(1, 1, delta);
 
+        if (pressedButtons[BTN_P1_RIGHTTURBINE])
+            if (p1_turb2_I != -1)
+                workTurbine(1, 2, delta);
+
+        if (pressedButtons[BTN_P1_GUN]) {
+            if (p1_gunTimer >= 0.2f) {
+                p1_gunTimer = 0f;
+                if (p1_steelGun_I != -1)
+                    gunShot(1, 1);
+                if (p1_wGun1_I != -1)
+                    gunShot(1, 2);
+                if (p1_wGun2_I != -1)
+                    gunShot(1, 3);
+            }
+        }
+
+        if (pressedButtons[BTN_P2_LEFTTURBINE])
             if (p2_turb1_I != -1)
-                if (p2_turb1power > 10)
-                    drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, BUTTON_RADIUS * 2 + 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
+                workTurbine(2, 1, delta);
 
-            if ((p2_steelGun_I != -1) || (p2_wGun1_I != -1) || (p2_wGun2_I != -1))
-                drawSprite("buttonfire", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS / 2 + BUTTON_RADIUS, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
-
+        if (pressedButtons[BTN_P2_RIGHTTURBINE])
             if (p2_turb2_I != -1)
-                if (p2_turb2power > 10)
-                    drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
+                workTurbine(2, 2, delta);
+
+        if (pressedButtons[BTN_P2_GUN]) {
+            if (p2_gunTimer >= 0.2f) {
+                p2_gunTimer = 0f;
+                if (p2_steelGun_I != -1)
+                    gunShot(2, 1);
+                if (p2_wGun1_I != -1)
+                    gunShot(2, 2);
+                if (p2_wGun2_I != -1)
+                    gunShot(2, 3);
+            }
+        }
 
 
+        for (int i = 0; i < meteorBodies.length; i++) {
+            Body body = meteorBodies[i];
+            String name = meteorNames[i];
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+        }
+
+        while (bullets.size() > 30) {
+            world.destroyBody(bullets.get(0));
+            bullets.remove(0);
+        }
+        while (bullets2.size() > 30) {
+            world.destroyBody(bullets2.get(0));
+            bullets2.remove(0);
+        }
 
 
-            // uncomment to show the polygons
-            // debugRenderer.render(world, camera.combined);
+        for (int i = 0; i < bullets.size(); i++) {
 
+            Body body = bullets.get(i);
+            String name = "bullet";
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+            BlockData block = (BlockData) body.getUserData();
+            if (block.isBulletActivated()) {
+                //drawSprite("hero2", position.x, position.y, degrees);
+                block.setBulletActivated(false);
+            }
+            bullets.get(i).setUserData(block);
+        }
+        for (int i = 0; i < bullets2.size(); i++) {
+            Body body = bullets2.get(i);
+            String name = "bullet2";
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+            BlockData block = (BlockData) body.getUserData();
+            if (block.isBulletActivated()) {
+                //drawSprite("hero2", position.x, position.y, degrees);
+                block.setBulletActivated(false);
+            }
+            bullets2.get(i).setUserData(block);
+        }
+
+        if (p1_turb2_I != -1)
+            if (p1_turb2power > 10)
+                drawSprite("buttonturbine", 1, 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
+
+        if ((p1_steelGun_I != -1) || (p1_wGun1_I != -1) || (p1_wGun2_I != -1))
+            drawSprite("buttonfire", 1, HEIGHT_IN_UNITS / 2 - BUTTON_RADIUS, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
+
+        if (p1_turb1_I != -1)
+            if (p1_turb1power > 10)
+                drawSprite("buttonturbine", 1, HEIGHT_IN_UNITS - BUTTON_RADIUS * 2 - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
+
+        if (p2_turb1_I != -1)
+            if (p2_turb1power > 10)
+                drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, BUTTON_RADIUS * 2 + 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
+
+        if ((p2_steelGun_I != -1) || (p2_wGun1_I != -1) || (p2_wGun2_I != -1))
+            drawSprite("buttonfire", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS / 2 + BUTTON_RADIUS, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
+
+        if (p2_turb2_I != -1)
+            if (p2_turb2power > 10)
+                drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
+
+
+        // uncomment to show the polygons
+        // debugRenderer.render(world, camera.combined);
 
 
         if (isPause) {
             drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
             drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
-        }
-        else
-            if (isEnd){
-                drawSprite("end", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
-            }
-            else{
+        } else if (isEnd) {
+            drawSprite("end", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+        } else {
             drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
         }
         batch.end();
@@ -761,10 +758,30 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             world.step(STEP_TIME, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         }
 
-        if (p1_gunTimer < 0.2f)
+        if (p1_gunTimer < GUNSHOT_DELTA)
             p1_gunTimer += delta;
-        if (p2_gunTimer < 0.2f)
+        if (p2_gunTimer < GUNSHOT_DELTA)
             p2_gunTimer += delta;
+
+        for (int i = 0; i < bullets.size(); i++) {
+            synchronized (bullets.get(i)) {
+                BD_addLifetime(bullets.get(i), delta);
+                if (((BlockData) bullets.get(i).getUserData()).getBulletLifetime() > MAX_BULLET_LIFETIME) {
+                    world.destroyBody(bullets.get(i));
+                    bullets.remove(i);
+                }
+            }
+        }
+
+        for (int i = 0; i < bullets2.size(); i++) {
+            synchronized (bullets2.get(i)) {
+                BD_addLifetime(bullets2.get(i), delta);
+                if (((BlockData) bullets2.get(i).getUserData()).getBulletLifetime() > MAX_BULLET_LIFETIME) {
+                    world.destroyBody(bullets2.get(i));
+                    bullets2.remove(i);
+                }
+            }
+        }
     }
 
     private void drawSprite(String name, float x, float y, float degrees) {
@@ -1161,6 +1178,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
 
+
     private void BD_activateBullet(Body bullet) {
         BlockData data = (BlockData) bullet.getUserData();
         data.setBulletActivated(true);
@@ -1179,6 +1197,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         labels.add(newLabel);
         data.setEngineLabels(labels);
         engine.setUserData(data);
+    }
+
+    private void BD_addLifetime(Body bullet, float delta) {
+        BlockData data = (BlockData) bullet.getUserData();
+        data.setBulletLifetime(data.getBulletLifetime() + delta);
+        bullet.setUserData(data);
     }
 
 }
