@@ -6,9 +6,16 @@ class BlockData(var type: Int) {
 
     var hp: Float = 0f
 
+
+
     var isBulletActivated: Boolean = false
+    var bulletLifetime: Float = 0f
+
     var turbinePower: Float = 0f
+
     var engineLabels = ArrayList<Int>()
+
+
 
     init {
         this.hp = when (type) {
@@ -26,6 +33,7 @@ class BlockData(var type: Int) {
             else -> 0f
         }
         this.isBulletActivated = false
+        this.bulletLifetime = 0f
         this.turbinePower = 0f
         this.engineLabels = ArrayList()
     }

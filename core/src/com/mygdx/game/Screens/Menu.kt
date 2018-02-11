@@ -43,8 +43,8 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
 
     private var currI = ItemID.NULL
     private var currJ = ItemID.NULL                                                 // Предмет, который мы сейчас перетаскиваем
-    private var isImageDragging = false
-    // Перетаскиваем ли мы какой-нибудь из предметов
+    private var isImageDragging = false                                             // Перетаскиваем ли мы какой-нибудь из предметов
+
 
 
     init {
