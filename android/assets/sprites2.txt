@@ -1,19 +1,12 @@
 sprites2.png
-size: 3948, 2319
+size: 3739, 3046
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-meteorfour
-  rotate: true
-  xy: 3631, 665
-  size: 332, 301
-  orig: 393, 301
-  offset: 61, 0
-  index: -1
-meteorthree
-  rotate: true
-  xy: 3679, 999
-  size: 328, 260
-  orig: 328, 260
+halfsteelblock90
+  rotate: false
+  xy: 2425, 2398
+  size: 333, 333
+  orig: 333, 333
   offset: 0, 0
   index: -1

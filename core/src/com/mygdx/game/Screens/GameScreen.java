@@ -497,7 +497,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         }
 
 
-        drawSprite("background_red_space", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
+        drawSprite("background", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
@@ -744,7 +744,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
                 break;
             case END:
-                drawSprite("end", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+                drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
                 break;
             case RUN:
                 drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
