@@ -17,7 +17,6 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.JointEdge;
 import com.badlogic.gdx.physics.box2d.Manifold;
@@ -30,7 +29,7 @@ import com.codeandweb.physicseditor.PhysicsShapeCache;
 import com.mygdx.game.Bodies.BlockData;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
 import com.mygdx.game.Extra.ItemID;
-import com.sun.org.apache.bcel.internal.generic.ALOAD;
+import com.mygdx.game.Extra.MathConsts;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,34 +37,48 @@ import java.util.Random;
 
 
 
-public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScreenCoords {
+public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScreenCoords, MathConsts {
 
-    private static final float STEP_TIME = 1f / 60f;
-    private static final int VELOCITY_ITERATIONS = 6;
-    private static final int POSITION_ITERATIONS = 2;
-    private static final float SCALE = 0.005f;
-    private static final int COUNT = 60;
 
-    private static final float TURB_MAX_POWER = 54000f;
 
-    private static final float UNIT_SIZE = SCREEN_HEIGHT / 50f;
-    private static final float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;
-    private static final float HEIGHT_IN_UNITS = 50f;
-    private static final float BUTTON_RADIUS = 6f;
+    public enum State {
+        PAUSE,
+        RUN,
+        END
+    }
 
-    private static final float ATAN_0195 = (float) Math.atan(0.195);
-    private static final float ATAN_01 = (float) Math.atan(0.1);
-    private static final float ASIN_0975 = (float) Math.asin(0.975);
-    private static final float ASIN_0985 = (float) Math.asin(0.985);
+    private State state = State.RUN;
 
-    private static final int BTN_P1_LEFTTURBINE = 0;
-    private static final int BTN_P1_GUN = 1;
-    private static final int BTN_P1_RIGHTTURBINE = 2;
-    private static final int BTN_P2_LEFTTURBINE = 3;
-    private static final int BTN_P2_GUN = 4;
-    private static final int BTN_P2_RIGHTTURBINE = 5;
+
+
+    private static final float STEP_TIME = 1f / 60f;                                // Базовый интервал времени между кадрами (в сек)
+    private static final int VELOCITY_ITERATIONS = 6;                               // ???
+    private static final int POSITION_ITERATIONS = 2;                               // ???
+    private static final float GUNSHOT_DELTA = 0.2f;                                // Интервал времени между выстрелами пушек при стрельбе очередью (в сек)
+    private static final float MAX_RENDER_DELTA = 0.15f;                            // Максимальный интервал внутриигрового времени (в сек). То есть, если по каким-то причинам кадры в игре меняются через время, бОльшее, чем 0.15 сек, то игра считает, что прошло ровно 0.15 сек
+    private static final float MAX_BULLET_LIFETIME = 7f;                            // Время жизни пули (в сек)
+    private static final float MAX_GAMEPLAY_TIME = 180f;                            // Максимальное время игры (в сек)
+
+    private static final int METEORS_COUNT = 60;                                    // Количество метеоритов на карте
+
+    private static final float ENGINE_POWER = 54000f;                               // Мощность одного двигателя
+
+    private static final float SCALE = 0.005f;                                      // Константа, переводящая GDX-овские размеры объектов в игровые
+    private static final float UNIT_SIZE = SCREEN_HEIGHT / 50f;                     // Размер 1 клетки при отрисовке текстур
+    private static final float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;           // Ширина экрана в клетках
+    private static final float HEIGHT_IN_UNITS = 50f;                               // Высота экрана в клетках
+    private static final float BUTTON_RADIUS = 6f;                                  // Размер кнопки в клетках
+
+    private static final int BTN_P1_LEFTTURBINE = 0;                                //
+    private static final int BTN_P1_GUN = 1;                                        //
+    private static final int BTN_P1_RIGHTTURBINE = 2;                               //      ID всех игровых кнопок (по 3 кнопки на каждого
+    private static final int BTN_P2_LEFTTURBINE = 3;                                //                      из 2 игроков)
+    private static final int BTN_P2_GUN = 4;                                        //
+    private static final int BTN_P2_RIGHTTURBINE = 5;                               //
 
     private static final int bulletType = -1;
+
+
 
     private TextureAtlas textureAtlas;
     private TextureAtlas textureAtlas2;
@@ -79,9 +92,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private World world;
     private Box2DDebugRenderer debugRenderer;
     private PhysicsShapeCache physicsBodies;
-    private float accumulator = 0;
+    private float accumulator = 0f;
+    private float gameplayTimer = 0f;                                               // Время с начала запуска игры (в сек)
 
-    private Body[] gameFieldBounds = new Body[4];                           // Границы карты
+    private Body[] gameFieldBounds = new Body[4];                                                                           // Границы карты
+    private int[][] SPAWN_CORNERS = {{7, 7*FIELD_HEIGHT},
+            {(int) (WIDTH_IN_UNITS/SCALE*0.02f) - (FIELD_WIDTH+1)*7, (int) (HEIGHT_IN_UNITS/SCALE*0.02f)- 7*2}};            // Массив 2х2, хранит координаты спавна у первого корабля ([0][]) и второго корабля ([1][])
 
     private Body[][] p1_bodies = new Body[FIELD_WIDTH][FIELD_HEIGHT];
     private Body[][] p2_bodies = new Body[FIELD_WIDTH][FIELD_HEIGHT];
@@ -117,10 +133,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private Game game;
     private ShipChoosingScreen shipChoosingScreen;
 
-    private boolean isPause = false;
 
-    private Body[] meteorBodies = new Body[COUNT];
-    private String[] meteorNames = new String[COUNT];
+    private Body[] meteorBodies = new Body[METEORS_COUNT];
+    private String[] meteorNames = new String[METEORS_COUNT];
     private ArrayList<Body> bullets = new ArrayList<Body>();
     private ArrayList<Body> bullets2 = new ArrayList<Body>();
 
@@ -154,9 +169,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 Body bodyB = contact.getFixtureB().getBody();
                 BlockData dataA = (BlockData) bodyA.getUserData();
                 BlockData dataB = (BlockData) bodyB.getUserData();
-                //if ((dataA.getType()>=0)||(dataB.getType()>=0)){
-                    //Gdx.app.log("begincontact","bodyA hp:" + dataA.getHp() + "    bodyB hp:" + dataB.getHp());
-                    //Gdx.app.log("begincontact","bodyA type:" + dataA.getType() + "    bodyB type:" + dataB.getType());}
                 if ((dataA.getType() >= 0) && (dataB.getType() == bulletType) && (!dataB.isBulletActivated())) {
                     float x = bodyA.getLinearVelocity().x;
                     float y = bodyB.getLinearVelocity().y;
@@ -173,9 +185,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         BD_activateBullet(bodyA);
                     }
                 }
-                //if ((dataA.getType()>=0)||(dataB.getType()>=0)){
-                //Gdx.app.log("endcontact","bodyA hp:" + dataA.getHp() + "    bodyB hp:" + dataB.getHp());
-                //Gdx.app.log("endcontact","bodyA type:" + dataA.getType() + "    bodyB type:" + dataB.getType());}
             }
 
             @Override
@@ -244,8 +253,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         case DOWN: name += "270"; break;
                     }
 
-                    float x = getXOnField(p1_ship[i][j], i, 7);
-                    float y = getYOnField(p1_ship[i][j], j, 7*FIELD_HEIGHT);
+                    float x = getXOnField(p1_ship[i][j], i, SPAWN_CORNERS[0][0]);
+                    float y = getYOnField(p1_ship[i][j], j, SPAWN_CORNERS[0][1]);
 
                     if (type == TURBINE) {
                         if (turbExist) {
@@ -286,8 +295,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
         }
 
-        int xCorner = (int)(WIDTH_IN_UNITS/SCALE*0.02f) - (FIELD_WIDTH+1)*7;
-        int yCorner = (int)(HEIGHT_IN_UNITS/SCALE*0.02f)- 7*2;
         turbExist = false;
         wGunExist = false;
         for (int i = 0; i < FIELD_WIDTH; i++) {
@@ -304,8 +311,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         case DOWN: name += "270"; break;
                     }
 
-                    float x = getXOnField(p2_ship[i][j], i, xCorner);
-                    float y = getYOnField(p2_ship[i][j], j, yCorner);
+                    float x = getXOnField(p2_ship[i][j], i, SPAWN_CORNERS[1][0]);
+                    float y = getYOnField(p2_ship[i][j], j, SPAWN_CORNERS[1][1]);
 
                     if (type == TURBINE) {
                         if (turbExist) {
@@ -359,7 +366,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (Math.abs(p1_turb2_I - I) + Math.abs(p1_turb2_J - J) == 1)
                 turbineNeighbours += 2;                                                                             // Если двигатель граничит со второй турбиной, то turbineNeighbours / 2 == 1
 
-            float additionalPower = TURB_MAX_POWER / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);       // Добавочный коэффициент силы турбин равен (T_M_P / КОЛИЧЕСТВО_ТУРБИН)
+            float additionalPower = ENGINE_POWER / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);       // Добавочный коэффициент силы турбин равен (T_M_P / КОЛИЧЕСТВО_ТУРБИН)
             if (turbineNeighbours % 2 == 1) {
                 p1_turb1power += additionalPower;                                                                   // Если двигатель граничит с первой турбиной, то добавляем коэффициент к первой турбине
                 BD_addEngineLabel(p1_bodies[I][J], 1);
@@ -382,7 +389,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (Math.abs(p2_turb2_I - I) + Math.abs(p2_turb2_J - J) == 1)
                 turbineNeighbours += 2;                                                                             // Если двигатель граничит со второй турбиной, то turbineNeighbours / 2 == 1
 
-            float additionalPower = TURB_MAX_POWER / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);       // Добавочный коэффициент силы турбин равен (T_M_P / КОЛИЧЕСТВО_ТУРБИН)
+            float additionalPower = ENGINE_POWER / (float) (turbineNeighbours / 2 + turbineNeighbours % 2);       // Добавочный коэффициент силы турбин равен (T_M_P / КОЛИЧЕСТВО_ТУРБИН)
             if (turbineNeighbours % 2 == 1) {
                 p2_turb1power += additionalPower;                                                                   // Если двигатель граничит с первой турбиной, то добавляем коэффициент к первой турбине
                 BD_addEngineLabel(p2_bodies[I][J], 1);
@@ -408,7 +415,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         }
                     if (p2_ship[i][j] != NULL && p2_ship[i - 1][j] != NULL)
                         if (canBeJoined(p2_ship[i][j], LEFT) && canBeJoined(p2_ship[i - 1][j], RIGHT)) {
-                            jointDef.initialize(p2_bodies[i][j], p2_bodies[i - 1][j], new Vector2((float) ((xCorner + 17.5) * SCALE / 0.02), (float) ((yCorner - 10.5) * SCALE / 0.02)));
+                            jointDef.initialize(p2_bodies[i][j], p2_bodies[i - 1][j], new Vector2((float) ((SPAWN_CORNERS[1][0] + 17.5) * SCALE / 0.02), (float) ((SPAWN_CORNERS[1][1] - 10.5) * SCALE / 0.02)));
                             world.createJoint(jointDef);
                         }
                 }
@@ -420,7 +427,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         }
                     if (p2_ship[i][j] != NULL && p2_ship[i][j - 1] != NULL)
                         if (canBeJoined(p2_ship[i][j], UP) && canBeJoined(p2_ship[i][j - 1], DOWN)) {
-                            jointDef.initialize(p2_bodies[i][j], p2_bodies[i][j - 1], new Vector2((float) ((xCorner + 17.5) * SCALE / 0.02), (float) ((yCorner - 10.5) * SCALE / 0.02)));
+                            jointDef.initialize(p2_bodies[i][j], p2_bodies[i][j - 1], new Vector2((float) ((SPAWN_CORNERS[1][0] + 17.5) * SCALE / 0.02), (float) ((SPAWN_CORNERS[1][1] - 10.5) * SCALE / 0.02)));
                             world.createJoint(jointDef);
                         }
                 }
@@ -436,9 +443,16 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         for (int i = 0; i < meteorBodies.length; i++) {
             String name = meteorNames[random.nextInt(meteorNames.length)];
+            float[][] dangerRects = {{getXOnField(WOOD_BLOCK, -1, SPAWN_CORNERS[0][0]), getXOnField(WOOD_BLOCK, FIELD_WIDTH, SPAWN_CORNERS[0][0]), getYOnField(WOOD_BLOCK, FIELD_HEIGHT, SPAWN_CORNERS[0][1]), getYOnField(WOOD_BLOCK, -1, SPAWN_CORNERS[0][1])},
+                    {getXOnField(WOOD_BLOCK, -1, SPAWN_CORNERS[1][0]), getXOnField(WOOD_BLOCK, FIELD_WIDTH, SPAWN_CORNERS[1][0]), getYOnField(WOOD_BLOCK, FIELD_HEIGHT, SPAWN_CORNERS[1][1]), getYOnField(WOOD_BLOCK, -1, SPAWN_CORNERS[1][1])}};
+                    // Массив 2х4 вида {{minX, maxX, minY, maxY},{minX, maxX, minY, maxY}}; представляет из себя две зоны, где спавнятся корабли и где метеориты быть не должны
 
-            float x = (random.nextFloat() * (int)(WIDTH_IN_UNITS/SCALE*0.02-1)) * (float) (SCALE/0.02);
-            float y = (random.nextFloat() * (int)(HEIGHT_IN_UNITS/SCALE*0.02-1)) * (float) (SCALE/0.02);
+            int x, y;
+            do {
+                x = (int) (random.nextFloat() * (WIDTH_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+                y = (int) (random.nextFloat() * (HEIGHT_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+            } while (isInRect(x, y, dangerRects[0][0], dangerRects[0][1], dangerRects[0][2], dangerRects[0][3])
+                    || isInRect(x, y, dangerRects[1][0], dangerRects[1][1], dangerRects[1][2], dangerRects[1][3]));
 
                 this.meteorNames[i] = name;
                 meteorBodies[i] = createBody(name, x, y, 0);
@@ -464,57 +478,70 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     @Override
     public void render(float delta) {
+
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        stepWorld();
-        if (delta > 0.25f) delta = 0.25f;
-
         batch.begin();
 
 
-        drawSprite("background_red_space",0,0,camera.viewportWidth,camera.viewportHeight,0);
+        if (delta > MAX_RENDER_DELTA)
+            delta = MAX_RENDER_DELTA;
+
+        if (state == State.RUN)
+            stepWorld(delta);
+
+        if (gameplayTimer > MAX_GAMEPLAY_TIME) {
+
+            // Скрипт с завершением игры из-за лимита во времени
+
+        }
+
+
+        drawSprite("background_red_space", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
 
         for (int i = 0; i < FIELD_WIDTH; i++) {
             for (int j = 0; j < FIELD_HEIGHT; j++) {
                 if (p1_bodies[i][j] != null) {
-                    if (p1_bodies[i][j].getUserData() != null){
+                    if (p1_bodies[i][j].getUserData() != null) {
                         BlockData block = (BlockData) p1_bodies[i][j].getUserData();
                         if (block.getHp() <= 0) {
-                            for (JointEdge joint : p1_bodies[i][j].getJointList()) {
+
+                            for (JointEdge joint : p1_bodies[i][j].getJointList())
                                 world.destroyJoint(joint.joint);
-                            }
+
+                            if (p1_ship[i][j] == EYE)
+                                state = State.END;
 
                             if (p1_ship[i][j] == ENGINE) {
                                 ArrayList<Integer> labels = ((BlockData) p1_bodies[i][j].getUserData()).getEngineLabels();
                                 for (int label : labels)
                                     switch (label) {
                                         case 1:
-                                            p1_turb1power -= TURB_MAX_POWER / (float) (labels.size());
+                                            p1_turb1power -= ENGINE_POWER / (float) (labels.size());
                                             break;
                                         case 2:
-                                            p1_turb2power -= TURB_MAX_POWER / (float) (labels.size());
+                                            p1_turb2power -= ENGINE_POWER / (float) (labels.size());
                                             break;
                                     }
                             }
 
-                            if ((i == p1_turb1_I)&&(j == p1_turb1_J)){
+                            if ((i == p1_turb1_I) && (j == p1_turb1_J)) {
                                 p1_turb1_I = -1;
                                 p1_turb1_J = -1;
                             }
-                            if ((i == p1_turb2_I)&&(j == p1_turb2_J)){
+                            if ((i == p1_turb2_I) && (j == p1_turb2_J)) {
                                 p1_turb2_I = -1;
                                 p1_turb2_J = -1;
                             }
-                            if ((i == p1_steelGun_I)&&(j == p1_steelGun_J)){
+                            if ((i == p1_steelGun_I) && (j == p1_steelGun_J)) {
                                 p1_steelGun_I = -1;
                                 p1_steelGun_J = -1;
                             }
-                            if ((i == p1_wGun1_I)&&(j == p1_wGun1_J)){
+                            if ((i == p1_wGun1_I) && (j == p1_wGun1_J)) {
                                 p1_wGun1_I = -1;
                                 p1_wGun1_J = -1;
                             }
-                            if ((i == p1_wGun2_I)&&(j == p1_wGun2_J)){
+                            if ((i == p1_wGun2_I) && (j == p1_wGun2_J)) {
                                 p1_wGun2_I = -1;
                                 p1_wGun2_J = -1;
                             }
@@ -522,70 +549,73 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                             world.destroyBody(p1_bodies[i][j]);
                             p1_bodies[i][j] = null;
 
+                        } else {
+                            Body body = p1_bodies[i][j];
+                            String name = p1_namesOfBodies[i][j];
+
+
+                            Vector2 position = body.getPosition();
+                            float degrees = (float) Math.toDegrees(body.getAngle());
+                            drawSprite(name, position.x, position.y, degrees);
                         }
-
-                        else{
-                        Body body = p1_bodies[i][j];
-                        String name = p1_namesOfBodies[i][j];
-
-
-                        Vector2 position = body.getPosition();
-                        float degrees = (float) Math.toDegrees(body.getAngle());
-                        drawSprite(name, position.x, position.y, degrees);}}
+                    }
                 }
                 if (p2_bodies[i][j] != null) {
-                    if (p2_bodies[i][j].getUserData() != null){
+                    if (p2_bodies[i][j].getUserData() != null) {
                         BlockData block = (BlockData) p2_bodies[i][j].getUserData();
                         if (block.getHp() <= 0) {
-                            for (JointEdge joint : p2_bodies[i][j].getJointList()) {
+
+                            for (JointEdge joint : p2_bodies[i][j].getJointList())
                                 world.destroyJoint(joint.joint);
-                            }
+
+                            if (p2_ship[i][j] == EYE)
+                                state = State.END;
 
                             if (p2_ship[i][j] == ENGINE) {
                                 ArrayList<Integer> labels = ((BlockData) p2_bodies[i][j].getUserData()).getEngineLabels();
                                 for (int label : labels)
                                     switch (label) {
                                         case 1:
-                                            p2_turb1power -= TURB_MAX_POWER / (float) (labels.size());
+                                            p2_turb1power -= ENGINE_POWER / (float) (labels.size());
                                             break;
                                         case 2:
-                                            p2_turb2power -= TURB_MAX_POWER / (float) (labels.size());
+                                            p2_turb2power -= ENGINE_POWER / (float) (labels.size());
                                             break;
                                     }
                             }
-                            if ((i == p2_turb1_I)&&(j == p2_turb1_J)){
+                            if ((i == p2_turb1_I) && (j == p2_turb1_J)) {
                                 p2_turb1_I = -1;
                                 p2_turb1_J = -1;
                             }
-                            if ((i == p2_turb2_I)&&(j == p2_turb2_J)){
+                            if ((i == p2_turb2_I) && (j == p2_turb2_J)) {
                                 p2_turb2_I = -1;
                                 p2_turb2_J = -1;
                             }
-                            if ((i == p2_steelGun_I)&&(j == p2_steelGun_J)){
+                            if ((i == p2_steelGun_I) && (j == p2_steelGun_J)) {
                                 p2_steelGun_I = -1;
                                 p2_steelGun_J = -1;
                             }
-                            if ((i == p2_wGun1_I)&&(j == p2_wGun1_J)){
+                            if ((i == p2_wGun1_I) && (j == p2_wGun1_J)) {
                                 p2_wGun1_I = -1;
                                 p2_wGun1_J = -1;
                             }
-                            if ((i == p2_wGun2_I)&&(j == p2_wGun2_J)){
+                            if ((i == p2_wGun2_I) && (j == p2_wGun2_J)) {
                                 p2_wGun2_I = -1;
                                 p2_wGun2_J = -1;
                             }
 
                             world.destroyBody(p2_bodies[i][j]);
                             p2_bodies[i][j] = null;
-                        }
-
-                        else{
+                        } else {
                             Body body = p2_bodies[i][j];
                             String name = p2_namesOfBodies[i][j];
 
 
                             Vector2 position = body.getPosition();
                             float degrees = (float) Math.toDegrees(body.getAngle());
-                            drawSprite(name, position.x, position.y, degrees);}}
+                            drawSprite(name, position.x, position.y, degrees);
+                        }
+                    }
                 }
             }
         }
@@ -605,9 +635,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (p1_gunTimer >= 0.2f) {
                 p1_gunTimer = 0f;
                 if (p1_steelGun_I != -1)
-                    gunShot(1,1);
+                    gunShot(1, 1);
                 if (p1_wGun1_I != -1)
-                    gunShot(1,2);
+                    gunShot(1, 2);
                 if (p1_wGun2_I != -1)
                     gunShot(1, 3);
             }
@@ -625,9 +655,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (p2_gunTimer >= 0.2f) {
                 p2_gunTimer = 0f;
                 if (p2_steelGun_I != -1)
-                    gunShot(2,1);
+                    gunShot(2, 1);
                 if (p2_wGun1_I != -1)
-                    gunShot(2,2);
+                    gunShot(2, 2);
                 if (p2_wGun2_I != -1)
                     gunShot(2, 3);
             }
@@ -661,9 +691,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
-            BlockData block = (BlockData)body.getUserData();
-            if (block.isBulletActivated()){
-                //drawSprite("hero2", position.x, position.y, degrees);
+            BlockData block = (BlockData) body.getUserData();
+            if (block.isBulletActivated()) {
                 block.setBulletActivated(false);
             }
             bullets.get(i).setUserData(block);
@@ -675,9 +704,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
-            BlockData block = (BlockData)body.getUserData();
-            if (block.isBulletActivated()){
-                //drawSprite("hero2", position.x, position.y, degrees);
+            BlockData block = (BlockData) body.getUserData();
+            if (block.isBulletActivated()) {
                 block.setBulletActivated(false);
             }
             bullets2.get(i).setUserData(block);
@@ -685,54 +713,82 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         if (p1_turb2_I != -1)
             if (p1_turb2power > 10)
-                drawSprite("buttonturbine",1,1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+                drawSprite("buttonturbine", 1, 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
 
         if ((p1_steelGun_I != -1) || (p1_wGun1_I != -1) || (p1_wGun2_I != -1))
-            drawSprite("buttonfire",1,HEIGHT_IN_UNITS/2 - BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+            drawSprite("buttonfire", 1, HEIGHT_IN_UNITS / 2 - BUTTON_RADIUS, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
 
         if (p1_turb1_I != -1)
             if (p1_turb1power > 10)
-                drawSprite("buttonturbine",1, HEIGHT_IN_UNITS - BUTTON_RADIUS*2 - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,0);
+                drawSprite("buttonturbine", 1, HEIGHT_IN_UNITS - BUTTON_RADIUS * 2 - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 0);
 
         if (p2_turb1_I != -1)
             if (p2_turb1power > 10)
-                drawSprite("buttonturbine",WIDTH_IN_UNITS - 1,BUTTON_RADIUS*2 + 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+                drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, BUTTON_RADIUS * 2 + 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
 
         if ((p2_steelGun_I != -1) || (p2_wGun1_I != -1) || (p2_wGun2_I != -1))
-            drawSprite("buttonfire",WIDTH_IN_UNITS - 1,HEIGHT_IN_UNITS/2 + BUTTON_RADIUS,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+            drawSprite("buttonfire", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS / 2 + BUTTON_RADIUS, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
 
         if (p2_turb2_I != -1)
             if (p2_turb2power > 10)
-                drawSprite("buttonturbine",WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1,BUTTON_RADIUS*2,BUTTON_RADIUS*2,180);
+                drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
 
-        if (!isPause) {
-            drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-        }
-        if (isPause){
-            drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-            drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
-        }
-        batch.end();
 
         // uncomment to show the polygons
         // debugRenderer.render(world, camera.combined);
 
+
+        switch (this.state) {
+            case PAUSE:
+                drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
+                drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+                break;
+            case END:
+                drawSprite("end", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+                break;
+            case RUN:
+                drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
+                break;
+        }
+
+        batch.end();
+
     }
 
-    private void stepWorld() {
-        float delta = Gdx.graphics.getDeltaTime();
-        if (delta > 0.25f) delta = 0.25f;
-
+    private void stepWorld(float delta) {
         accumulator += delta;
         if (accumulator >= STEP_TIME) {
             accumulator -= STEP_TIME;
             world.step(STEP_TIME, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
         }
 
-        if (p1_gunTimer < 0.2f)
+        if (gameplayTimer < MAX_GAMEPLAY_TIME)
+            gameplayTimer += delta;
+
+        if (p1_gunTimer < GUNSHOT_DELTA)
             p1_gunTimer += delta;
-        if (p2_gunTimer < 0.2f)
+        if (p2_gunTimer < GUNSHOT_DELTA)
             p2_gunTimer += delta;
+
+        for (int i = 0; i < bullets.size(); i++) {
+            synchronized (bullets.get(i)) {
+                BD_addLifetime(bullets.get(i), delta);
+                if (((BlockData) bullets.get(i).getUserData()).getBulletLifetime() > MAX_BULLET_LIFETIME) {
+                    world.destroyBody(bullets.get(i));
+                    bullets.remove(i);
+                }
+            }
+        }
+
+        for (int i = 0; i < bullets2.size(); i++) {
+            synchronized (bullets2.get(i)) {
+                BD_addLifetime(bullets2.get(i), delta);
+                if (((BlockData) bullets2.get(i).getUserData()).getBulletLifetime() > MAX_BULLET_LIFETIME) {
+                    world.destroyBody(bullets2.get(i));
+                    bullets2.remove(i);
+                }
+            }
+        }
     }
 
     private void drawSprite(String name, float x, float y, float degrees) {
@@ -741,7 +797,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         sprite.setRotation(degrees);
         sprite.draw(batch);
     }
-    private void drawSprite(String name, float x, float y, float width, float height, float degrees){
+    private void drawSprite(String name, float x, float y, float width, float height, float degrees) {
         Sprite sprite = sprites.get(name);
         sprite.setPosition(x, y);
         sprite.setRotation(degrees);
@@ -792,7 +848,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     @Override
     public void pause() {
-
+        this.state = State.PAUSE;
     }
 
     @Override
@@ -835,17 +891,26 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if ((screenX>SCREEN_WIDTH*0.47)&&(screenY>0)&&(screenX<SCREEN_WIDTH*0.53)&&(screenY<SCREEN_WIDTH*0.06)){
-            isPause = true;
-            //game.setScreen(shipChoosingScreen);
-        }
-        if (isPause){
-            if (isInCircle(screenX,screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f)){
-                game.setScreen(shipChoosingScreen);
-            }
-            if (isInCircle(screenX,screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f)){
-                isPause = false;
-            }
+        switch (this.state) {
+            case PAUSE:
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                    game.setScreen(shipChoosingScreen);
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                    this.state = State.RUN;
+                break;
+
+            case END:
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                    game.setScreen(shipChoosingScreen);
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                    game.setScreen(new GameScreen(shipChoosingScreen,game,p1_ship,p2_ship));
+                break;
+
+            case RUN:
+                if (isInRect(screenX, screenY, SCREEN_WIDTH*0.47f, SCREEN_WIDTH*0.53f, 0, SCREEN_HEIGHT*0.06f))
+                    this.state = State.PAUSE;
+                break;
+
         }
         return false;
     }
@@ -974,6 +1039,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static boolean isInCircle(int x, int y, float xCenter, float yCenter, float radius) {
         return (xCenter - x) * (xCenter - x) + (yCenter - y) * (yCenter - y) < radius * radius;
     }
+    private static boolean isInRect(int x, int y, float minX, float maxX, float minY, float maxY) {
+        return (x > minX) && (x < maxX) && (y > minY) && (y < maxY);
+    }
 
     private static boolean[] pressedButtons(ArrayList<Integer> touchPos) {
         int x, y;
@@ -1059,8 +1127,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         float cos = (float) Math.cos(body.getAngle() + rotate * Math.PI/2);
         float sin = (float) Math.sin(body.getAngle() + rotate * Math.PI/2);
         float cosAlpha, sinAlpha;
-        float atan = (gunNum == 1)? ATAN_0195 : ATAN_01;
-        float asin = (gunNum == 1)? ASIN_0975 : ASIN_0985;
+        float atan = (gunNum == 1)? ARCTG_0195 : ARCTG_01;
+        float asin = (gunNum == 1)? ARCSIN_0975 : ARCSIN_0985;
         float kf2 = (gunNum == 1)? 0.93f: 0.61f;
         float kf3 = (gunNum == 1)? 0.65f: 0.35f;
         int impulse = (gunNum == 1)? 100 : 70;
@@ -1115,6 +1183,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
 
+
     private void BD_activateBullet(Body bullet) {
         BlockData data = (BlockData) bullet.getUserData();
         data.setBulletActivated(true);
@@ -1133,6 +1202,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         labels.add(newLabel);
         data.setEngineLabels(labels);
         engine.setUserData(data);
+    }
+
+    private void BD_addLifetime(Body bullet, float delta) {
+        BlockData data = (BlockData) bullet.getUserData();
+        data.setBulletLifetime(data.getBulletLifetime() + delta);
+        bullet.setUserData(data);
     }
 
 }

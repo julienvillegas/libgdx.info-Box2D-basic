@@ -15,8 +15,7 @@ import com.mygdx.game.Bodies.MoveableImage
 import com.mygdx.game.Extra.AssemblingScreenCoords
 import com.mygdx.game.Extra.AssemblingScreenCoords.*
 import com.mygdx.game.Extra.ItemID
-import com.mygdx.game.Extra.ItemID.TURBINE
-import com.mygdx.game.Extra.ItemID.WOOD_GUN
+import com.mygdx.game.Extra.ItemID.*
 import com.mygdx.game.MyGdxGame
 
 class Menu internal constructor (private val game : Game, private val shipChoosingScreen: ShipChoosingScreen,
@@ -47,6 +46,7 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
     private var isImageDragging = false                                             // Перетаскиваем ли мы какой-нибудь из предметов
 
 
+
     init {
 
         val button = TextButton("Ship is created!", MyGdxGame.skin)
@@ -54,12 +54,14 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
         button.addListener(object : InputListener() {
 
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                val returnShip = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
-                for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH)
-                    for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT)
-                        returnShip[i][j] = ship[i][j]
-                shipChoosingScreen.setShipData(returnShip, player, inventory)
-                game.screen = shipChoosingScreen
+               if (inventory[EYE] == 0) {
+                   val returnShip = Array(AssemblingScreenCoords.FIELD_WIDTH) { IntArray(AssemblingScreenCoords.FIELD_HEIGHT) }
+                   for (i in 0 until AssemblingScreenCoords.FIELD_WIDTH)
+                       for (j in 0 until AssemblingScreenCoords.FIELD_HEIGHT)
+                           returnShip[i][j] = ship[i][j]
+                   shipChoosingScreen.setShipData(returnShip, player, inventory)
+                   game.screen = shipChoosingScreen
+               }
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
@@ -92,11 +94,16 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
             }
 
             for (j in 0 until blocks[i].size) {
-                if (j < inventory[i])
-                    blocks[i][blocks[i].size - j - 1] = MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i))
+                if (j < inventory[i]) {
+                    blocks[i][j] = MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i))
+                    if (j == 0) {
+                        blocks[i][j].isTouchable = true
+                        stage.addActor(blocks[i][j])
+                    }
+                }
                 else {
                     currI = i
-                    currJ = blocks[i].size - j - 1
+                    currJ = j
                     blocks[currI][currJ] = MoveableImage(getPosX(i, "item"), getPosY(i, "item"), getWidth(i), getHeight(i), 0, getImageName(i))
                     val iInField = shipItemsCoords[i][2*(j - inventory[i])]
                     val jInField = shipItemsCoords[i][2*(j - inventory[i]) + 1]
@@ -109,9 +116,10 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
                             AssemblingScreenCoords.FIELD_DELTA_Y + AssemblingScreenCoords.BLOCK_SIZE * jInField + getDeltaYForLongBlocks(id))
                     blocks[currI][currJ].xinTable = iInField
                     blocks[currI][currJ].yinTable = jInField
+                    updateOccupiedCells(true, iInField, jInField)
+                    blocks[currI][currJ].isTouchable = true
+                    stage.addActor(blocks[currI][currJ])
                 }
-                blocks[i][blocks[i].size - j - 1].isTouchable = true
-                stage.addActor(blocks[i][blocks[i].size - j - 1])
             }
         }
 
@@ -388,28 +396,37 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
 
         ship[i][j] = id
         blocks[currI][currJ].setXYinTable(i, j)
-        occupiedCells[i][j] = true
-        when (id) {
-            ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> occupiedCells[i + 1][j] = true
-            ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> occupiedCells[i][j + 1] = true
-            ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> occupiedCells[i - 1][j] = true
-            ItemID.TURBINE + ItemID.UP, ItemID.STEEL_GUN + ItemID.DOWN, ItemID.WOOD_GUN + ItemID.DOWN -> occupiedCells[i][j - 1] = true
-        }
+        updateOccupiedCells(true, i, j)
     }
 
     private fun removeImageFromTable() {
         val i = blocks[currI][currJ].xinTable
         val j = blocks[currI][currJ].yinTable
-        val id = blocks[currI][currJ].getNumber()
 
         ship[i][j] = ItemID.NULL
         blocks[currI][currJ].setXYinTable(ItemID.NULL, ItemID.NULL)
-        occupiedCells[i][j] = false
-        when (id) {
-            ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> occupiedCells[i + 1][j] = false
-            ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> occupiedCells[i][j + 1] = false
-            ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> occupiedCells[i - 1][j] = false
-            ItemID.TURBINE + ItemID.UP, ItemID.STEEL_GUN + ItemID.DOWN, ItemID.WOOD_GUN + ItemID.DOWN -> occupiedCells[i][j - 1] = false
+        updateOccupiedCells(false, i, j)
+    }
+
+    private fun updateOccupiedCells(isSet: Boolean, xInField: Int, yInField: Int) {
+        // isSet = true - обновление при установке объекта, false - при удалении
+        val id = blocks[currI][currJ].getNumber()
+        if (isSet) {
+            occupiedCells[xInField][yInField] = true
+            when (id) {
+                ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> occupiedCells[xInField + 1][yInField] = true
+                ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> occupiedCells[xInField][yInField + 1] = true
+                ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> occupiedCells[xInField - 1][yInField] = true
+                ItemID.TURBINE + ItemID.UP, ItemID.STEEL_GUN + ItemID.DOWN, ItemID.WOOD_GUN + ItemID.DOWN -> occupiedCells[xInField][yInField - 1] = true
+            }
+        } else {
+            occupiedCells[xInField][yInField] = false
+            when (id) {
+                ItemID.TURBINE + ItemID.LEFT, ItemID.STEEL_GUN + ItemID.RIGHT, ItemID.WOOD_GUN + ItemID.RIGHT -> occupiedCells[xInField + 1][yInField] = false
+                ItemID.TURBINE + ItemID.DOWN, ItemID.STEEL_GUN + ItemID.UP, ItemID.WOOD_GUN + ItemID.UP -> occupiedCells[xInField][yInField + 1] = false
+                ItemID.TURBINE + ItemID.RIGHT, ItemID.STEEL_GUN + ItemID.LEFT, ItemID.WOOD_GUN + ItemID.LEFT -> occupiedCells[xInField - 1][yInField] = false
+                ItemID.TURBINE + ItemID.UP, ItemID.STEEL_GUN + ItemID.DOWN, ItemID.WOOD_GUN + ItemID.DOWN -> occupiedCells[xInField][yInField - 1] = false
+            }
         }
     }
 
@@ -481,15 +498,13 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
                     setImageOnTable(lastXInTable, lastYInTable)
                 }
             } else if (setEndPosition(x, y)) {
-                if (currJ < blocks[currI].size - 1) {
-                    for (h in currJ + 1 until blocks[currI].size) {
+                    for (h in 0 until blocks[currI].size) {
                         if (blocks[currI][h].isInStartPos) {
                             blocks[currI][h].isTouchable = true
                             stage.addActor(blocks[currI][h])
                             break
                         }
                     }
-                }
             } else {
                 if (blocks[currI][currJ].isInStartPos) {
                     plus1item(currI)
