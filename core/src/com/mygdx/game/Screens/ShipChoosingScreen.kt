@@ -4,10 +4,15 @@ import com.badlogic.gdx.Game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
+import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.mygdx.game.Extra.AssemblingScreenCoords
 import com.mygdx.game.Extra.AssemblingScreenCoords.*
@@ -15,6 +20,9 @@ import com.mygdx.game.Extra.ItemID
 import com.mygdx.game.Extra.ItemID.NULL
 import com.mygdx.game.Extra.ItemID.NUMBER_OF_ITEMS
 import com.mygdx.game.MyGdxGame
+import com.badlogic.gdx.scenes.scene2d.Actor
+
+
 
 class ShipChoosingScreen(private val game: Game) : Screen {
 
@@ -29,14 +37,23 @@ class ShipChoosingScreen(private val game: Game) : Screen {
     fun getMe() = this
 
     init {
+        val container = Table()
+
+        stage!!.addActor(container.apply {
+            setFillParent(true)
+            background = TextureRegionDrawable(TextureRegion(Texture("background.png")))
+
+        })
 
         val p1shipbutton = TextButton("Create 1st ship", MyGdxGame.skin)
         val p2shipbutton = TextButton("Create 2nd ship", MyGdxGame.skin)
         val playButton = TextButton("Start!", MyGdxGame.skin)
+        val p1prepared = TextButton("Choose prepared 1st ship", MyGdxGame.skin)
 
         playButton.width = (SCREEN_WIDTH / 2).toFloat()
 
         p1shipbutton.setPosition( p1shipbutton.width / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
+        p1prepared.setPosition( p1shipbutton.width / 4, SCREEN_HEIGHT_F*3/4)
         p2shipbutton.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - p2shipbutton.width * 5 / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
         playButton.setPosition(SCREEN_WIDTH / 2 - playButton.width / 2, SCREEN_HEIGHT / 2 - playButton.height / 2)
 
@@ -50,6 +67,7 @@ class ShipChoosingScreen(private val game: Game) : Screen {
                 return true
             }
         })
+
 
         p2shipbutton.addListener(object : InputListener() {
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
@@ -72,11 +90,40 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         })
 
 
-        stage.addActor(p1shipbutton)
-        stage.addActor(p2shipbutton)
-        stage.addActor(playButton)
+        container.addActor(p1shipbutton)
+        container.addActor(p2shipbutton)
+        container.addActor(playButton)
+        container.addActor(p1prepared)
+        val table = Table()
 
+        for (i in 0..99) {
+            table.row()
+            val button1 = TextButton(i.toString() + "one", MyGdxGame.skin)
+            val button2 = TextButton(i.toString() + "two", MyGdxGame.skin)
+            val button3 = TextButton(i.toString() + "three", MyGdxGame.skin)
+            table.add(button1).width(300.toFloat())
+            table.add(button2).width(300.toFloat())
+            table.add(button3).width(300.toFloat())
+        }
+        val scroll = ScrollPane(table, MyGdxGame.skin)
+        scroll.setFadeScrollBars(true)
+        scroll.width = (SCREEN_WIDTH/2).toFloat()
+        scroll.height = (SCREEN_HEIGHT_F/2)
+        scroll.setPosition(0.toFloat(), SCREEN_HEIGHT_F/4)
+
+        p1prepared.addListener(object : InputListener() {
+            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
+                container.addActor(scroll)
+                container.removeActor(p1prepared)
+            }
+
+            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                return true
+            }
+        })
     }
+
+
 
 
 
