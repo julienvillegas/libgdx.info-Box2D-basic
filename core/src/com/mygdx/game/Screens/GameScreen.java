@@ -118,6 +118,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private int p2_steelGun_I = -1, p2_steelGun_J = -1;
     private int p2_wGun1_I = -1, p2_wGun1_J = -1;
     private int p2_wGun2_I = -1, p2_wGun2_J = -1;
+    private boolean p1_won = false;
+    private boolean p2_won = false;
 
 
     private ArrayList<Integer> p1_enginesCoords = new ArrayList<Integer>();
@@ -235,7 +237,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
     private void generate() {
-        String[] blockNames = new String[]{"woodblock", "steelblock", "engine", "turbine", "halfwoodblock", "halfsteelblock", "guntwo", "gunone","hero1"};
+        String[] blockNames = new String[]{"woodblock", "steelblock", "engine", "turbine", "halfwoodblock", "halfsteelblock", "guntwo", "gunone","hero1","hero2"};
 
         boolean turbExist = false;
         boolean wGunExist = false;
@@ -509,8 +511,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                             for (JointEdge joint : p1_bodies[i][j].getJointList())
                                 world.destroyJoint(joint.joint);
 
-                            if (p1_ship[i][j] == EYE)
-                                state = State.END;
+                            if (p1_ship[i][j] == EYE){
+                                p2_won = true;
+                                state = State.END;}
 
                             if (p1_ship[i][j] == ENGINE) {
                                 ArrayList<Integer> labels = ((BlockData) p1_bodies[i][j].getUserData()).getEngineLabels();
@@ -568,8 +571,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                             for (JointEdge joint : p2_bodies[i][j].getJointList())
                                 world.destroyJoint(joint.joint);
 
-                            if (p2_ship[i][j] == EYE)
-                                state = State.END;
+                            if (p2_ship[i][j] == EYE2){
+                                p1_won = true;
+                                state = State.END;}
 
                             if (p2_ship[i][j] == ENGINE) {
                                 ArrayList<Integer> labels = ((BlockData) p2_bodies[i][j].getUserData()).getEngineLabels();
@@ -744,7 +748,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
                 break;
             case END:
-                drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+                if (p2_won){
+                    drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);}
+                if (p1_won){
+                    drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);}
                 break;
             case RUN:
                 drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);

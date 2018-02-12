@@ -30,6 +30,7 @@ class BlockData(var type: Int) {
             STEEL_GUN -> HP_STEEL_GUN
             WOOD_GUN -> HP_WOOD_GUN
             EYE -> HP_EYE
+            EYE2 -> HP_EYE2
             else -> 0f
         }
         this.isBulletActivated = false
