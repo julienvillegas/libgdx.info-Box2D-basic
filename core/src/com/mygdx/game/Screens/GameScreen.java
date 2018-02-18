@@ -59,7 +59,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final float MAX_BULLET_LIFETIME = 7f;                            // Время жизни пули (в сек)
     private static final float MAX_GAMEPLAY_TIME = 180f;                            // Максимальное время игры (в сек)
 
-    private static final int METEORS_COUNT = 60;                                    // Количество метеоритов на карте
+    private static final int METEORS_COUNT = 0;                                    // Количество метеоритов на карте
 
     private static final float ENGINE_POWER = 54000f;                               // Мощность одного двигателя
 
@@ -174,7 +174,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if ((dataA.getType() >= 0) && (dataB.getType() == bulletType) && (!dataB.isBulletActivated())) {
                     float x = bodyA.getLinearVelocity().x;
                     float y = bodyB.getLinearVelocity().y;
-                    if (x*x + y*y > 20*20) {
+                    if (x*x + y*y > 15*15) {
                         BD_getDamage(bodyA);
                         BD_activateBullet(bodyB);
                     }
@@ -182,7 +182,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if ((dataB.getType() >= 0) && (dataA.getType() == bulletType)&& (!dataA.isBulletActivated())) {
                     float x = bodyA.getLinearVelocity().x;
                     float y = bodyB.getLinearVelocity().y;
-                    if (x*x + y*y > 20*20) {
+                    if (x*x + y*y > 15*15) {
                         BD_getDamage(bodyB);
                         BD_activateBullet(bodyA);
                     }
@@ -305,7 +305,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     int type = p2_ship[i][j] % 10;
                     BlockData block = new BlockData(type);
                     int facing = p2_ship[i][j] / 10 * 10;
-
+                    if (type == EYE){
+                        type = EYE2;
+                    }
                     String name = blockNames[type];
                     switch (facing) {
                         case UP: name += "90"; break;
@@ -315,7 +317,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
                     float x = getXOnField(p2_ship[i][j], i, SPAWN_CORNERS[1][0]);
                     float y = getYOnField(p2_ship[i][j], j, SPAWN_CORNERS[1][1]);
-
                     if (type == TURBINE) {
                         if (turbExist) {
                             p2_turb1_I = i; p2_turb1_J = j;
@@ -571,7 +572,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                             for (JointEdge joint : p2_bodies[i][j].getJointList())
                                 world.destroyJoint(joint.joint);
 
-                            if (p2_ship[i][j] == EYE2){
+                            if (p2_ship[i][j] == EYE){
                                 p1_won = true;
                                 state = State.END;}
 
@@ -690,28 +691,26 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < bullets.size(); i++) {
 
             Body body = bullets.get(i);
-            String name = "bullet";
-
+            String name = "bullet2";
+            BlockData block = (BlockData) body.getUserData();
+            if (block.isBulletActivated()) {
+                name = "bullet";
+            }
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
-            BlockData block = (BlockData) body.getUserData();
-            if (block.isBulletActivated()) {
-                block.setBulletActivated(false);
-            }
             bullets.get(i).setUserData(block);
         }
         for (int i = 0; i < bullets2.size(); i++) {
             Body body = bullets2.get(i);
             String name = "bullet2";
-
+            BlockData block = (BlockData) body.getUserData();
+            if (block.isBulletActivated()) {
+                name = "bullet";
+            }
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSprite(name, position.x, position.y, degrees);
-            BlockData block = (BlockData) body.getUserData();
-            if (block.isBulletActivated()) {
-                block.setBulletActivated(false);
-            }
             bullets2.get(i).setUserData(block);
         }
 
@@ -745,13 +744,13 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         switch (this.state) {
             case PAUSE:
                 drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-                drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);
+                drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
                 break;
             case END:
                 if (p2_won){
-                    drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);}
+                    drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
                 if (p1_won){
-                    drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight - camera.viewportWidth * 0.5f, camera.viewportWidth * 0.6f, camera.viewportWidth * 0.4f, 0);}
+                    drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
                 break;
             case RUN:
                 drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
@@ -900,21 +899,21 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         switch (this.state) {
             case PAUSE:
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.554f,SCREEN_WIDTH*0.089f))
                     game.setScreen(shipChoosingScreen);
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.6f,SCREEN_HEIGHT*0.554f,SCREEN_WIDTH*0.089f))
                     this.state = State.RUN;
                 break;
 
             case END:
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.382f,SCREEN_HEIGHT*0.6f,SCREEN_WIDTH*0.068f))
                     game.setScreen(shipChoosingScreen);
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.61f,SCREEN_HEIGHT*0.483f,SCREEN_WIDTH*0.09375f))
+                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.568f,SCREEN_HEIGHT*0.6f,SCREEN_WIDTH*0.068f))
                     game.setScreen(new GameScreen(shipChoosingScreen,game,p1_ship,p2_ship));
                 break;
 
             case RUN:
-                if (isInRect(screenX, screenY, SCREEN_WIDTH*0.47f, SCREEN_WIDTH*0.53f, 0, SCREEN_HEIGHT*0.06f))
+                if (isInRect(screenX, screenY, SCREEN_WIDTH*0.47f, SCREEN_WIDTH*0.53f, 0, SCREEN_WIDTH*0.06f))
                     this.state = State.PAUSE;
                 break;
 
@@ -1138,7 +1137,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         float asin = (gunNum == 1)? ARCSIN_0975 : ARCSIN_0985;
         float kf2 = (gunNum == 1)? 0.93f: 0.61f;
         float kf3 = (gunNum == 1)? 0.65f: 0.35f;
-        int impulse = (gunNum == 1)? 100 : 70;
+        int impulse = (gunNum == 1)? 150 : 100;
         Body bullet;
          if (gunNum == 1){bullet = createBody("bullet2", 0, 0, body.getAngle());}
         else { bullet = createBody("bullet", 0, 0, body.getAngle());}
