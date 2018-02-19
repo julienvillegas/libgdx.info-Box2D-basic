@@ -18,6 +18,11 @@ import com.mygdx.game.Extra.ItemID
 import com.mygdx.game.Extra.ItemID.NULL
 import com.mygdx.game.Extra.ItemID.NUMBER_OF_ITEMS
 import com.mygdx.game.MyGdxGame
+import jdk.nashorn.internal.runtime.ScriptingFunctions.readLine
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStreamReader
 
 
 class ShipChoosingScreen(private val game: Game) : Screen {
@@ -44,12 +49,10 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         val p1shipbutton = TextButton("Create 1st ship", MyGdxGame.skin)
         val p2shipbutton = TextButton("Create 2nd ship", MyGdxGame.skin)
         val playButton = TextButton("Start!", MyGdxGame.skin)
-        val p1prepared = TextButton("Choose prepared 1st ship", MyGdxGame.skin)
 
         playButton.width = (SCREEN_WIDTH / 2).toFloat()
 
         p1shipbutton.setPosition( p1shipbutton.width / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
-        p1prepared.setPosition( p1shipbutton.width / 4, SCREEN_HEIGHT_F*3/4)
         p2shipbutton.setPosition(AssemblingScreenCoords.SCREEN_WIDTH - p2shipbutton.width * 5 / 4, AssemblingScreenCoords.BLOCK_SIZE / 2)
         playButton.setPosition(SCREEN_WIDTH / 2 - playButton.width / 2, SCREEN_HEIGHT / 2 - playButton.height / 2)
 
@@ -78,6 +81,16 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         playButton.addListener(object : InputListener() {
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
                 game.screen = GameScreen(getMe(), game,p1_ship, p2_ship)
+                for ( i in 0 until p1_inventory.size){
+                    System.out.print("${p1_inventory[i]} ")
+                }
+                for ( i in 0..p1_ship.size-1){
+                    System.out.println()
+                    for ( j in 0..p1_ship[0].size-1){
+                        System.out.print("${p1_ship[i][j]} ")
+                    }
+                }
+
             }
 
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
@@ -89,42 +102,41 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         container.addActor(p1shipbutton)
         container.addActor(p2shipbutton)
         container.addActor(playButton)
-        container.addActor(p1prepared)
         val table = Table()
+        val button1 = TextButton( "<-", MyGdxGame.skin)
+        val button2 = TextButton( "model+${1}", MyGdxGame.skin)
+        button2.addListener(object : InputListener() {
+            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
 
-        for (i in 0..99) {
-            table.row()
-            val button1 = TextButton(i.toString() + "one", MyGdxGame.skin)
-            val button2 = TextButton(i.toString() + "two", MyGdxGame.skin)
-            val button3 = TextButton(i.toString() + "three", MyGdxGame.skin)
-            table.add(button1).width(300.toFloat())
-            table.add(button2).width(300.toFloat())
-            table.add(button3).width(300.toFloat())
+            }
+
+            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+
+                return true
+            }
+        })
+        val button3 = TextButton( "->", MyGdxGame.skin)
+        table.add(button1).width(300.toFloat())
+        table.add(button2).width(300.toFloat())
+        table.add(button3).width(300.toFloat())
+        table.width = (SCREEN_WIDTH/2).toFloat()
+        table.setPosition(0.toFloat(), SCREEN_HEIGHT_F*3/4)
+        container.addActor(table)
+
+    }
+
+
+    private fun getMass(ship :Array<IntArray>, inventory : IntArray) {
+        val fstream = FileInputStream("text.txt")
+        val br = BufferedReader(InputStreamReader(fstream))
+        var strLine: String = br.readLine()
+        for (i in 0 until ship.size) {
+            var arr = strLine.split(" ")
+            for (j in 0 until arr.size) {
+                ship[i][j] = arr[j].toInt()
+            }
+            strLine = br.readLine()
         }
-        val scroll = ScrollPane(table, MyGdxGame.skin)
-        scroll.setFadeScrollBars(true)
-        scroll.width = (SCREEN_WIDTH/2).toFloat()
-        scroll.height = (SCREEN_HEIGHT_F/2)
-        scroll.setPosition(0.toFloat(), SCREEN_HEIGHT_F/4)
-        container.addListener(object : InputListener() {
-            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-
-            }
-
-            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                return true
-            }
-        })
-        p1prepared.addListener(object : InputListener() {
-            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
-                container.addActor(scroll)
-                container.removeActor(p1prepared)
-            }
-
-            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                return true
-            }
-        })
     }
 
 
