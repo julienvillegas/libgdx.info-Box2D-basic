@@ -6,9 +6,7 @@ import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.scenes.scene2d.InputEvent
-import com.badlogic.gdx.scenes.scene2d.InputListener
-import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.*
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
@@ -20,8 +18,6 @@ import com.mygdx.game.Extra.ItemID
 import com.mygdx.game.Extra.ItemID.NULL
 import com.mygdx.game.Extra.ItemID.NUMBER_OF_ITEMS
 import com.mygdx.game.MyGdxGame
-import com.badlogic.gdx.scenes.scene2d.Actor
-
 
 
 class ShipChoosingScreen(private val game: Game) : Screen {
@@ -110,7 +106,15 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         scroll.width = (SCREEN_WIDTH/2).toFloat()
         scroll.height = (SCREEN_HEIGHT_F/2)
         scroll.setPosition(0.toFloat(), SCREEN_HEIGHT_F/4)
+        container.addListener(object : InputListener() {
+            override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
 
+            }
+
+            override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
+                return true
+            }
+        })
         p1prepared.addListener(object : InputListener() {
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
                 container.addActor(scroll)
@@ -122,6 +126,11 @@ class ShipChoosingScreen(private val game: Game) : Screen {
             }
         })
     }
+
+
+
+
+
 
 
 
