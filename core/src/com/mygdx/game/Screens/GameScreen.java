@@ -4,8 +4,10 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -23,6 +25,7 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
@@ -59,7 +62,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final float MAX_BULLET_LIFETIME = 7f;                            // Время жизни пули (в сек)
     private static final float MAX_GAMEPLAY_TIME = 180f;                            // Максимальное время игры (в сек)
 
-    private static final int METEORS_COUNT = 0;                                    // Количество метеоритов на карте
+    private static final int METEORS_COUNT = 10;                                    // Количество метеоритов на карте
 
     private static final float ENGINE_POWER = 54000f;                               // Мощность одного двигателя
 
@@ -493,11 +496,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         if (state == State.RUN)
             stepWorld(delta);
 
-        if (gameplayTimer > MAX_GAMEPLAY_TIME) {
 
-            // Скрипт с завершением игры из-за лимита во времени
-
-        }
 
 
         drawSprite("background", 0, 0, camera.viewportWidth, camera.viewportHeight, 0);
@@ -739,7 +738,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         // uncomment to show the polygons
         // debugRenderer.render(world, camera.combined);
-
+        if (gameplayTimer > MAX_GAMEPLAY_TIME) {
+            state = State.END;
+        } else {
+            String time = getStringTimer(gameplayTimer);
+            drawText(time, WIDTH_IN_UNITS/2,HEIGHT_IN_UNITS/2, 0.1f);
+        }
 
         switch (this.state) {
             case PAUSE:
@@ -749,9 +753,17 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             case END:
                 if (p2_won){
                     drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
-                if (p1_won){
-                    drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
-                break;
+                else {
+                    if (p1_won) {
+                        drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight * 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
+                    }
+                    else {
+                        drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
+                    }
+
+                }
+
+                    break;
             case RUN:
                 drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
                 break;
@@ -810,6 +822,16 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         sprite.setSize(width,height);
         sprite.draw(batch);
     }
+    private void drawText(String s, float x, float y, float scale) {
+        BitmapFont bf = new BitmapFont();
+        bf.getData().scale(scale);
+        Label.LabelStyle bfl = new Label.LabelStyle(bf, Color.BLACK);
+        Label lb = new Label(s,bfl);
+        lb.setX(x);
+        lb.setY(y);
+        lb.draw(batch,1f);
+    }
+
 
     @Override
     public void resize(int width, int height) {
@@ -1214,6 +1236,13 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         BlockData data = (BlockData) bullet.getUserData();
         data.setBulletLifetime(data.getBulletLifetime() + delta);
         bullet.setUserData(data);
+    }
+
+
+    private String getStringTimer(float timerInFloat) {
+        int min = (int) (timerInFloat / 60);
+        int sec = (int) (timerInFloat % 60);
+        return (sec < 10)? min + ":0" + sec : min + ":" + sec;
     }
 
 }
