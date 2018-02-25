@@ -690,10 +690,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < bullets.size(); i++) {
 
             Body body = bullets.get(i);
-            String name = "bullet2";
+            String name = "bullet";
             BlockData block = (BlockData) body.getUserData();
             if (block.isBulletActivated()) {
-                name = "bullet";
+                name = "bullet0";
             }
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -705,7 +705,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             String name = "bullet2";
             BlockData block = (BlockData) body.getUserData();
             if (block.isBulletActivated()) {
-                name = "bullet";
+                name = "bullet20";
             }
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -758,7 +758,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                         drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight * 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
                     }
                     else {
-                        drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
+                        drawSprite("timeisover", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
                     }
 
                 }

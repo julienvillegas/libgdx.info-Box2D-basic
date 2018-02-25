@@ -1,12 +1,20 @@
 sprites2.png
-size: 3739, 3046
+size: 3906, 3408
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-halfsteelblock90
+guntwo180
   rotate: false
-  xy: 2425, 2398
-  size: 333, 333
-  orig: 333, 333
+  xy: 703, 2746
+  size: 763, 315
+  orig: 763, 315
   offset: 0, 0
   index: -1
+meteorfour
+  rotate: false
+  xy: 3064, 3010
+  size: 332, 301
+  orig: 393, 301
+  offset: 61, 0
+  index: -1
+

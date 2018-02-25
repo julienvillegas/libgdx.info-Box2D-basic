@@ -268,7 +268,7 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
             ItemID.HALF_STEEL_BLOCK -> return "halfsteelblock.png"
             ItemID.STEEL_GUN -> return "gun_2.png"
             ItemID.WOOD_GUN -> return "gun_1.png"
-            ItemID.EYE -> return "eye.png"
+            ItemID.EYE -> return "eye${player}.png"
         }
         return ""
     }
