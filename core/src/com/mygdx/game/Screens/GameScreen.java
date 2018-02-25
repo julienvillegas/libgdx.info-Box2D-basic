@@ -752,10 +752,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 break;
             case END:
                 if (p2_won){
-                    drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
+                    drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
                 else {
                     if (p1_won) {
-                        drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight * 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
+                        drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight * 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
                     }
                     else {
                         drawSprite("timeisover", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);

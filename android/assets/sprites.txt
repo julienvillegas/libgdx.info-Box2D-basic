@@ -3,7 +3,7 @@ size: 3906, 3408
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-background_red_space
+background
   rotate: true
   xy: 1332, 916
   size: 1398, 679
