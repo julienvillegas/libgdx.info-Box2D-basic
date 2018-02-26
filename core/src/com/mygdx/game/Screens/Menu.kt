@@ -4,16 +4,17 @@ import com.badlogic.gdx.*
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.viewport.ScreenViewport
+import com.mygdx.game.Bodies.GameFont
 import com.mygdx.game.Bodies.MoveableImage
 import com.mygdx.game.Extra.AssemblingScreenCoords
 import com.mygdx.game.Extra.AssemblingScreenCoords.*
+import com.mygdx.game.Extra.FontID.Companion.JURA_DEMIBOLD
 import com.mygdx.game.Extra.ItemID
 import com.mygdx.game.Extra.ItemID.*
 import com.mygdx.game.MyGdxGame
@@ -123,12 +124,10 @@ class Menu internal constructor (private val game : Game, private val shipChoosi
             }
         }
 
-        val itemsCountBF = BitmapFont()
-        itemsCountBF.data.scale(2f)
-        val itemsCountLS = Label.LabelStyle(itemsCountBF, Color.BLACK)
+        val itemsCountFont = GameFont(JURA_DEMIBOLD, 48, Color.DARK_GRAY)
 
         for (i in labels.indices) {
-            labels[i] = Label("x" + inventory[i], itemsCountLS)
+            labels[i] = Label("x" + inventory[i], itemsCountFont.getLS())
             labels[i]!!.x = getPosX(i, "label")
             labels[i]!!.y = getPosY(i, "label")
             stage.addActor(labels[i])

@@ -30,7 +30,9 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
 import com.mygdx.game.Bodies.BlockData;
+import com.mygdx.game.Bodies.GameFont;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
+import com.mygdx.game.Extra.FontID;
 import com.mygdx.game.Extra.ItemID;
 import com.mygdx.game.Extra.MathConsts;
 
@@ -67,9 +69,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final float ENGINE_POWER = 54000f;                               // Мощность одного двигателя
 
     private static final float SCALE = 0.005f;                                      // Константа, переводящая GDX-овские размеры объектов в игровые
-    private static final float UNIT_SIZE = SCREEN_HEIGHT / 50f;                     // Размер 1 клетки при отрисовке текстур
-    private static final float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;           // Ширина экрана в клетках
     private static final float HEIGHT_IN_UNITS = 50f;                               // Высота экрана в клетках
+    private static final float UNIT_SIZE = SCREEN_HEIGHT / HEIGHT_IN_UNITS;         // Размер 1 клетки при отрисовке текстур
+    private static final float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;           // Ширина экрана в клетках
     private static final float BUTTON_RADIUS = 6f;                                  // Размер кнопки в клетках
 
     private static final int BTN_P1_LEFTTURBINE = 0;                                //
@@ -96,7 +98,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private Box2DDebugRenderer debugRenderer;
     private PhysicsShapeCache physicsBodies;
     private float accumulator = 0f;
-    private float gameplayTimer = 0f;                                               // Время с начала запуска игры (в сек)
+    private float gameplayTimer = 0f;                                                                                       // Время с начала запуска игры (в сек)
 
     private Body[] gameFieldBounds = new Body[4];                                                                           // Границы карты
     private int[][] SPAWN_CORNERS = {{7, 7*FIELD_HEIGHT},
@@ -135,8 +137,11 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private float p1_gunTimer = 0f;
     private float p2_gunTimer = 0f;
 
+
     private Game game;
     private ShipChoosingScreen shipChoosingScreen;
+
+    private GameFont timerFont = new GameFont(FontID.Companion.getJURA_MEDIUM(), 4, new Color(0xffcccccc));
 
 
     private Body[] meteorBodies = new Body[METEORS_COUNT];
@@ -205,6 +210,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
         });
         physicsBodies = new PhysicsShapeCache("physics.xml");
+
         generate();
         generateMeteors();
 
@@ -738,11 +744,12 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         // uncomment to show the polygons
         // debugRenderer.render(world, camera.combined);
+
         if (gameplayTimer > MAX_GAMEPLAY_TIME) {
             state = State.END;
         } else {
             String time = getStringTimer(gameplayTimer);
-            drawText(time, WIDTH_IN_UNITS/2,HEIGHT_IN_UNITS/2, 0.1f);
+            timerFont.getBF().draw(batch, time, WIDTH_IN_UNITS * 0.46f, HEIGHT_IN_UNITS - WIDTH_IN_UNITS * 0.08f);
         }
 
         switch (this.state) {
@@ -821,15 +828,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         sprite.setRotation(degrees);
         sprite.setSize(width,height);
         sprite.draw(batch);
-    }
-    private void drawText(String s, float x, float y, float scale) {
-        BitmapFont bf = new BitmapFont();
-        bf.getData().scale(scale);
-        Label.LabelStyle bfl = new Label.LabelStyle(bf, Color.BLACK);
-        Label lb = new Label(s,bfl);
-        lb.setX(x);
-        lb.setY(y);
-        lb.draw(batch,1f);
     }
 
 
