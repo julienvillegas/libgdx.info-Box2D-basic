@@ -102,7 +102,7 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         container.addActor(p1shipbutton)
         container.addActor(p2shipbutton)
         container.addActor(playButton)
-        val table = Table()
+        /*val table = Table()
         val button1 = TextButton( "<-", MyGdxGame.skin)
         val button2 = TextButton( "model+${1}", MyGdxGame.skin)
         button2.addListener(object : InputListener() {
@@ -121,7 +121,7 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         table.add(button3).width(300.toFloat())
         table.width = (SCREEN_WIDTH/2).toFloat()
         table.setPosition(0.toFloat(), SCREEN_HEIGHT_F*3/4)
-        container.addActor(table)
+        container.addActor(table)*/
 
     }
 
@@ -138,13 +138,6 @@ class ShipChoosingScreen(private val game: Game) : Screen {
             strLine = br.readLine()
         }
     }
-
-
-
-
-
-
-
 
 
 

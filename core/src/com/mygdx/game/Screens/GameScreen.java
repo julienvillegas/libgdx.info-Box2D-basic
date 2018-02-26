@@ -7,7 +7,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
@@ -25,7 +24,6 @@ import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import com.codeandweb.physicseditor.PhysicsShapeCache;
@@ -33,6 +31,7 @@ import com.mygdx.game.Bodies.BlockData;
 import com.mygdx.game.Bodies.GameFont;
 import com.mygdx.game.Extra.AssemblingScreenCoords;
 import com.mygdx.game.Extra.FontID;
+import com.mygdx.game.Extra.GameScreenCoords;
 import com.mygdx.game.Extra.ItemID;
 import com.mygdx.game.Extra.MathConsts;
 
@@ -42,7 +41,7 @@ import java.util.Random;
 
 
 
-public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScreenCoords, MathConsts {
+public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScreenCoords, GameScreenCoords, MathConsts {
 
 
 
@@ -64,15 +63,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private static final float MAX_BULLET_LIFETIME = 7f;                            // Время жизни пули (в сек)
     private static final float MAX_GAMEPLAY_TIME = 180f;                            // Максимальное время игры (в сек)
 
-    private static final int METEORS_COUNT = 10;                                    // Количество метеоритов на карте
+    private static final int METEORS_COUNT = 30;                                    // Количество метеоритов на карте
 
     private static final float ENGINE_POWER = 54000f;                               // Мощность одного двигателя
 
-    private static final float SCALE = 0.005f;                                      // Константа, переводящая GDX-овские размеры объектов в игровые
-    private static final float HEIGHT_IN_UNITS = 50f;                               // Высота экрана в клетках
-    private static final float UNIT_SIZE = SCREEN_HEIGHT / HEIGHT_IN_UNITS;         // Размер 1 клетки при отрисовке текстур
-    private static final float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;           // Ширина экрана в клетках
-    private static final float BUTTON_RADIUS = 6f;                                  // Размер кнопки в клетках
 
     private static final int BTN_P1_LEFTTURBINE = 0;                                //
     private static final int BTN_P1_GUN = 1;                                        //
@@ -749,30 +743,27 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             state = State.END;
         } else {
             String time = getStringTimer(gameplayTimer);
-            timerFont.getBF().draw(batch, time, WIDTH_IN_UNITS * 0.46f, HEIGHT_IN_UNITS - WIDTH_IN_UNITS * 0.08f);
+            timerFont.getBF().draw(batch, time, WIDTH_IN_UNITS * 0.45f, HEIGHT_IN_UNITS - WIDTH_IN_UNITS * 0.08f);
         }
 
         switch (this.state) {
             case PAUSE:
-                drawSprite("stop", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
-                drawSprite("pausescreen", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
+                drawSprite("stop", PAUSE_BTN_DELTA_X, PAUSE_BTN_DELTA_Y, PAUSE_BTN_SIZE, PAUSE_BTN_SIZE, 0);
+                drawSprite("pausescreen", PAUSE_SCREEN_DELTA_X, PAUSE_SCREEN_DELTA_Y, PAUSE_SCREEN_WIDTH, PAUSE_SCREEN_HEIGHT, 0);
                 break;
             case END:
                 if (p2_won){
-                    drawSprite("player2won", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);}
-                else {
+                    drawSprite("player2won", PLAYER2WON_SCREEN_DELTA_X, PLAYER2WON_SCREEN_DELTA_Y, PLAYER2WON_SCREEN_WIDTH, PLAYER2WON_SCREEN_HEIGHT, 0);
+                } else {
                     if (p1_won) {
-                        drawSprite("player1won", camera.viewportWidth * 0.2f, camera.viewportHeight * 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
+                        drawSprite("player1won", PLAYER1WON_SCREEN_DELTA_X, PLAYER1WON_SCREEN_DELTA_Y, PLAYER1WON_SCREEN_WIDTH, PLAYER1WON_SCREEN_HEIGHT, 0);
+                    } else {
+                        drawSprite("timeisover", TIMEOUT_SCREEN_DELTA_X, TIMEOUT_SCREEN_DELTA_Y, TIMEOUT_SCREEN_WIDTH, TIMEOUT_SCREEN_HEIGHT, 0);
                     }
-                    else {
-                        drawSprite("timeisover", camera.viewportWidth * 0.2f, camera.viewportHeight* 0.3f, camera.viewportWidth * 0.6f, camera.viewportHeight * 0.5f, 0);
-                    }
-
                 }
-
-                    break;
+                break;
             case RUN:
-                drawSprite("pause", camera.viewportWidth * 0.47f, camera.viewportHeight - camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, camera.viewportWidth * 0.06f, 0);
+                drawSprite("pause", PAUSE_BTN_DELTA_X, PAUSE_BTN_DELTA_Y, PAUSE_BTN_SIZE, PAUSE_BTN_SIZE, 0);
                 break;
         }
 
@@ -919,21 +910,23 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         switch (this.state) {
             case PAUSE:
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.4f,SCREEN_HEIGHT*0.554f,SCREEN_WIDTH*0.089f))
+                if (isInCircle(screenX, screenY, POPUP_BTN1_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
                     game.setScreen(shipChoosingScreen);
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.6f,SCREEN_HEIGHT*0.554f,SCREEN_WIDTH*0.089f))
+                if (isInCircle(screenX, screenY, POPUP_BTN2_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
+                    this.state = State.RUN;
+                if (isInRect(screenX, screenY, PAUSE_BTN_DELTA_X * UNIT_SIZE, (PAUSE_BTN_DELTA_X + PAUSE_BTN_SIZE) * UNIT_SIZE, 0, PAUSE_BTN_SIZE * UNIT_SIZE))
                     this.state = State.RUN;
                 break;
 
             case END:
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.382f,SCREEN_HEIGHT*0.6f,SCREEN_WIDTH*0.068f))
+                if (isInCircle(screenX, screenY, POPUP_BTN1_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
                     game.setScreen(shipChoosingScreen);
-                if (isInCircle(screenX, screenY,SCREEN_WIDTH*0.568f,SCREEN_HEIGHT*0.6f,SCREEN_WIDTH*0.068f))
+                if (isInCircle(screenX, screenY, POPUP_BTN2_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
                     game.setScreen(new GameScreen(shipChoosingScreen,game,p1_ship,p2_ship));
                 break;
 
             case RUN:
-                if (isInRect(screenX, screenY, SCREEN_WIDTH*0.47f, SCREEN_WIDTH*0.53f, 0, SCREEN_WIDTH*0.06f))
+                if (isInRect(screenX, screenY, PAUSE_BTN_DELTA_X * UNIT_SIZE, (PAUSE_BTN_DELTA_X + PAUSE_BTN_SIZE) * UNIT_SIZE, 0, PAUSE_BTN_SIZE * UNIT_SIZE))
                     this.state = State.PAUSE;
                 break;
 
