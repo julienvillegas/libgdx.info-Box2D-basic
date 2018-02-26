@@ -139,7 +139,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
 
     private Body[] meteorBodies = new Body[METEORS_COUNT];
+    private Body[] obstacleBodies = new Body[1];
     private String[] meteorNames = new String[METEORS_COUNT];
+    private String[] obstacleNames = new String[1];
     private ArrayList<Body> bullets = new ArrayList<Body>();
     private ArrayList<Body> bullets2 = new ArrayList<Body>();
 
@@ -157,7 +159,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
-        viewport = new ExtendViewport(50, 50, camera);
+        viewport = new ExtendViewport(80, 80, camera);
 
 
         textureAtlas = new TextureAtlas("sprites.txt");
@@ -207,6 +209,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         generate();
         generateMeteors();
+        generateObstacles();
 
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -468,6 +471,18 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
 
         }
+    private void generateObstacles(){
+       String[] obstacleNames = new String[]{"star"};
+       for (int i=0;i<obstacleNames.length;i++){
+           String name  = obstacleNames[0];
+           this.obstacleNames[i] = name;
+           int x = (int) (0.5f * (WIDTH_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+           int y = (int) (0.5f * (HEIGHT_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+           obstacleBodies[i] = createBody(name,x,y,0);
+           BlockData block = new BlockData(-2);
+           obstacleBodies[i].setUserData(block);
+       }
+    }
 
 
     private Body createBody(String name, float x, float y, float rotation) {
@@ -677,6 +692,15 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             drawSprite(name, position.x, position.y, degrees);
         }
 
+        for (int i = 0; i < obstacleBodies.length; i++) {
+            Body body = obstacleBodies[i];
+            String name = obstacleNames[i];
+
+            Vector2 position = body.getPosition();
+            float degrees = (float) Math.toDegrees(body.getAngle());
+            drawSprite(name, position.x, position.y, degrees);
+        }
+
         while (bullets.size() > 30) {
             world.destroyBody(bullets.get(0));
             bullets.remove(0);
@@ -737,7 +761,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
 
         // uncomment to show the polygons
-        // debugRenderer.render(world, camera.combined);
+
 
         if (gameplayTimer > MAX_GAMEPLAY_TIME) {
             state = State.END;
@@ -767,6 +791,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 break;
         }
 
+        //debugRenderer.render(world, camera.combined);
         batch.end();
 
     }
@@ -841,6 +866,8 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         fixtureDef.friction = 0.5f;
         FixtureDef fixtureDef1 = new FixtureDef();
         fixtureDef1.friction = 0.5f;
+        FixtureDef fixtureDef2 = new FixtureDef();
+        fixtureDef2.friction = 0.5f;
 
         PolygonShape shape = new PolygonShape();
         shape.setAsBox(camera.viewportWidth, 1);
@@ -850,14 +877,21 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         shape1.setAsBox(1, camera.viewportHeight);
         fixtureDef1.shape = shape1;
 
+        PolygonShape shape2 = new PolygonShape();
+        shape2.setAsBox(camera.viewportWidth/4, camera.viewportHeight/4);
+        fixtureDef2.shape = shape2;
+
+
         for (int i = 0; i < 4; i++) {
-            gameFieldBounds[i] = world.createBody(bodyDef);
-            BlockData block = new BlockData(-2);
-            gameFieldBounds[i].setUserData(block);
-            Gdx.app.log("Ground","Ground Hp: " +block.getHp() + "Ground Type: " + block.getType());
-            gameFieldBounds[i].createFixture((i < 2)? fixtureDef : fixtureDef1);
-            gameFieldBounds[i].setTransform((i == 3)? camera.viewportWidth : 0, (i == 0)? camera.viewportHeight : 0, 0);
+                gameFieldBounds[i] = world.createBody(bodyDef);
+                BlockData block = new BlockData(-2);
+                gameFieldBounds[i].setUserData(block);
+                gameFieldBounds[i].createFixture((i < 2)? fixtureDef : fixtureDef1);
+                gameFieldBounds[i].setTransform((i == 3)? camera.viewportWidth : 0, (i == 0)? camera.viewportHeight : 0, 0);
         }
+
+
+
 
         shape.dispose();
         shape1.dispose();
@@ -912,6 +946,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             case PAUSE:
                 if (isInCircle(screenX, screenY, POPUP_BTN1_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
                     game.setScreen(shipChoosingScreen);
+                Gdx.app.log("Button", POPUP_BTN_RADIUS*UNIT_SIZE + " ");
                 if (isInCircle(screenX, screenY, POPUP_BTN2_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
                     this.state = State.RUN;
                 if (isInRect(screenX, screenY, PAUSE_BTN_DELTA_X * UNIT_SIZE, (PAUSE_BTN_DELTA_X + PAUSE_BTN_SIZE) * UNIT_SIZE, 0, PAUSE_BTN_SIZE * UNIT_SIZE))

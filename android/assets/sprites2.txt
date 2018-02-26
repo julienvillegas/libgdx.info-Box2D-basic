@@ -1,20 +1,12 @@
 sprites2.png
-size: 3906, 3408
+size: 3290, 2968
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
-guntwo180
+star
   rotate: false
-  xy: 703, 2746
-  size: 763, 315
-  orig: 763, 315
+  xy: 1, 1
+  size: 2978, 2966
+  orig: 2978, 2966
   offset: 0, 0
   index: -1
-meteorfour
-  rotate: false
-  xy: 3064, 3010
-  size: 332, 301
-  orig: 393, 301
-  offset: 61, 0
-  index: -1
-
