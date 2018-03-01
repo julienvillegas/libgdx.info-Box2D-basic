@@ -159,7 +159,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
-        viewport = new ExtendViewport(80, 80, camera);
+        viewport = new ExtendViewport(50, 50, camera);
 
 
         textureAtlas = new TextureAtlas("sprites.txt");
@@ -178,7 +178,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if ((dataA.getType() >= 0) && (dataB.getType() == bulletType) && (!dataB.isBulletActivated())) {
                     float x = bodyA.getLinearVelocity().x;
                     float y = bodyB.getLinearVelocity().y;
-                    if (x*x + y*y > 15*15) {
+                    if (x*x + y*y > 14*14) {
                         BD_getDamage(bodyA);
                         BD_activateBullet(bodyB);
                     }
@@ -186,7 +186,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if ((dataB.getType() >= 0) && (dataA.getType() == bulletType)&& (!dataA.isBulletActivated())) {
                     float x = bodyA.getLinearVelocity().x;
                     float y = bodyB.getLinearVelocity().y;
-                    if (x*x + y*y > 15*15) {
+                    if (x*x + y*y > 14*14) {
                         BD_getDamage(bodyB);
                         BD_activateBullet(bodyA);
                     }
@@ -464,8 +464,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                     || isInRect(x, y, dangerRects[1][0], dangerRects[1][1], dangerRects[1][2], dangerRects[1][3]));
 
                 this.meteorNames[i] = name;
-                meteorBodies[i] = createBody(name, x, y, 0);
-                BlockData block = new BlockData(-2);
+                int scale = Math.abs((int)(random.nextFloat()*2+1));
+                BlockData block = new BlockData(scale+100);
+                meteorBodies[i] = createBodyWH(name, x, y, 0,scale);
                 meteorBodies[i].setUserData(block);
                 meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
             }
@@ -476,17 +477,25 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
        for (int i=0;i<obstacleNames.length;i++){
            String name  = obstacleNames[0];
            this.obstacleNames[i] = name;
-           int x = (int) (0.5f * (WIDTH_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
-           int y = (int) (0.5f * (HEIGHT_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
-           obstacleBodies[i] = createBody(name,x,y,0);
-           BlockData block = new BlockData(-2);
+           Random random = new Random();
+           int scale = 1;
+           BlockData block = new BlockData(scale+100);
+           int x = (int) (0.3f * (WIDTH_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+           int y = (int) (0.6f * (HEIGHT_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+           obstacleBodies[i] = createBodyWH(name,x,y,0,scale);
            obstacleBodies[i].setUserData(block);
+           obstacleBodies[i].setAngularVelocity(10f);
        }
     }
 
 
     private Body createBody(String name, float x, float y, float rotation) {
         Body body = physicsBodies.createBody(name, world, SCALE, SCALE);
+        body.setTransform(x, y, rotation);
+        return body;
+    }
+    private Body createBodyWH(String name, float x, float y, float rotation, float proportion) {
+        Body body = physicsBodies.createBody(name, world, SCALE*proportion, SCALE*proportion);
         body.setTransform(x, y, rotation);
         return body;
     }
@@ -686,19 +695,22 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < meteorBodies.length; i++) {
             Body body = meteorBodies[i];
             String name = meteorNames[i];
-
+            BlockData block  =(BlockData) body.getUserData();
+            int scale = block.getType() - 100;
+            //Gdx.app.log("scale", scale+ "");
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
-            drawSprite(name, position.x, position.y, degrees);
+            drawSpriteWH(name, position.x, position.y, degrees, scale);
         }
 
         for (int i = 0; i < obstacleBodies.length; i++) {
             Body body = obstacleBodies[i];
             String name = obstacleNames[i];
-
+            BlockData block  =(BlockData) body.getUserData();
+            int scale = block.getType() - 100;
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
-            drawSprite(name, position.x, position.y, degrees);
+            drawSpriteWH(name, position.x, position.y, degrees, scale);
         }
 
         while (bullets.size() > 30) {
@@ -759,8 +771,6 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             if (p2_turb2power > 10)
                 drawSprite("buttonturbine", WIDTH_IN_UNITS - 1, HEIGHT_IN_UNITS - 1, BUTTON_RADIUS * 2, BUTTON_RADIUS * 2, 180);
 
-
-        // uncomment to show the polygons
 
 
         if (gameplayTimer > MAX_GAMEPLAY_TIME) {
@@ -836,6 +846,13 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         Sprite sprite = sprites.get(name);
         sprite.setPosition(x, y);
         sprite.setRotation(degrees);
+        sprite.draw(batch);
+    }
+    private void drawSpriteWH(String name, float x, float y, float degrees, float proportion) {
+        Sprite sprite = sprites.get(name);
+        sprite.setPosition(x, y);
+        sprite.setRotation(degrees);
+        sprite.setScale(proportion);
         sprite.draw(batch);
     }
     private void drawSprite(String name, float x, float y, float width, float height, float degrees) {
@@ -1185,33 +1202,33 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         float asin = (gunNum == 1)? ARCSIN_0975 : ARCSIN_0985;
         float kf2 = (gunNum == 1)? 0.93f: 0.61f;
         float kf3 = (gunNum == 1)? 0.65f: 0.35f;
-        int impulse = (gunNum == 1)? 150 : 100;
+        int impulse = (gunNum == 1)? (int)(150) : (int)(100);
         Body bullet;
          if (gunNum == 1){bullet = createBody("bullet2", 0, 0, body.getAngle());}
         else { bullet = createBody("bullet", 0, 0, body.getAngle());}
         if (rotate == 0) {
             cosAlpha = (float) Math.cos(body.getAngle() + atan);
             sinAlpha = (float) Math.sin(body.getAngle() + atan);
-            bullet.setTransform(body.getPosition().x + 4.0f * cosAlpha, body.getPosition().y + 4.0f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
+            bullet.setTransform(body.getPosition().x + 4.0f*SCALE/0.005f * cosAlpha, body.getPosition().y + 4.0f *SCALE/0.005f* sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
         else if (rotate == 1) {
             cosAlpha = (float) Math.cos(body.getAngle() + asin);
             sinAlpha = (float) Math.sin(body.getAngle() + asin);
-            bullet.setTransform(body.getPosition().x + 4.0f * cosAlpha, body.getPosition().y + 4.0f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
+            bullet.setTransform(body.getPosition().x + 4.0f*SCALE/0.005f * cosAlpha, body.getPosition().y + 4.0f*SCALE/0.005f * sinAlpha, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
         else if (rotate == 2) {
             cosAlpha = (float) Math.cos(body.getAngle() + Math.PI / 2);
             sinAlpha = (float) Math.sin(body.getAngle() + Math.PI / 2);
             float cosAlpha1 = (float) Math.cos(body.getAngle());
             float sinAlpha1 = (float) Math.sin(body.getAngle());
-            bullet.setTransform(body.getPosition().x + kf2 * cosAlpha -0.2f*cosAlpha1, body.getPosition().y + kf2 * sinAlpha-0.2f*sinAlpha1, body.getAngle() + (float) Math.PI / 2 * rotate);
+            bullet.setTransform(body.getPosition().x + kf2*SCALE/0.005f * cosAlpha -0.2f*SCALE/0.005f*cosAlpha1, body.getPosition().y + kf2*SCALE/0.005f * sinAlpha-0.2f*SCALE/0.005f*sinAlpha1, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
         else if (rotate == 3) {
             cosAlpha = (float) Math.cos(body.getAngle());
             sinAlpha = (float) Math.sin(body.getAngle());
             float cosAlpha1 = (float) Math.cos(body.getAngle() + Math.PI / 2);
             float sinAlpha1 = (float) Math.sin(body.getAngle() + Math.PI / 2);
-            bullet.setTransform(body.getPosition().x + kf3 * cosAlpha -0.2f*cosAlpha1, body.getPosition().y + kf3 * sinAlpha-0.2f*sinAlpha1, body.getAngle() + (float) Math.PI / 2 * rotate);
+            bullet.setTransform(body.getPosition().x + kf3 *SCALE/0.005f* cosAlpha -0.2f*SCALE/0.005f*cosAlpha1, body.getPosition().y + kf3*SCALE/0.005f * sinAlpha-0.2f*SCALE/0.005f*sinAlpha1, body.getAngle() + (float) Math.PI / 2 * rotate);
         }
 
         bullet.setLinearVelocity(new Vector2(body.getLinearVelocity().x + impulse * (float) Math.cos(body.getAngle() + rotate*Math.PI/2), body.getLinearVelocity().y + impulse * (float) Math.sin(body.getAngle() + rotate * Math.PI/2)));

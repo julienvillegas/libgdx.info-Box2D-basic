@@ -800,11 +800,12 @@
 	</body>
 
 	<body name="star">
+		<is_dynamic/>
 		<linear_damping>0</linear_damping>
 		<angular_damping>0</angular_damping>
 		<allow_sleep/>
 		<fixture>
-			<density>2</density>
+			<density>10000000</density>
 			<friction>0</friction>
 			<restitution>0</restitution>
 			<filter_category_bits>1</filter_category_bits>
