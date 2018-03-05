@@ -1,0 +1,12 @@
+sprites2.png
+size: 3290, 2968
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+star
+  rotate: false
+  xy: 1, 1
+  size: 2978, 2966
+  orig: 2978, 2966
+  offset: 0, 0
+  index: -1
