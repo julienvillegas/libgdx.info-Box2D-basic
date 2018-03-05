@@ -65,7 +65,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
     private static final int METEORS_COUNT = 30;                                    // Количество метеоритов на карте
 
-    private static final float ENGINE_POWER = 54000f;                               // Мощность одного двигателя
+    private static final float ENGINE_POWER = 70000f;                               // Мощность одного двигателя
 
 
     private static final int BTN_P1_LEFTTURBINE = 0;                                //
@@ -139,9 +139,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
 
     private Body[] meteorBodies = new Body[METEORS_COUNT];
-    private Body[] obstacleBodies = new Body[1];
+    private Body[] obstacleBodies = new Body[3];
     private String[] meteorNames = new String[METEORS_COUNT];
-    private String[] obstacleNames = new String[1];
+    private String[] obstacleNames = new String[3];
     private ArrayList<Body> bullets = new ArrayList<Body>();
     private ArrayList<Body> bullets2 = new ArrayList<Body>();
 
@@ -153,17 +153,17 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     ){
         this.game = game;
         this.shipChoosingScreen = shipChoosingScreen;
-        this.p1_ship = shipFlipHorizontal(player1ship);
-        this.p2_ship = shipFlipHorizontal(shipRotate(player2ship));
+        this.p1_ship = player1ship;
+        this.p2_ship = player2ship;
 
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
-        viewport = new ExtendViewport(50, 50, camera);
+        viewport = new ExtendViewport(80, 80, camera);
 
 
-        textureAtlas = new TextureAtlas("sprites.txt");
-        textureAtlas2 = new TextureAtlas("sprites2.txt");
+        textureAtlas = new TextureAtlas("sprite.txt");
+        //textureAtlas2 = new TextureAtlas("sprites2.txt");
         addSprites();
 
         Box2D.init();
@@ -228,7 +228,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
             sprites.put(region.name, sprite);
         }
-        regions = textureAtlas2.getRegions();
+        /*regions = textureAtlas2.getRegions();
         for (TextureAtlas.AtlasRegion region : regions) {
             Sprite sprite = textureAtlas2.createSprite(region.name);
 
@@ -239,7 +239,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             sprite.setOrigin(0, 0);
 
             sprites.put(region.name, sprite);
-        }
+        }*/
     }
 
     private void generate() {
@@ -465,7 +465,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
                 this.meteorNames[i] = name;
                 int scale = Math.abs((int)(random.nextFloat()*2+1));
-                BlockData block = new BlockData(scale+100);
+                BlockData block = new BlockData(-scale-100);
                 meteorBodies[i] = createBodyWH(name, x, y, 0,scale);
                 meteorBodies[i].setUserData(block);
                 meteorBodies[i].setLinearVelocity(new Vector2((random.nextFloat()-0.5f)*20,(random.nextFloat()-0.5f)*20));
@@ -473,16 +473,27 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
 
         }
     private void generateObstacles(){
-       String[] obstacleNames = new String[]{"star"};
+       String[] obstacleNames = new String[]{"obstacle1","obstacle2","obstacle3"};
        for (int i=0;i<obstacleNames.length;i++){
-           String name  = obstacleNames[0];
+           String name  = obstacleNames[i];
            this.obstacleNames[i] = name;
-           Random random = new Random();
-           int scale = 1;
-           BlockData block = new BlockData(scale+100);
-           int x = (int) (0.3f * (WIDTH_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
-           int y = (int) (0.6f * (HEIGHT_IN_UNITS / SCALE * 0.02 - 1) * SCALE / 0.02);
+           int scale = 4;
+           BlockData block = new BlockData(-scale-100);
+           int x=0,y=0;
+           if (i == 1){
+               y=(int)(HEIGHT_IN_UNITS*0.85);
+               x = (int)(HEIGHT_IN_UNITS*0.55);
+           }
+           if (i == 2){
+               y=0;
+               x = (int)(HEIGHT_IN_UNITS*0.4);
+           }
+           if (i ==0){
+               y=(int)(HEIGHT_IN_UNITS*0.3);
+               x = (int)((1 -0.088)*WIDTH_IN_UNITS);
+           }
            obstacleBodies[i] = createBodyWH(name,x,y,0,scale);
+           obstacleBodies[i].setBullet(true);
            obstacleBodies[i].setUserData(block);
            obstacleBodies[i].setAngularVelocity(10f);
        }
@@ -696,7 +707,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             Body body = meteorBodies[i];
             String name = meteorNames[i];
             BlockData block  =(BlockData) body.getUserData();
-            int scale = block.getType() - 100;
+            int scale = -block.getType() - 100;
             //Gdx.app.log("scale", scale+ "");
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -707,7 +718,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             Body body = obstacleBodies[i];
             String name = obstacleNames[i];
             BlockData block  =(BlockData) body.getUserData();
-            int scale = block.getType() - 100;
+            int scale = -block.getType() - 100;
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
             drawSpriteWH(name, position.x, position.y, degrees, scale);
@@ -726,10 +737,10 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
         for (int i = 0; i < bullets.size(); i++) {
 
             Body body = bullets.get(i);
-            String name = "bullet";
+            String name = "bullet0";
             BlockData block = (BlockData) body.getUserData();
             if (block.isBulletActivated()) {
-                name = "bullet0";
+                name = "bullet";
             }
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -741,7 +752,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             String name = "bullet2";
             BlockData block = (BlockData) body.getUserData();
             if (block.isBulletActivated()) {
-                name = "bullet20";
+                name = "bullet";
             }
             Vector2 position = body.getPosition();
             float degrees = (float) Math.toDegrees(body.getAngle());
@@ -1002,7 +1013,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
 
-
+    /*
     private static int[][] shipRotate(int[][] ship) {
         int[][] res = new int[ship.length][ship[0].length];
         int ID;
@@ -1030,9 +1041,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
 
         return res;
-    }
+    }*/
 
-    private static int[][] shipFlipHorizontal(int[][] ship) {
+    /*private static int[][] shipFlipHorizontal(int[][] ship) {
         int[][] res = new int[ship.length][ship[0].length];
         for (int i = 0; i < res.length; i++) {
             for (int j = 0; j < res[0].length; j++) {
@@ -1040,7 +1051,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
         }
         return res;
-    }
+    }*/
 
 
     private static float getXOnField(int ID, int i, int xCorner) {

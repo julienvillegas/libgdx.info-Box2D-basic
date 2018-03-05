@@ -48,7 +48,6 @@ public interface ItemID {
     int STEEL_GUN_MAXCNT = 1;
     int WOOD_GUN_MAXCNT = 2;
     int EYE_MAXCNT = 1;
-    int EYE2_MAXCNT = 1;
 
 
     int[] ITEMS_MAX_CNT = {WOOD_BLOCK_MAXCNT, STEEL_BLOCK_MAXCNT, ENGINE_MAXCNT,

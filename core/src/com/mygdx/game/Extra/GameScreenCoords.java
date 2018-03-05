@@ -8,10 +8,10 @@ public interface GameScreenCoords  {
     // Базовые константы
 
     float SCALE = 0.005f;                                      // Константа, переводящая GDX-овские размеры объектов в игровые
-    float HEIGHT_IN_UNITS = 50f;                               // Высота экрана в клетках
+    float HEIGHT_IN_UNITS = 80f;                               // Высота экрана в клетках
     float UNIT_SIZE = SCREEN_HEIGHT / HEIGHT_IN_UNITS;         // Размер 1 клетки при отрисовке текстур
     float WIDTH_IN_UNITS = SCREEN_WIDTH / UNIT_SIZE;           // Ширина экрана в клетках
-    float BUTTON_RADIUS = 6f;                                  // Размер кнопки в клетках
+    float BUTTON_RADIUS = 9.6f;                                  // Размер кнопки в клетках
 
 
 
