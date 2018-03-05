@@ -144,18 +144,20 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     private String[] obstacleNames = new String[3];
     private ArrayList<Body> bullets = new ArrayList<Body>();
     private ArrayList<Body> bullets2 = new ArrayList<Body>();
-
+    private int [][] player1ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
+    private int [][] player2ship = new int[FIELD_WIDTH][FIELD_HEIGHT];
     GameScreen(
             ShipChoosingScreen shipChoosingScreen,
             Game game,
             int[][] player1ship,
             int[][] player2ship
     ){
+        this.player1ship = player1ship;
+        this.player2ship = player2ship;
         this.game = game;
         this.shipChoosingScreen = shipChoosingScreen;
-        this.p1_ship = player1ship;
-        this.p2_ship = player2ship;
-
+        this.p1_ship = shipFlipHorizontal(player1ship);
+        this.p2_ship = shipFlipHorizontal(shipRotate(player2ship));
 
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
@@ -490,7 +492,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
            }
            if (i ==0){
                y=(int)(HEIGHT_IN_UNITS*0.3);
-               x = (int)((1 -0.088)*WIDTH_IN_UNITS);
+               x = (int)((1 -0.06)*WIDTH_IN_UNITS);
            }
            obstacleBodies[i] = createBodyWH(name,x,y,0,scale);
            obstacleBodies[i].setBullet(true);
@@ -985,7 +987,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
                 if (isInCircle(screenX, screenY, POPUP_BTN1_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
                     game.setScreen(shipChoosingScreen);
                 if (isInCircle(screenX, screenY, POPUP_BTN2_X * UNIT_SIZE, POPUP_BTN_Y * UNIT_SIZE, POPUP_BTN_RADIUS * UNIT_SIZE))
-                    game.setScreen(new GameScreen(shipChoosingScreen,game,p1_ship,p2_ship));
+                    game.setScreen(new GameScreen(shipChoosingScreen,game,player1ship,player2ship));
                 break;
 
             case RUN:
@@ -1013,7 +1015,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
     }
 
 
-    /*
+
     private static int[][] shipRotate(int[][] ship) {
         int[][] res = new int[ship.length][ship[0].length];
         int ID;
@@ -1041,9 +1043,9 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
 
         return res;
-    }*/
+    }
 
-    /*private static int[][] shipFlipHorizontal(int[][] ship) {
+    private static int[][] shipFlipHorizontal(int[][] ship) {
         int[][] res = new int[ship.length][ship[0].length];
         for (int i = 0; i < res.length; i++) {
             for (int j = 0; j < res[0].length; j++) {
@@ -1051,7 +1053,7 @@ public class GameScreen implements Screen, InputProcessor, ItemID, AssemblingScr
             }
         }
         return res;
-    }*/
+    }
 
 
     private static float getXOnField(int ID, int i, int xCorner) {

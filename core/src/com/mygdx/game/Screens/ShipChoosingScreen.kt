@@ -23,7 +23,7 @@ import com.mygdx.game.MyGdxGame.Companion.skin
 class ShipChoosingScreen(private val game: Game) : Screen {
 
     private val stage: Stage = Stage(ScreenViewport())
-
+    private var cnt = 0
     var p1_ship = setPrimaryShip()
     var p2_ship = setPrimaryShip()
     var p1_inventory = setPrimaryInventory()
@@ -103,8 +103,7 @@ class ShipChoosingScreen(private val game: Game) : Screen {
         playButton.addListener(object : InputListener() {
             override fun touchUp(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int) {
                 game.screen = GameScreen(getMe(), game,p1_ship, p2_ship)
-                p1_ship = shipFlipHorizontal(p1_ship)
-                p2_ship = shipFlipHorizontal(shipRotate(p2_ship))
+
                 for ( i in 0 until p1_inventory.size){
                     System.out.print("${p1_inventory[i]} ")
                 }
